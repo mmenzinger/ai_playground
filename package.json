@@ -1,0 +1,43 @@
+{
+  "name": "ai.c4f.wtf",
+  "version": "0.0.0",
+  "description": "",
+  "dependencies": {
+    "ace-builds": "^1.4.6",
+    "dexie": "^2.0.4",
+    "golden-layout": "^1.5.9",
+    "jquery": "^3.4.1",
+    "jstree": "^3.3.8",
+    "lit-element": "^2.2.1",
+    "pwa-helpers": "^0.9.1",
+    "redux": "^4.0.4",
+    "redux-thunk": "^2.3.0",
+    "workbox-routing": "^4.3.1"
+  },
+  "devDependencies": {
+    "clean-webpack-plugin": "^3.0.0",
+    "copy-webpack-plugin": "^5.0.4",
+    "css-loader": "^3.2.0",
+    "file-loader": "^4.2.0",
+    "html-loader": "^0.5.5",
+    "html-webpack-plugin": "^3.2.0",
+    "minify-lit-html-loader": "0.0.3",
+    "serviceworker-webpack-plugin": "^1.0.1",
+    "style-loader": "^1.0.0",
+    "terser-webpack-plugin": "^2.1.2",
+    "webpack": "^4.41.0",
+    "webpack-cli": "^3.3.9",
+    "webpack-dev-server": "^3.8.2",
+    "webpack-merge": "^4.2.2"
+  },
+  "scripts": {
+    "start": "npm run start:dev",
+    "start:dev": "webpack-dev-server --config webpack.dev.js",
+    "start:prod": "webpack-dev-server --config webpack.prod.js",
+    "build": "npm run build:prod",
+    "build:dev": "webpack --config webpack.dev.js",
+    "build:prod": "webpack --config webpack.prod.js"
+  },
+  "author": "Manuel Menzinger",
+  "license": "MIT"
+}

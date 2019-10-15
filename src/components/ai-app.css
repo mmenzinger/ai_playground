@@ -1,0 +1,18 @@
+:host{
+    display: flex;
+    flex-direction: column;
+    overflow:hidden;
+}
+
+main{
+    flex: 1;
+}
+
+.page {
+    display: none;
+}
+
+.page[active] {
+    display: block;
+    height:100%;
+}

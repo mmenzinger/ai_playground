@@ -1,0 +1,35 @@
+:host {
+  display: block;
+  box-sizing: border-box;
+}
+
+body, html{
+    height:100%;
+    font-family: var(--font-sans-serif);
+}
+
+h1, h2, h3{
+  padding: 0;
+  margin: 0;
+  font-family: var(--font-serif);
+  text-shadow: 1px 1px 1px var(--color-shadow);
+}
+
+ul{
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+p{
+    margin:1rem 0;
+}
+
+a{
+    text-decoration: none;
+    color: var(--color-text);
+    font-family: var(--font-monospace);
+}
+a:hover{
+    color: var(--color-highlight);
+}

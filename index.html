@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>AI - Coding4Fun</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Coding4Fun Educational Artificial Intelligence Platform">
+    <!--<link rel="manifest" href="manifest.json">-->
+    <!--<link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>-->
+    <script>
+        // Load and register pre-caching Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function () {
+                navigator.serviceWorker.register('service-worker.js', {
+                    scope: '/',
+                });
+            });
+        }
+        else {
+            throw Error("This page can't work without service workers!");
+        }
+
+        // Redux assumes `process.env.NODE_ENV` exists in the ES module build.
+        // https://github.com/reactjs/redux/issues/2907
+        window.process = { env: { NODE_ENV: 'production' } };
+    </script>
+
+    <style>
+        @font-face {
+            font-family: 'Roboto';
+            font-style: normal;
+            font-weight: 400;
+            font-display: swap;
+            src: local('Roboto'), local('Roboto-Regular'), url(https://fonts.gstatic.com/s/roboto/v20/KFOmCnqEu92Fr1Mu4mxK.woff2) format('woff2');
+        }
+
+        @font-face {
+            font-family: 'Roboto Slab';
+            font-style: normal;
+            font-weight: 400;
+            font-display: swap;
+            src: local('Roboto Slab Regular'), local('RobotoSlab-Regular'), url(https://fonts.gstatic.com/s/robotoslab/v9/BngMUXZYTXPIvIBgJJSb6ufN5qU.woff2) format('woff2');
+        }
+
+        @font-face {
+            font-family: 'Source Code Pro';
+            font-style: normal;
+            font-weight: 400;
+            font-display: swap;
+            src: local('Source Code Pro Regular'), local('SourceCodePro-Regular'), url(https://fonts.gstatic.com/s/sourcecodepro/v11/HI_SiYsKILxRpg3hIP6sJ7fM7PqlPevW.woff2) format('woff2');
+        }
+
+        :root {
+            --color-background-primary: #fff;
+            --color-background-secondary: #eee;
+            --color-highlight: #f82;
+            --color-warning: #ffa;
+            --color-border: #aaa;
+            --color-text: #333;
+            --color-text-weak: #aaa;
+            --color-shadow: rgba(0, 0, 0, 0.25);
+
+            --font-serif: 'Roboto Slab', serif;
+            --font-sans-serif: 'Roboto', sans-serif;
+            --font-monospace: 'Source Code Pro', monospace;
+        }
+
+        body {
+            margin: 0
+        }
+
+        #app {
+            height: 100vh;
+        }
+    </style>
+</head>
+
+<body>
+    <ai-app id='app'></ai-app>
+    <noscript>
+        Please enable JavaScript to view this website.
+    </noscript>
+</body>
+
+</html>
