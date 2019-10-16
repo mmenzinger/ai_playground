@@ -5,6 +5,7 @@ import {
 
 const INITIAL_STATE = {
     page: '',
+    params: [],
     offline: false,
 };
 
@@ -13,7 +14,8 @@ const app = (state = INITIAL_STATE, action) => {
         case UPDATE_PAGE:
             return {
                 ...state,
-                page: action.page
+                page: action.page,
+                params: action.params,
             };
         case UPDATE_OFFLINE:
             return {
@@ -21,7 +23,9 @@ const app = (state = INITIAL_STATE, action) => {
                 offline: action.offline
             };
         default:
-            return state;
+            return{
+                ...state
+            }
     }
 };
 

@@ -1,66 +1,48 @@
-
-/*var code = 'self.postMessage({text: "sandbox created"});';
-var url = window.URL.createObjectURL(
-    new Blob([code], {type: 'text/javascript'})
-);
-
-var worker = new Worker(url);
-
-// forwarding messages to parent
-worker.addEventListener('message', function(m) {
-    parent.postMessage(m.data, '*');
-});*/
-
 let worker;
 
-window.addEventListener('message', m => {
-    if (m.origin !== 'null' && m.source === parent) {
-        switch (m.data.type) {
-            case 'init':
-                simInit(m.data.code);
-                break;
-
-            case 'update':
-                simUpdate();
-                break;
-
-            case 'load_scenario':
-                loadScenario(m.data.name);
-                break;
-        }
-
-    }
-    //parent.postMessage(m.data, '*');
-    //parent.postMessage({type: 'result'}, '*');
-});
-
-onload = () => {
-    parent.postMessage({type: 'sandbox_status', status: 'online'}, '*');
-}
-
-function loadScenario(name) {
-    console.log("load scneario", name);
-    if (worker) {
+window.simTerminate = () => {
+    if(worker)
         worker.terminate();
-    }
-
-    worker = new Worker(`${name}.js`, { type: "module" });
+    worker = undefined;
 }
 
-function simInit(code) {
-    if (worker) {
-        worker.postMessage({ type:'init', code });
-    }
-    else {
-        throw Error('no scneario loaded!');
-    }
+window.simStart = (files, state) => {
+    return new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => {
+            simTerminate();
+            reject(Error('timeout'));
+        }, 1000);
+        if (worker) {
+            worker.terminate();
+        }
+        worker = new Worker(`scenario-worker.js#project/1`/*, { type: "module" }*/); // waiting for module support...
+        const channel = new MessageChannel();
+        channel.port1.onmessage = m => {
+            console.log(m.data.type);
+            clearTimeout(timeout);
+            resolve();
+        }
+        worker.postMessage({ type:'start', files, state }, [channel.port2]);
+    });
 }
 
-function simUpdate() {
-    if (worker) {
-        worker.postMessage({ type:'update' });
-    }
-    else {
-        throw Error('no scneario loaded!');
-    }
+window.simUpdate = (state, actions) => {
+    return new Promise((resolve, reject) => {
+        if (worker) {
+            const timeout = setTimeout(() => {
+                simTerminate();
+                reject(Error('timeout'));
+            }, 1000);
+            const channel = new MessageChannel();
+            channel.port1.onmessage = m => {
+                console.log(m.data.type);
+                clearTimeout(timeout);
+                resolve();
+            }
+            worker.postMessage({ type:'update', state, actions }, [channel.port2]);
+        }
+        else {
+            reject(Error('no scenario loaded!'));
+        }
+    });
 }

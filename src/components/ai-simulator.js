@@ -1,7 +1,6 @@
 import { html, LitElement } from 'lit-element';
 import { connect } from 'pwa-helpers/connect-mixin.js';
 import { store } from 'src/store.js';
-import files from 'reducers/files.js';
 
 
 class AiSimulator extends connect(store)(LitElement) {
@@ -12,43 +11,36 @@ class AiSimulator extends connect(store)(LitElement) {
 
     render() {
         return html`
-            <button @click=${this.simLoad}>load</button>
+            <button @click=${this.simStart}>start</button>
             <button @click=${this.simUpdate}>update</button>
         `;
     }
 
-    simLoad(){
+    simStart(){
         const state = store.getState();
-        const file = state.files.opened;
-        if(file !== -1){
-            const code = state.files.files[state.files.opened].content;
-            // '*' to work on any domain
-            // https://stackoverflow.com/questions/22194409/failed-to-execute-postmessage-on-domwindow-the-target-origin-provided-does
-            this.sandbox.postMessage({type:'init', code}, '*'); 
-        }
+        const project = state.app.params[0];
+        this.sandbox.simStart([`local/${project}/index.js`], {}).catch(e => {
+            console.log("simStart error:", e.message);
+        });
     }
 
     simUpdate(){
-        this.sandbox.postMessage({type:'update'}, '*'); 
+        this.sandbox.simUpdate({}, {});
     }
 
     firstUpdated() {
-        var iframe = document.createElement('iframe');
-        iframe.srcdoc = '<script src="sandbox.js"></script>';
+        const state = store.getState();
+        const iframe = document.createElement('iframe');
+        // 16.10.2019: srcdoc currently bugged in chrome, does not register service-worker requests
+        //iframe.srcdoc = '<script src="sandbox.js"></script>';
+        iframe.src = `srcdoc.html#${state.app.params[0]}`;
         iframe.sandbox = 'allow-scripts allow-same-origin';
         iframe.style.display = 'none';
         this.shadowRoot.appendChild(iframe);
         this.sandbox = iframe.contentWindow;
-
-        window.addEventListener('message', m => {
-            if (m.source === this.sandbox) {
-                if(m.data.type === 'sandbox_status' && m.data.status === 'online'){
-                    this.sandbox.postMessage({type:'load_scenario', name: 'test'}, '*');
-                }
-                console.log('parent', m.data);
-            }
-        });
-        
+        iframe.onload = () => {
+            this.simStart();
+        }
     }
 
     stateChanged(state) {

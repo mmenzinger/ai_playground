@@ -1,15 +1,12 @@
-console.log("worker started");
+let counter = 0;
 
-let code;
-onmessage = m => {
-    if(m.data.type === 'init'){
-        //console.log(m.data.code);#
-        code = m.data.code;
-        eval(m.data.code);
-    }
-    if(m.data.type === 'update'){
-        console.log(code);
-        eval(code);
-        update();
-    }
+function init(state){
+    console.log("CODE INIT", state);
+    //while(true){console.log("2")}
+}
+
+function update(state, actions){
+    importScripts('global/qwe');
+    counter++;
+    console.log("CODE UPDATE", counter);
 }

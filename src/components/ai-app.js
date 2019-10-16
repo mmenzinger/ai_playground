@@ -7,6 +7,7 @@ import { installOfflineWatcher } from 'pwa-helpers/network.js';
 import { navigate, updateOffline } from 'actions/app.js';
 
 import('components/ai-header.js');
+import('components/c4f-modal.js');
 
 const sharedStyles = unsafeCSS(require('./shared-styles.css').toString());
 const style = unsafeCSS(require('./ai-app.css').toString());
@@ -33,6 +34,7 @@ class AiApp extends connect(store)(LitElement) {
 
     render() {
         return html`
+            <c4f-modal></c4f-modal>
             <header>
                 <ai-header title="AI Playground"></ai-header>
             </header>
@@ -44,7 +46,7 @@ class AiApp extends connect(store)(LitElement) {
     }
 
     firstUpdated() {
-        installRouter(location => store.dispatch(navigate(decodeURIComponent(location.pathname))));
+        installRouter(location => store.dispatch(navigate(decodeURIComponent(location.pathname), location.hash)));
         installOfflineWatcher(offline => store.dispatch(updateOffline(offline)));
     }
 

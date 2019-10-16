@@ -11,6 +11,7 @@
     "lit-element": "^2.2.1",
     "pwa-helpers": "^0.9.1",
     "redux": "^4.0.4",
+    "redux-async-initial-state": "^0.3.0",
     "redux-thunk": "^2.3.0",
     "workbox-routing": "^4.3.1"
   },

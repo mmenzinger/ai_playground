@@ -3,6 +3,9 @@ const webpack = require("webpack");
 const CopyPlugin = require('copy-webpack-plugin');
 
 const staticFiles = [
+    'srcdoc.html',
+    //'.htaccess',
+    //{from: 'src/scenarios/test.js', to: 'test.js'}
     //'service-worker.js',
     //{from: 'node_modules/workbox-sw/build/workbox-sw.js', to: 'workbox-sw.js'},
 ];
@@ -12,8 +15,9 @@ module.exports = {
     entry: {
         'app': './src/components/ai-app.js',
         'sandbox': './src/sandbox.js',
-        'test': './src/scenarios/test.js',
         'service-worker': './src/service-worker.js',
+        'scenario-worker': './src/scenario-worker.js',
+        //'test': './src/scenarios/test.js',
     },
 
     output: {

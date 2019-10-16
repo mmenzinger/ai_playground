@@ -7,23 +7,22 @@ import {
 import thunk from 'redux-thunk';
 import { lazyReducerEnhancer } from 'pwa-helpers/lazy-reducer-enhancer.js';
 
-import app from './reducers/app.js';
+import app from 'reducers/app.js';
 import files from 'reducers/files.js';
+import modal from 'reducers/modal.js';
 
-import LocalDB from 'src/localdb';
+import db from 'src/localdb';
 
 // Sets up a Chrome extension for time travel debugging.
 // See https://github.com/zalmoxisus/redux-devtools-extension for more information.
 const devCompose = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 
-const db = LocalDB();
-
 export const store = createStore(
     state => state,
-    db.loadState(),
+    //db.loadState(),
     devCompose(
         lazyReducerEnhancer(combineReducers),
-        applyMiddleware(thunk) // async action support
+        applyMiddleware(thunk), // async action support
     )
 );
 
@@ -31,9 +30,11 @@ export const store = createStore(
 store.addReducers({
     app,
     files,
+    modal,
 });
 
 store.subscribe(() => { // TODO: throttle
-    db.saveState(store.getState());
+    //db.saveState(store.getState());
 })
 
+export default store;
