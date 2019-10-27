@@ -3,16 +3,18 @@
   "version": "0.0.0",
   "description": "",
   "dependencies": {
+    "@tensorflow/tfjs": "^1.2.11",
     "ace-builds": "^1.4.6",
     "dexie": "^2.0.4",
     "golden-layout": "^1.5.9",
     "jquery": "^3.4.1",
-    "jstree": "^3.3.8",
+    "json-stringify-pretty-compact": "^2.0.0",
     "lit-element": "^2.2.1",
+    "ml5": "^0.4.1",
     "pwa-helpers": "^0.9.1",
     "redux": "^4.0.4",
-    "redux-async-initial-state": "^0.3.0",
     "redux-thunk": "^2.3.0",
+    "tau-prolog": "^0.2.73",
     "workbox-routing": "^4.3.1"
   },
   "devDependencies": {
@@ -37,7 +39,11 @@
     "start:prod": "webpack-dev-server --config webpack.prod.js",
     "build": "npm run build:prod",
     "build:dev": "webpack --config webpack.dev.js",
-    "build:prod": "webpack --config webpack.prod.js"
+    "build:prod": "webpack --config webpack.prod.js",
+    "deploy": "npm run build:prod && firebase deploy"
+  },
+  "browser": {
+    "child_process": false
   },
   "author": "Manuel Menzinger",
   "license": "MIT"

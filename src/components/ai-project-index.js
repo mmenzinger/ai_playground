@@ -1,5 +1,5 @@
 import { html, unsafeCSS } from 'lit-element';
-import { PageElement } from 'classes/page-element.js';
+import { LazyElement } from 'components/lazy-element.js';
 import { store } from 'src/store.js';
 import { showModal } from 'actions/modal.js';
 
@@ -8,7 +8,7 @@ import db from 'src/localdb.js';
 const sharedStyles = unsafeCSS(require('./shared-styles.css').toString());
 //const style = unsafeCSS(require('./ai-project-index.css').toString());
 
-class AiProjectIndex extends PageElement {
+class AiProjectIndex extends LazyElement {
     static get properties() {
         return {
             _projects: { type: Array },
@@ -54,11 +54,16 @@ class AiProjectIndex extends PageElement {
 //importScripts(project('filename.js));
 
 function init(state){
-    console.log("INIT", state);
 }
 
 function update(state, actions){
-    console.log("UPDATE", actions);
+    // take a random action
+    const action = Math.round(Math.random()*(actions.length-1));
+    return actions[action];
+}
+
+function finish(state, score){
+    console.log('finish', state, score);
 }`      );
             this._projects = await db.getProjects();
         }

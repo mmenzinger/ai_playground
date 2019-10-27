@@ -33,7 +33,15 @@ module.exports = merge(common, {
                 test: /\.js$/,
                 exclude: /node_modules/,
                 use: {
-                    loader: 'minify-lit-html-loader'
+                    loader: 'minify-lit-html-loader',
+                    options: {
+                        htmlMinifier: {
+                            ignoreCustomFragments: [
+                                /\@click=\${.*?}?}/,
+                                /\?hidden=\${.*?}/,
+                            ]
+                        }
+                    }
                 }
             },
         ],

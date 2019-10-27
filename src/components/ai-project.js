@@ -1,7 +1,7 @@
 import { html, unsafeCSS } from 'lit-element';
 import { connect } from 'pwa-helpers/connect-mixin.js';
 import { store } from 'src/store.js';
-import { PageElement } from 'classes/page-element.js';
+import { LazyElement } from 'components/lazy-element.js';
 import files from 'reducers/files.js';
 
 import 'components/ai-header.js';
@@ -9,8 +9,9 @@ import 'components/golden-layout.js';
 import 'components/file-tree.js';
 import 'components/c4f-editor.js';
 import 'components/ai-simulator.js';
+import 'components/c4f-console.js';
 
-class AiProject extends connect(store)(PageElement) {
+class AiProject extends connect(store)(LazyElement) {
     render() {
         const settings = JSON.stringify({
             showPopoutIcon: false,
@@ -67,7 +68,7 @@ class AiProject extends connect(store)(PageElement) {
             },
             {
                 name: 'Console',
-                content: '<h1>Console</h1>'
+                content: '<c4f-console></c4f-console>'
             },
         ]);
 

@@ -1,6 +1,6 @@
 import { LitElement } from 'lit-element';
 
-export class PageElement extends LitElement {
+export class LazyElement extends LitElement {
     static get properties() {
         return {
             active: { type: Boolean }

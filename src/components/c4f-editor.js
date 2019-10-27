@@ -15,6 +15,7 @@ class C4fEditor extends connect(store)(LitElement) {
     static get properties() {
         return {
             _currentFile: { type: Number },
+            _lastChange: { type: Number },
         };
     }
 
@@ -28,6 +29,7 @@ class C4fEditor extends connect(store)(LitElement) {
     constructor() {
         super();
         this._currentFile = 0;
+        this._lastChange = 0;
         this._preventOnChange = false;
         this._editor = undefined;
     }
@@ -55,7 +57,7 @@ class C4fEditor extends connect(store)(LitElement) {
         editor.session.on('change', () => { // TODO: throttle
             if (this._preventOnChange !== true) {
                 db.saveFile(this._currentFile, this._editor.getValue()).then(ret => {
-                    console.log(ret);
+                    //console.log(ret);
                 });
                 //store.dispatch(changeFile(this._currentFile, this._editor.getValue()));
             }
@@ -67,7 +69,11 @@ class C4fEditor extends connect(store)(LitElement) {
     }
 
     stateChanged(state) {
-        if (state.files.currentFile !== this._currentFile) {
+        if (state.files.currentFile !== this._currentFile
+            || (state.files.lastChangeFileContent !== this._lastChange
+                && state.files.lastChangeFileId === this._currentFile
+            )
+        ) {
             this._currentFile = state.files.currentFile;
             this.loadFile(this._currentFile);
         }

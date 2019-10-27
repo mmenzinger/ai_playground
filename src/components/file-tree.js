@@ -18,7 +18,7 @@ const sharedStyles = unsafeCSS(require('./shared-styles.css').toString());
 class FileTree extends connect(store)(LitElement) {
     static get properties() {
         return {
-            //_lastChanged: { type: Number },
+            _lastChanged: { type: Number },
             _global: { type: Array },
             _project: { type: Array },
         };
@@ -71,18 +71,7 @@ class FileTree extends connect(store)(LitElement) {
 
     async onDelete(id) {
         try {
-            const state = store.getState();
-            const project = Number(state.app.params[0]);
-            const num = await db.removeFile(id);
-            if (num === 1) {
-                store.dispatch(deleteFile(id));
-            }
-            db.getFiles(0).then((files) => {
-                this._global = files;
-            });
-            db.getFiles(project).then((files) => {
-                this._project = files;
-            });
+            await store.dispatch(deleteFile(id));
         }
         catch (error) {
             console.error(error);
@@ -111,51 +100,28 @@ class FileTree extends connect(store)(LitElement) {
                 submit: 'Create File',
                 abort: 'Cancel',
             }));
-            await db.createFile(modal.name, project, '');
-            db.getFiles(project).then((files) => {
-                if(project === 0)
-                    this._global = files;
-                else
-                    this._project = files;
-            });
+            const id = await store.dispatch(createFile(modal.name, project, ''));
         }
         catch (error) {
-            console.log(error);
+            console.error(error);
         }
     }
 
     firstUpdated() {
-        const state = store.getState();
-        const project = Number(state.app.params[0]);
-        db.getFiles(0).then((files) => {
-            this._global = files;
-        });
-        db.getFiles(project).then((files) => {
-            this._project = files;
-        });
     }
 
     stateChanged(state) {
-        /*const result = state.app.modalResult;
-        if(result !== undefined && result.type === 'addGlobalFile'){
-            store.dispatch(modalConsume());
-            if(result.success === true){
-                db.createFile(result.fields.filename, 0, '').then((id) => {
-                    store.dispatch(createFile());
-                });
-            }
-        }*/
-        /*if (state.files.lastChanged !== this._lastChanged) {
-            this._lastChanged = state.files.lastChanged;
-            db.getFiles(state.app.currentProject).then((files) => {
+        if (state.files.lastChangeFileTree !== this._lastChanged) {
+            this._lastChanged = state.files.lastChangeFileTree;
+
+            const project = Number(state.app.params[0]);
+            db.getFiles(project).then((files) => {
+                this._project = files;
+            });
+            db.getFiles(0).then((files) => {
                 this._global = files;
-            });*/
-        /*this._global = [];
-        for(const fileId of state.files.projects.get(0).files){
-            this._global.push(state.files.files.get(fileId));
-        }*/
-        //this._project = state.files.projects.get(state.files.currentProject);
-        //}
+            });
+        }
     }
 }
 

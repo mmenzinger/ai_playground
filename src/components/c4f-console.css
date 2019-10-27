@@ -1,0 +1,24 @@
+:host{
+    white-space: pre;
+    background: white;
+    height: 100%;
+    overflow: scroll;
+}
+
+p{ 
+    margin: 0;
+    padding: 0 0.5rem;
+    border-top: 1px solid rgb(200,200,200);
+}
+
+p.log{
+
+}
+
+p.warn{
+    background: rgb(252, 235, 141);
+}
+
+p.error{
+    background: rgb(255, 123, 123);
+}

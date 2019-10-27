@@ -4,6 +4,11 @@ const CopyPlugin = require('copy-webpack-plugin');
 
 const staticFiles = [
     'srcdoc.html',
+    //'node_modules/ml5/dist/ml5.min.js',
+    //'ml5js/dist/ml5.min.js',
+    //'./src/tau-prolog.js',
+    'node_modules/@tensorflow/tfjs/dist/tf.min.js',
+    { from: 'assets', to: 'assets' },
     //'.htaccess',
     //{from: 'src/scenarios/test.js', to: 'test.js'}
     //'service-worker.js',
@@ -17,6 +22,7 @@ module.exports = {
         'sandbox': './src/sandbox.js',
         'service-worker': './src/service-worker.js',
         'scenario-worker': './src/scenario-worker.js',
+        'tau-prolog': './src/tau-prolog.js',
         //'test': './src/scenarios/test.js',
     },
 
@@ -33,7 +39,8 @@ module.exports = {
             'actions': path.join(__dirname, 'src/actions'),
             'components': path.join(__dirname, 'src/components'),
             'reducers': path.join(__dirname, 'src/reducers'),
-            'classes': path.join(__dirname, 'src/classes'),
+            'scenarios': path.join(__dirname, 'src/components/scenarios'),
+            'assets': path.join(__dirname, 'assets'),
         }
     },
 
@@ -41,11 +48,13 @@ module.exports = {
         rules: [
             {
                 test: /\.css$/,
-                use: ['css-loader'],
+                //use: ['css-loader'],
+                loader: 'css-loader',
+                options: { url: false }
             },
             {
                 test: /\.(jpe?g|png|gif|svg)$/i,
-                loader: "file-loader?name=/icons/[name].[ext]"
+                loader: "file-loader?name=/assets/[name].[ext]"
             },
         ]
     },
@@ -70,5 +79,11 @@ module.exports = {
             children: false,
             maxModules: 0,
         },
+        clientLogLevel: "warning",
+    },
+
+    node: {
+        fs: 'empty',
+        child_process: 'empty',
     }
 };
