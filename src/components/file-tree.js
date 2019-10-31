@@ -23,6 +23,7 @@ class FileTree extends connect(store)(LitElement) {
             _global: { type: Array },
             _project: { type: Array },
             _currentFile: { type: Number },
+            _currentProject: { type: Number },
         };
     }
     static get styles() {
@@ -44,9 +45,9 @@ class FileTree extends connect(store)(LitElement) {
             let ending = file.name.match(/\.([a-z]+)$/);
             ending = ending === null ? 'unknown' : ending[1];
             globalFiles.push(html`
-                <li ?active=${this._currentFile===file.id}>
-                    <a @click=${e=> { this.onFile(file) }}><img src="assets/filetree/${ending}.svg" class="icon">${file.name}</a>
-                    <a class="delete" @click=${e=> { this.onDelete(file) }}>x</a>
+                <li ?active=${this._currentFile === file.id}>
+                    <a @click=${e => { this.onFile(file) }}><img src="assets/filetree/${ending}.svg" class="icon">${file.name}</a>
+                    <a class="delete" @click=${e => { this.onDelete(file) }}>x</a>
                 </li>
             `);
         });
@@ -61,9 +62,9 @@ class FileTree extends connect(store)(LitElement) {
             let ending = file.name.match(/\.([a-z]+)$/);
             ending = ending === null ? 'unknown' : ending[1];
             projectFiles.push(html`
-                <li ?active=${this._currentFile===file.id}>
-                    <a @click=${e=>{this.onFile(file)}}><img src="assets/filetree/${ending}.svg" class="icon">${file.name}</a>
-                    <a class="delete" @click=${e=>{this.onDelete(file)}}>x</a>
+                <li ?active=${this._currentFile === file.id}>
+                    <a @click=${e => { this.onFile(file) }}><img src="assets/filetree/${ending}.svg" class="icon">${file.name}</a>
+                    <a class="delete" @click=${e => { this.onDelete(file) }}>x</a>
                 </li>
             `);
         });
@@ -123,12 +124,12 @@ class FileTree extends connect(store)(LitElement) {
                 submit: 'Create File',
                 abort: 'Cancel',
                 check: async (fields) => {
-                    if(fields.name.length === 0)
+                    if (fields.name.length === 0)
                         return Error('Empty filname! Every file must have a name.');
-                    if(! fields.name.match(/[a-zA-Z0-9_-]/))
+                    if (!fields.name.match(/[a-zA-Z0-9_-]/))
                         return Error('Invalid character! Only numbers, letters, _ and - are allowed.');
                     const file = await db.loadFileByName(project, `${fields.name}.${fields.type}`);
-                    if(file !== undefined)
+                    if (file !== undefined)
                         return Error('Duplicate name! A file with that name and ending already exists!');
                 }
             }));
@@ -143,20 +144,21 @@ class FileTree extends connect(store)(LitElement) {
     }
 
     stateChanged(state) {
-        if (state.files.lastChangeFileTree !== this._lastChanged) {
+        if (state.files.lastChangeFileTree !== this._lastChanged 
+            || state.files.currentFile !== this._currentFile
+            || state.projects.currentProject !== this._currentProject) {
             this._lastChanged = state.files.lastChangeFileTree;
 
-            const project = Number(state.app.params[0]);
-            db.getFiles(project).then((files) => {
+            const project = state.projects.currentProject;
+            db.getProjectFiles(project).then((files) => {
                 this._project = files;
             });
-            db.getFiles(0).then((files) => {
+            db.getProjectFiles(0).then((files) => {
                 this._global = files;
             });
-        }
 
-        if(state.files.currentFile !== this._currentFile){
             this._currentFile = state.files.currentFile;
+            this._currentProject = state.projects.currentProject;
         }
     }
 }

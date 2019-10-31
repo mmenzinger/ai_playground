@@ -46,8 +46,8 @@ self.fixPath = (path, ending = '') => {
 }
 
 self.project = (filename) => {
-    const projectId = location.hash.split('/')[1];
-    return `local/${projectId}/${filename}`;
+    const urlParams = new URLSearchParams(location.search);
+    return `local/${urlParams.get('project')}/${filename}`;
 }
 
 self.global = (filename) => {
@@ -57,6 +57,8 @@ self.global = (filename) => {
 self.getFileContent = async (path) => {
     path = fixPath(path);
     const body = await fetch(path);
+    if(body.status !== 200)
+        throw Error(`could not open file '${path}'`)
     return await body.text();
 }
 
@@ -96,7 +98,7 @@ function getCaller() {
     }
 }
 
-const _console = self.console;
+/*const _console = self.console;
 self.console = {
     log(...args) {
         if (typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope) {
@@ -134,9 +136,9 @@ self.console = {
         }
         _console.error(...args);
     },
-}
+}*/
 
-onmessage = m => {
+onmessage = async m => {
     switch (m.data.type) {
         case 'start': {
             try {
@@ -146,19 +148,19 @@ onmessage = m => {
                 console.warn("importScripts error:", error.message);
             }
             //console.log("files loaded", m.data.files);
-            init(m.data.state);
+            await init(m.data.state);
             m.ports[0].postMessage({ type: 'init_return' });
             break;
         }
 
         case 'update': {
-            const action = update(m.data.state, m.data.actions);
+            const action = await update(m.data.state, m.data.actions);
             m.ports[0].postMessage({ type: 'update_return', action });
             break;
         }
 
         case 'finish': {
-            finish(m.data.state, m.data.score);
+            await finish(m.data.state, m.data.score);
             m.ports[0].postMessage({ type: 'finish_return' });
             break;
         }

@@ -46,7 +46,7 @@ class AiApp extends connect(store)(LitElement) {
     }
 
     firstUpdated() {
-        installRouter(location => store.dispatch(navigate(decodeURIComponent(location.pathname), location.hash)));
+        installRouter(location => store.dispatch(navigate(decodeURIComponent(location.pathname), location.search)));
         installOfflineWatcher(offline => store.dispatch(updateOffline(offline)));
     }
 

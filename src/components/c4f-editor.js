@@ -1,8 +1,12 @@
 import { html, unsafeCSS, css, LitElement } from 'lit-element';
-import { connect } from 'pwa-helpers/connect-mixin.js';
-import { store } from 'src/store.js';
+import { connect } from 'pwa-helpers/connect-mixin';
+import { store } from 'src/store';
+import { ResizeObserver } from 'resize-observer';
+import { saveFile } from 'actions/files';
 
 import db from '../localdb';
+
+
 
 import ace from 'ace-builds';
 import 'ace-builds/src-noconflict/mode-plain_text';
@@ -37,6 +41,10 @@ class C4fEditor extends connect(store)(LitElement) {
         this._lastChange = 0;
         this._preventOnChange = false;
         this._editor = undefined;
+
+        this._resizeObserver = new ResizeObserver(() => {
+            this._editor.resize();
+        });
     }
 
     render() {
@@ -44,7 +52,8 @@ class C4fEditor extends connect(store)(LitElement) {
     }
 
     firstUpdated() {
-        const editor = ace.edit(this.shadowRoot.querySelector('div'), {
+        const container = this.shadowRoot.querySelector('div');
+        const editor = ace.edit(container, {
             value: '',
             //mode: 'ace/mode/javascript',
         });
@@ -61,16 +70,17 @@ class C4fEditor extends connect(store)(LitElement) {
 
         editor.session.on('change', () => { // TODO: throttle
             if (this._preventOnChange !== true) {
-                db.saveFile(this._currentFile, this._editor.getValue()).then(ret => {
+                store.dispatch(saveFile(this._currentFile, this._editor.getValue())).then(ret => {
                     //console.log(ret);
                 });
-                //store.dispatch(changeFile(this._currentFile, this._editor.getValue()));
             }
         });
 
         this._editor = editor;
-        //if(this._currentFile > 0)
-        //    this.loadFile(this._currentFile);
+        this._resizeObserver.observe(container);
+
+        if(this._currentFile > 0)
+            this.loadFile(this._currentFile);
     }
 
     stateChanged(state) {

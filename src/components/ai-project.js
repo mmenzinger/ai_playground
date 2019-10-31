@@ -2,7 +2,6 @@ import { html, unsafeCSS } from 'lit-element';
 import { connect } from 'pwa-helpers/connect-mixin.js';
 import { store } from 'src/store.js';
 import { LazyElement } from 'components/lazy-element.js';
-import files from 'reducers/files.js';
 
 import 'components/ai-header.js';
 import 'components/golden-layout.js';

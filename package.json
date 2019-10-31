@@ -14,6 +14,7 @@
     "pwa-helpers": "^0.9.1",
     "redux": "^4.0.4",
     "redux-thunk": "^2.3.0",
+    "resize-observer": "^1.0.0",
     "tau-prolog": "^0.2.73",
     "workbox-routing": "^4.3.1"
   },

@@ -9,6 +9,7 @@ import { lazyReducerEnhancer } from 'pwa-helpers/lazy-reducer-enhancer.js';
 
 import app from 'reducers/app.js';
 import files from 'reducers/files.js';
+import projects from 'reducers/projects.js';
 import modal from 'reducers/modal.js';
 import log from 'reducers/log.js';
 
@@ -29,6 +30,7 @@ export const store = createStore(
 store.addReducers({
     app,
     files,
+    projects,
     modal,
     log,
 });

@@ -33,7 +33,7 @@ class LocalDB {
         return this.db.files.where('id').equals(id).delete();
     }
 
-    async getFiles(project){
+    async getProjectFiles(project){
         return this.db.files.where('project').equals(project).toArray();
     }
 
@@ -62,6 +62,10 @@ class LocalDB {
 
     async getProjects(){
         return this.db.projects.toArray();
+    }
+
+    async getProjectByName(name){
+        return this.db.projects.where({name}).first();
     }
 
     //------------------------------------------------------------------------------------------

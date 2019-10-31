@@ -1,7 +1,13 @@
 // store gets set by parent, else it would be a different store (scope iframe)
+// scenario gets set by parent
 import { addLog } from 'actions/log';
 import { createFile, saveFile } from 'actions/files';
 import db from 'src/localdb';
+
+const libs = [
+    'tf.min.js',
+    'tau-prolog.js',
+]
 
 let worker;
 
@@ -20,13 +26,14 @@ window.simTerminate = () => {
     worker = undefined;
 }
 
-window.simStart = (files, state) => {
+window.simStart = (index, scenario) => {
     return new Promise((resolve, reject) => {
         const timeout = Timeout(reject);
         if (worker) {
             worker.terminate();
         }
-        worker = new Worker(`scenario-worker.js#project/1`/*, { type: "module" }*/); // waiting for module support...
+        const state = store.getState();
+        worker = new Worker(`scenario-worker.js?project=${state.projects.currentProject}`/*, { type: "module" }*/); // waiting for module support...
 
         worker.onmessage = async (m) => {
             switch (m.data.type) {
@@ -58,7 +65,11 @@ window.simStart = (files, state) => {
             clearTimeout(timeout);
             resolve();
         }
-        worker.postMessage({ type: 'start', files, state }, [channel.port2]);
+        worker.postMessage({ 
+            type: 'start', 
+            files: [...libs, ...scenario.files, index],
+            state: scenario.state
+        }, [channel.port2]);
     });
 }
 

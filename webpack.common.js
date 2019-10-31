@@ -9,6 +9,7 @@ const staticFiles = [
     //'./src/tau-prolog.js',
     'node_modules/@tensorflow/tfjs/dist/tf.min.js',
     { from: 'assets', to: 'assets' },
+    { from: './src/scenarios/ai-tictactoe-scenario.js', to: 'scenario/tictactoe.js'}
     //'.htaccess',
     //{from: 'src/scenarios/test.js', to: 'test.js'}
     //'service-worker.js',
@@ -23,6 +24,7 @@ module.exports = {
         'service-worker': './src/service-worker.js',
         'scenario-worker': './src/scenario-worker.js',
         'tau-prolog': './src/tau-prolog.js',
+
         //'test': './src/scenarios/test.js',
     },
 
@@ -39,8 +41,9 @@ module.exports = {
             'actions': path.join(__dirname, 'src/actions'),
             'components': path.join(__dirname, 'src/components'),
             'reducers': path.join(__dirname, 'src/reducers'),
-            'scenarios': path.join(__dirname, 'src/components/scenarios'),
+            'scenarios': path.join(__dirname, 'src/scenarios'),
             'assets': path.join(__dirname, 'assets'),
+            'templates': path.join(__dirname, 'src/scenarios/templates'),
         }
     },
 

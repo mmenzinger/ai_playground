@@ -26,10 +26,10 @@ class AiSimulator extends connect(store)(LitElement) {
         this._scenario = this.shadowRoot.querySelector('[active]');
         this._scenario.onInit(this._sandbox.simUpdate, this._sandbox.simFinish);
         const state = store.getState();
-        const project = state.app.params[0];
+        const project = state.projects.currentProject;
         //this._sandbox.updateCallback = this._scenario.onUpdate;
         this._sandbox.store = store;
-        this._sandbox.simStart([`local/${project}/index.js`, 'tf.min.js', 'tau-prolog.js'], this._scenario.state).catch(e => {
+        this._sandbox.simStart(`local/${project}/index.js`, this._scenario).catch(e => {
             console.log(`simStart error: ${e.message}`);
         });
     }

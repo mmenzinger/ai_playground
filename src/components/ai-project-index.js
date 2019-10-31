@@ -1,9 +1,19 @@
 import { html, unsafeCSS } from 'lit-element';
-import { LazyElement } from 'components/lazy-element.js';
-import { store } from 'src/store.js';
-import { showModal } from 'actions/modal.js';
+import { LazyElement } from 'components/lazy-element';
+import { store } from 'src/store';
+import { showModal } from 'actions/modal';
 
-import db from 'src/localdb.js';
+import { createProject } from 'actions/projects';
+
+import db from 'src/localdb';
+
+import TicTacToe from 'templates/tictactoe';
+import TicTacToeMinMax from 'templates/tictactoe-minmax';
+
+const templates = [
+    TicTacToe,
+    TicTacToeMinMax,
+];
 
 const sharedStyles = unsafeCSS(require('./shared-styles.css').toString());
 //const style = unsafeCSS(require('./ai-project-index.css').toString());
@@ -31,7 +41,7 @@ class AiProjectIndex extends LazyElement {
         const elements = [];
         this._projects.forEach(project => {
             elements.push(html`
-                <li><a href="#project/${project.id}">${project.name}</a></li>
+                <li><a href="?page=project&id=${project.id}">${project.name}</a></li>
             `);
         });
         return html`
@@ -43,28 +53,30 @@ class AiProjectIndex extends LazyElement {
 
     async onNewProject() {
         try {
+            const options = [];
+            for(let i = 0; i < templates.length; i++){
+                options.push(html`<option value="${i}">${templates[i].name}</option>`);
+            }
             const modal = await store.dispatch(showModal({
-                fields: [{ id: 'name', type: 'text', placeholder: 'Project Name' }],
-                submit: 'Create Project',
+                title: 'New Project',
+                content: html`
+                    <form>
+                        <input id="name" type="text" placeholder="name">
+                        <select id="template">${options}</select>
+                    </form>`,
+                submit: 'Create',
                 abort: 'Cancel',
+                check: async (fields) => {
+                    if(fields.name.length === 0)
+                        return Error('Empty project name! Every project must have a name.');
+                    const project = await db.getProjectByName(fields.name);
+                    if(project !== undefined)
+                        return Error('Duplicate name! A project with that name already exists!');
+                }
             }));
-            const project = await db.createProject(modal.name);
-            await db.createFile('index.js', project,
-                `//importScripts(global('filename.js));
-//importScripts(project('filename.js));
-
-function init(state){
-}
-
-function update(state, actions){
-    // take a random action
-    const action = Math.round(Math.random()*(actions.length-1));
-    return actions[action];
-}
-
-function finish(state, score){
-    console.log('finish', state, score);
-}`      );
+            
+            const template = templates[Number(modal.template)];
+            await store.dispatch(createProject(modal.name, template));
             this._projects = await db.getProjects();
         }
         catch (error) {
