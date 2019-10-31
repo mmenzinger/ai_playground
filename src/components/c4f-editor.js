@@ -2,10 +2,15 @@ import { html, unsafeCSS, css, LitElement } from 'lit-element';
 import { connect } from 'pwa-helpers/connect-mixin.js';
 import { store } from 'src/store.js';
 
-import ace from 'ace-builds';
-import 'ace-builds/src-noconflict/mode-javascript';
 import db from '../localdb';
+
+import ace from 'ace-builds';
+import 'ace-builds/src-noconflict/mode-plain_text';
+import 'ace-builds/src-noconflict/mode-javascript';
+import 'ace-builds/src-noconflict/mode-json';
+import 'ace-builds/src-noconflict/mode-prolog';
 ace.config.setModuleUrl('ace/mode/javascript_worker', require('file-loader?name=[name].[ext]!ace-builds/src-noconflict/worker-javascript'));
+ace.config.setModuleUrl('ace/mode/json_worker', require('file-loader?name=[name].[ext]!ace-builds/src-noconflict/worker-json'));
 ace.config.setModuleUrl('ace/theme/chrome', require('file-loader?name=[name].[ext]!ace-builds/src-noconflict/theme-chrome'));
 ace.config.setModuleUrl('ace/ext/language_tools', require('file-loader?name=[name].[ext]!ace-builds/src-noconflict/ext-language_tools'));
 
@@ -35,13 +40,13 @@ class C4fEditor extends connect(store)(LitElement) {
     }
 
     render() {
-        return html`<div ?hidden=${this._currentFile===0}></div>`;
+        return html`<div ?hidden=${this._currentFile === 0}></div>`;
     }
 
     firstUpdated() {
         const editor = ace.edit(this.shadowRoot.querySelector('div'), {
-            value: "",
-            mode: 'ace/mode/javascript',
+            value: '',
+            //mode: 'ace/mode/javascript',
         });
         editor.renderer.attachToShadowRoot();
 
@@ -81,12 +86,22 @@ class C4fEditor extends connect(store)(LitElement) {
 
     loadFile(id) {
         if (this._editor && id > 0) {
-            this._preventOnChange = true;
             db.loadFile(id).then(file => {
+                let mode = 'plain_text';
+                const ending = file.name.match(/\.([a-z]+)$/);
+                if (ending) {
+                    switch (ending[1]) {
+                        case 'js': mode = 'javascript'; break;
+                        case 'json': mode = 'json'; break;
+                        case 'pl': mode = 'prolog'; break;
+                        default: mode = 'plain_text';
+                    }
+                }
+                this._preventOnChange = true;
+                this._editor.session.setMode(`ace/mode/${mode}`);
                 this._editor.session.setValue(file.content);
-            }).finally(() => {
                 this._preventOnChange = false;
-            })
+            });
         }
     }
 }

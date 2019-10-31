@@ -1,7 +1,7 @@
-#__modal{
+#modal{
     background: rgba(0, 0, 0, 0.75);
     position: absolute;
-    z-index: 10;
+    z-index: 100;
     top: 0;
     left: 0;
     right: 0;
@@ -11,6 +11,22 @@
     align-items: center;
 }
 
-#__content{
+#content{
+    padding: 1rem;
+    border: 1px solid #000;
+    background-color: #eee;
+}
 
+#yes{
+    float: right;
+    background-color: #5e5;
+}
+
+#no{
+    float: left;
+    background-color: #e55;
+}
+
+form{
+    padding: 1rem 0;
 }

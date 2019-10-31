@@ -11,6 +11,7 @@ class C4fModal extends connect(store)(LitElement) {
     static get properties() {
         return {
             _data: { type: Object },
+            _error: {type: String },
         }
     }
 
@@ -26,34 +27,49 @@ class C4fModal extends connect(store)(LitElement) {
         this._data = undefined;
         this._resolve = undefined;
         this._reject = undefined;
+        this._error = '';
     }
 
     render() {
         if(this._data === undefined)
             return html``;
 
-        const fields = [];
-        this._data.fields.forEach(field => {
-            fields.push(html`<input type=${field.type} id=${field.id} placeholder=${field.placeholder} autofocus/><br>`);
-        });
         return html`
-            <div id="__modal">
-                <section id="__content">
-                    ${fields}
-                    <button @click=${this.onAbort}>${this._data.abort}</button>
-                    <button @click=${this.onSubmit}>${this._data.submit}</button>
+            <div id="modal">
+                <section id="content">
+                    <h1>${this._data.title}</h1>
+                    ${this._data.content}
+                    ${this._error}
+                    <button id="no" @click=${this.onAbort}>${this._data.abort}</button>
+                    <button id="yes" @click=${this.onSubmit}>${this._data.submit}</button>
                 </section>
             </div>`;
     }
 
-    onSubmit(){
-        const result = {};
-        this._data.fields.forEach(field => {
-            result[field.id] = this.shadowRoot.getElementById(field.id).value;
-        });
-        const resolve = this._resolve;
-        this.onExit();
-        resolve(result);
+    updated(){
+        const firstElement = this.shadowRoot.querySelector('input,select');
+        if(firstElement)
+            firstElement.focus();
+    }
+
+    async onSubmit(){
+        try{
+            const fields = {};
+            this.shadowRoot.querySelectorAll('input,select').forEach(input => {
+                fields[input.id] = input.value;
+            })
+            if(this._data.check){
+                const error = await this._data.check(fields);
+                if(error instanceof Error)
+                    throw error;
+            }
+            const resolve = this._resolve;
+            this.onExit();
+            resolve(fields);
+        }
+        catch(error){
+            this._error = html`<p class="error">${error}</p>`;
+        }
     }
 
     onAbort(){
@@ -70,6 +86,7 @@ class C4fModal extends connect(store)(LitElement) {
 
     onExit(){
         store.dispatch(hideModal());
+        this._error = undefined;
     }
 
     stateChanged(state) {

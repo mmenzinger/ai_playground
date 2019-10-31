@@ -29,6 +29,7 @@ a{
     text-decoration: none;
     color: var(--color-text);
     font-family: var(--font-monospace);
+    cursor: pointer;
 }
 a:hover{
     color: var(--color-highlight);
