@@ -103,7 +103,7 @@ class FileTree extends connect(store)(LitElement) {
 
     onAddFileProject() {
         const state = store.getState();
-        const project = Number(state.app.params[0]);
+        const project = state.projects.currentProject;
         this.addFile(project);
     }
 
@@ -133,6 +133,7 @@ class FileTree extends connect(store)(LitElement) {
                         return Error('Duplicate name! A file with that name and ending already exists!');
                 }
             }));
+            
             const id = await store.dispatch(createFile(`${modal.name}.${modal.type}`, project, ''));
         }
         catch (error) {

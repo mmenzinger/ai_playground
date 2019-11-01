@@ -4,8 +4,7 @@ export const TicTacToeMinMax = {
         {
             name: 'index.js',
             content: 
-`//importScripts(global('filename.js));
-//importScripts('filename.js);
+`//include('filename.js);
 
 function recGetScore(state, action, depth){
     const newState = scenario.performAction(state, action);
@@ -37,6 +36,7 @@ function getBestAction(state){
 }
 
 async function init(state){
+    console.log('initial state: ', state);
 }
 
 async function update(state, actions){
@@ -46,7 +46,8 @@ async function update(state, actions){
 }
 
 async function finish(state, score){
-    console.log(\`finish with score: \${score}\`);
+    console.log('final state: ', state);
+    console.log('score: ', score);
 }`,
         }
     ]

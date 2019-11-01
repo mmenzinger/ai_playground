@@ -1,49 +1,6 @@
-//------------------------------------------------------------------------------
-// hack to make tensorflow available in webworker
-/*if (typeof OffscreenCanvas !== "undefined") {
-    self.document = {
-        documentElement: {
-            getElementsByTagName(){ return []; }
-        },
-        readyState: "complete",
-        createElement: () => {
-            return new OffscreenCanvas(640, 480);
-        }
-    };
+import { serialize, deserialize } from 'src/util';
 
-    self.window = {
-        screen: {
-            width: 640,
-            height: 480
-        }
-    };
-    self.HTMLVideoElement = OffscreenCanvas;
-    self.HTMLImageElement = function () { };
-    class CanvasMock {
-        getContext() {
-            return new OffscreenCanvas(0, 0);
-        }
-    }
-    // @ts-ignore
-    self.HTMLCanvasElement = CanvasMock;
-}*/
-//------------------------------------------------------------------------------
-//self.window = self; // needed hack for tau-prolog
-/*self.document = {
-    getElementById(id) {
-        console.error(`invalid getElementById(${id})`);
-        return undefined;
-    }
-}*/
-const stringify = require('json-stringify-pretty-compact');
 
-self.fixPath = (path, ending = '') => {
-    if(! /^local\/[0-9]+\//.test(path))
-        path = project(path);
-    if(ending !== path.slice(path.length - ending.length))
-        path += ending;
-    return path;
-}
 
 self.project = (filename) => {
     const urlParams = new URLSearchParams(location.search);
@@ -54,14 +11,6 @@ self.global = (filename) => {
     return `local/0/${filename}`;
 }
 
-self.getFileContent = async (path) => {
-    path = fixPath(path);
-    const body = await fetch(path);
-    if(body.status !== 200)
-        throw Error(`could not open file '${path}'`)
-    return await body.text();
-}
-
 self.storeJson = (path, object) => {
     return new Promise((resolve, reject) => {
         path = fixPath(path, '.json');
@@ -70,7 +19,7 @@ self.storeJson = (path, object) => {
         const timeout = setTimeout(() => {
             reject(Error(`could not store file ${filename}`));
         }, 500);
-        const json = stringify(object);
+        const json = serialize(object);
         const channel = new MessageChannel();
         channel.port1.onmessage = m => {
             clearTimeout(timeout);
@@ -83,7 +32,39 @@ self.storeJson = (path, object) => {
 self.loadJson = async (path) => {
     path = fixPath(path, '.json');
     const json = await getFileContent(path);
-    return JSON.parse(json);
+    return deserialize(json);
+}
+
+self.include = (path) => {
+    try{ importScripts(path); }
+    catch{ 
+        try{ importScripts(project(path)); }
+        catch{ importScripts(self.global(path)); } // why is self needed here?
+    }
+}
+
+self.__console = self.console;
+self.console = {
+    log(...args) {
+        if (typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope) {
+            postMessage({ type: 'log', args: args.map(serialize), caller: getCaller() });
+        }
+        __console.log(...args);
+    },
+
+    warn(...args) {
+        if (typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope) {
+            postMessage({ type: 'warn', args: args.map(serialize), caller: getCaller() });
+        }
+        __console.warn(...args);
+    },
+
+    error(...args) {
+        if (typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope) {
+            postMessage({ type: 'error', args: args.map(serialize), caller: getCaller() });
+        }
+        __console.error(...args);
+    },
 }
 
 function getCaller() {
@@ -91,52 +72,31 @@ function getCaller() {
         throw Error('')
     }
     catch (error) {
-        let caller_line = error.stack.split("\n")[3];
-        //_console.log(caller_line);
-        //_console.log(caller_line.match(/([^\/]*:[0-9]+):[0-9]+/)[1]);
-        return caller_line.match(/([^\/]*:[0-9]+):[0-9]+/)[1];
+        try{
+            let callerLine = error.stack.split("\n")[3];
+            return callerLine.match(/(local\/\d+\/.*?:[0-9]+):[0-9]+/)[1];
+        }
+        catch{
+            return undefined;
+        }
     }
 }
 
-/*const _console = self.console;
-self.console = {
-    log(...args) {
-        if (typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope) {
-            try {
-                postMessage({ type: 'log', args, caller: getCaller() });
-            }
-            catch (error) {
-                postMessage({ type: 'log', args: JSON.stringify(args), caller: getCaller() });
-            }
-        }
-        _console.log(...args);
-    },
+async function getFileContent(path) {
+    path = fixPath(path);
+    const body = await fetch(path);
+    if(body.status !== 200)
+        throw Error(`could not open file '${path}'`)
+    return await body.text();
+}
 
-    warn(...args) {
-        if (typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope) {
-            try {
-                postMessage({ type: 'warn', args, caller: getCaller() });
-            }
-            catch (error) {
-                postMessage({ type: 'warn', args: JSON.stringify(args), caller: getCaller() });
-            }
-        }
-        _console.warn(getCaller());
-        _console.warn(...args);
-    },
-
-    error(...args) {
-        if (typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope) {
-            try {
-                postMessage({ type: 'error', args, caller: getCaller() });
-            }
-            catch (error) {
-                postMessage({ type: 'error', args: JSON.stringify(args), caller: getCaller() });
-            }
-        }
-        _console.error(...args);
-    },
-}*/
+function fixPath(path, ending = '') {
+    if(! /^local\/[0-9]+\//.test(path))
+        path = project(path);
+    if(! path.endsWith(ending))
+        path += ending;
+    return path;
+}
 
 onmessage = async m => {
     switch (m.data.type) {

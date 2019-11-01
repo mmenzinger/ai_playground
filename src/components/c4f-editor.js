@@ -85,9 +85,10 @@ class C4fEditor extends connect(store)(LitElement) {
 
     stateChanged(state) {
         if (state.files.currentFile !== this._currentFile
-            || (state.files.lastChangeFileContent !== this._lastChange
+            // why did i do that? forces reload after each change...
+           /* || (state.files.lastChangeFileContent !== this._lastChange
                 && state.files.lastChangeFileId === this._currentFile
-            )
+            )*/
         ) {
             this._currentFile = state.files.currentFile;
             this.loadFile(this._currentFile);

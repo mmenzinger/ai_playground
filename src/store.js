@@ -5,13 +5,13 @@ import {
     combineReducers
 } from 'redux';
 import thunk from 'redux-thunk';
-import { lazyReducerEnhancer } from 'pwa-helpers/lazy-reducer-enhancer.js';
+import { lazyReducerEnhancer } from 'pwa-helpers/lazy-reducer-enhancer';
 
-import app from 'reducers/app.js';
-import files from 'reducers/files.js';
-import projects from 'reducers/projects.js';
-import modal from 'reducers/modal.js';
-import log from 'reducers/log.js';
+import app from 'reducers/app';
+import files from 'reducers/files';
+import projects from 'reducers/projects';
+import modal from 'reducers/modal';
+import log from 'reducers/log';
 
 // Sets up a Chrome extension for time travel debugging.
 // See https://github.com/zalmoxisus/redux-devtools-extension for more information.

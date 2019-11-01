@@ -10,7 +10,7 @@
     "jquery": "^3.4.1",
     "json-stringify-pretty-compact": "^2.0.0",
     "lit-element": "^2.2.1",
-    "ml5": "^0.4.1",
+    "lodash": "^4.17.15",
     "pwa-helpers": "^0.9.1",
     "redux": "^4.0.4",
     "redux-thunk": "^2.3.0",

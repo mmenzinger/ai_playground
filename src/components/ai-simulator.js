@@ -17,8 +17,7 @@ class AiSimulator extends connect(store)(LitElement) {
         return html`
             <button @click=${this.simStart}>reload</button>
             <ai-tictactoe active></ai-tictactoe>
-            <c4f-console></c4f-console>
-        `;
+        `;//<c4f-console></c4f-console>
     }
 
     simStart(){
