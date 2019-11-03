@@ -16,6 +16,7 @@ class AiSimulator extends connect(store)(LitElement) {
         import('scenarios/ai-tictactoe');
         return html`
             <button @click=${this.simStart}>reload</button>
+            <button @click=${this.simTrain}>train</button>
             <ai-tictactoe active></ai-tictactoe>
         `;//<c4f-console></c4f-console>
     }
@@ -26,10 +27,20 @@ class AiSimulator extends connect(store)(LitElement) {
         this._scenario.onInit(this._sandbox.simUpdate, this._sandbox.simFinish);
         const state = store.getState();
         const project = state.projects.currentProject;
-        //this._sandbox.updateCallback = this._scenario.onUpdate;
         this._sandbox.store = store;
         this._sandbox.simStart(`local/${project}/index.js`, this._scenario).catch(e => {
             console.log(`simStart error: ${e.message}`);
+        });
+    }
+
+    simTrain(){
+        store.dispatch(clearLog());
+        this._scenario = this.shadowRoot.querySelector('[active]');
+        const state = store.getState();
+        const project = state.projects.currentProject;
+        this._sandbox.store = store;
+        this._sandbox.simTrain(`local/${project}/index.js`, this._scenario).catch(e => {
+            console.log(`simTrain error: ${e.message}`);
         });
     }
 

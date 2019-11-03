@@ -58,6 +58,16 @@ function validateAction(state, action) {
     if (action.player !== state.player) throw Error(`invalid player ${action.player}`);
 }
 
+function validAction(state, action){
+    try{
+        validateAction(state, action);
+        return true;
+    }
+    catch(e){
+        return false;
+    }
+}
+
 function performAction(state, action) {
     validateAction(state, action);
     const newState = deepCopy(state);

@@ -9,10 +9,12 @@ import db from 'src/localdb';
 
 import TicTacToe from 'templates/tictactoe';
 import TicTacToeMinMax from 'templates/tictactoe-minmax';
+import TicTacToeQTable from 'templates/tictactoe-qtable';
 
 const templates = [
     TicTacToe,
     TicTacToeMinMax,
+    TicTacToeQTable,
 ];
 
 const sharedStyles = unsafeCSS(require('./shared-styles.css').toString());

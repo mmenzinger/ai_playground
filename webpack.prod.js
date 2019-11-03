@@ -38,7 +38,8 @@ module.exports = merge(common, {
                         htmlMinifier: {
                             ignoreCustomFragments: [
                                 /\@click=\${.*?}?}/,
-                                /\?hidden=\${.*?}/,
+                                /\?hidden=\${.*?}?}/,
+                                /\?active=\${.*?}?}/,
                             ]
                         }
                     }

@@ -66,14 +66,23 @@ class C4fConsole extends LitElement {
             return arg;
         });
         try{
-            const matches = log.caller.match(/local\/(\d+)\/(\w+\.\w+):(\d+)$/);
+            const state = store.getState();
+            let matches = log.caller.match(/local\/(\d+)\/(\w+\.\w+):(\d+)$/);
+            if(matches == null){ // uncaught exception -> try files, project first
+                matches = log.caller.match(/(\w+\.\w+):(\d+)$/);
+                let file = await db.loadFileByName(state.projects.currentProject, matches[1]);
+                if(file)
+                    matches.splice(1, 0, state.projects.currentProject);
+                else
+                    matches.splice(1, 0, 0);
+            }
             const project = Number(matches[1]);
             const filename = matches[2];
             const linenumber = Number(matches[3]);
             const file = await db.loadFileByName(project, filename);
             return html`<p class="${log.type}"><a class="file" @click=${e=>{this.onClick(file)}}>${filename}:${linenumber}</a>${args}</p>`;
         }
-        catch{
+        catch(e){
             return html`<p class="${log.type}">${args}</p>`;
         }
         
