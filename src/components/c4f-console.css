@@ -1,4 +1,8 @@
 :host{
+    height: 100%;
+}
+
+div#wrapper{
     background: white;
     height: 100%;
     overflow: auto;

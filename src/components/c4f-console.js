@@ -32,7 +32,12 @@ class C4fConsole extends LitElement {
     }
 
     render() {
-        return html`${this._logs}`;
+        return html`<div id="wrapper">${this._logs}</div>`;
+    }
+
+    updated(){
+        // scroll to bottom
+        this.shadowRoot.querySelector('div#wrapper').scrollIntoView(false);
     }
 
     async onLog(action){
@@ -51,7 +56,7 @@ class C4fConsole extends LitElement {
     async getLogHtml(log){
         const args = log.args.map(arg => {
             arg = arg.replace(/\{\s*"type":\s*"__FUNCTION__",\s*"name":\s*"(\w+)"\s*\}/g, '$1()');
-            arg = arg.replace(/\{\s*"type":\s*"__ERROR__",\s*"message":\s*"(.*?)"[^]*?\}/g, 'Error($1)');
+            arg = arg.replace(/\{\s*"type":\s*"__ERROR__",\s*"message":\s*"(.*?)"[^]*?\}/g, 'Error: $1');
             arg = arg.replace(/\{\s*"type":\s*"__MAP__",\s*"data":\s*([^]*?)\s*\}/g, 'Map($1)');
             arg = arg.replace(/\{\s*"type":\s*"__SET__",\s*"data":\s*([^]*?)\s*\}/g, 'Set($1)');
             arg = arg.replace(/\{\s*"type":\s*"__DATE__",\s*"timestamp":\s*(\d*)\s*\}/g, (_,timestamp) => {
@@ -65,10 +70,10 @@ class C4fConsole extends LitElement {
             arg = arg.replace(/^"([^]*)"$/g, '$1'); // strings
             return arg;
         });
-        try{
+        try{ // add caller if valid
             const state = store.getState();
             let matches = log.caller.match(/local\/(\d+)\/(\w+\.\w+):(\d+)$/);
-            if(matches == null){ // uncaught exception -> try files, project first
+            if(matches === null){ // uncaught exception -> try files, project first
                 matches = log.caller.match(/(\w+\.\w+):(\d+)$/);
                 let file = await db.loadFileByName(state.projects.currentProject, matches[1]);
                 if(file)
@@ -83,7 +88,7 @@ class C4fConsole extends LitElement {
             return html`<p class="${log.type}"><a class="file" @click=${e=>{this.onClick(file)}}>${filename}:${linenumber}</a>${args}</p>`;
         }
         catch(e){
-            return html`<p class="${log.type}">${args}</p>`;
+            return html`<p class="${log.type}">${args.join(' ')}</p>`;
         }
         
     }

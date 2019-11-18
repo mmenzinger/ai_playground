@@ -1,25 +1,33 @@
+:host{
+    height: 100%;
+}
+
 table{
     width: 100%;
     border-collapse: collapse;
 }
 
 td{
-    padding-top: 40%;
+    padding-top: 33%;
     border: 1px solid rgb(64,64,64);
+    width: 33%;
+    position: relative;
 }
 
-td.symbol0:hover{
+td.empty:hover{
     background: rgb(177, 177, 177);
 }
 
-.symbol0{ 
+td.empty{ 
     background: rgb(206, 206, 206);
 }
 
-.symbol1{
-    background: center/contain no-repeat url('assets/tictactoe/x.png');
-}
-
-.symbol2{
-    background: center/contain no-repeat url('assets/tictactoe/o.png');
+td > img{
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    max-width: 100%;
+    max-height: 100%;
 }

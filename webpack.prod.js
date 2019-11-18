@@ -8,6 +8,10 @@ const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 module.exports = merge(common, {
     mode: 'production',
 
+    entry: {
+        'service-worker': './src/worker/service.worker.js',
+    },
+
     optimization: {
         minimize: true,
         minimizer: [new TerserPlugin()],
@@ -37,9 +41,9 @@ module.exports = merge(common, {
                     options: {
                         htmlMinifier: {
                             ignoreCustomFragments: [
-                                /\@click=\${.*?}?}/,
-                                /\?hidden=\${.*?}?}/,
-                                /\?active=\${.*?}?}/,
+                                /\@click=\${.*?(\s*})+/,
+                                /\?hidden=\${.*?(\s*})+/,
+                                /\?active=\${.*?(\s*})+/,
                             ]
                         }
                     }

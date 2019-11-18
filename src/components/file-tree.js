@@ -152,10 +152,10 @@ class FileTree extends connect(store)(LitElement) {
 
             const project = state.projects.currentProject;
             db.getProjectFiles(project).then((files) => {
-                this._project = files;
+                this._project = files.sort((a,b) => a.name.localeCompare(b.name));
             });
             db.getProjectFiles(0).then((files) => {
-                this._global = files;
+                this._global = files.sort((a,b) => a.name.localeCompare(b.name));
             });
 
             this._currentFile = state.files.currentFile;

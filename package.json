@@ -11,13 +11,16 @@
     "json-stringify-pretty-compact": "^2.0.0",
     "lit-element": "^2.2.1",
     "lodash": "^4.17.15",
+    "ml5": "^0.4.1",
     "pwa-helpers": "^0.9.1",
     "redux": "^4.0.4",
     "redux-thunk": "^2.3.0",
     "resize-observer": "^1.0.0",
     "showdown": "^1.9.1",
     "tau-prolog": "^0.2.73",
-    "workbox-routing": "^4.3.1"
+    "workbox-expiration": "^4.3.1",
+    "workbox-routing": "^4.3.1",
+    "workbox-strategies": "^4.3.1"
   },
   "devDependencies": {
     "clean-webpack-plugin": "^3.0.0",
@@ -30,10 +33,12 @@
     "serviceworker-webpack-plugin": "^1.0.1",
     "style-loader": "^1.0.0",
     "terser-webpack-plugin": "^2.1.2",
-    "webpack": "^4.41.0",
+    "webpack": "^4.41.2",
     "webpack-cli": "^3.3.9",
     "webpack-dev-server": "^3.8.2",
-    "webpack-merge": "^4.2.2"
+    "webpack-merge": "^4.2.2",
+    "worker-loader": "^2.0.0",
+    "worker-plugin": "^3.2.0"
   },
   "scripts": {
     "start": "npm run start:dev",

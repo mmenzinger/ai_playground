@@ -1,6 +1,8 @@
 const path = require('path');
 const webpack = require("webpack");
 const CopyPlugin = require('copy-webpack-plugin');
+const WorkerPlugin = require('worker-plugin');
+const ServiceWorkerWebpackPlugin = require('serviceworker-webpack-plugin');
 
 const staticFiles = [
     'srcdoc.html',
@@ -8,8 +10,10 @@ const staticFiles = [
     //'ml5js/dist/ml5.min.js',
     //'./src/tau-prolog.js',
     'node_modules/@tensorflow/tfjs/dist/tf.min.js',
+    //'node_modules/ml5/dist/ml5.min.js',
     { from: 'assets', to: 'assets' },
-    { from: './src/scenarios/ai-tictactoe-scenario.js', to: 'scenario/tictactoe.js'}
+    { from: './src/scenarios/ai-tictactoe-scenario.js', to: 'scenario/tictactoe.js'},
+    //{ from: './src/worker/scenario.worker.js', to: 'scenario.worker.js'},
     //'.htaccess',
     //{from: 'src/scenarios/test.js', to: 'test.js'}
     //'service-worker.js',
@@ -21,9 +25,12 @@ module.exports = {
     entry: {
         'app': './src/components/ai-app.js',
         'sandbox': './src/sandbox.js',
-        'service-worker': './src/service-worker.js',
-        'scenario-worker': './src/scenario-worker.js',
-        'tau-prolog': './src/tau-prolog.js',
+        //'service-worker': './src/worker/service.worker.js',
+        //'util.worker': './src/worker/util.worker.js',
+        //'scenario-worker': './src/worker/scenario.worker.js',
+        'tau-prolog': './src/libs/tau-prolog.worker.js',
+        //'ml5': './src/libs/ml5.js',
+        'tf': './src/libs/tf.worker.js',
 
         //'test': './src/scenarios/test.js',
     },
@@ -44,20 +51,35 @@ module.exports = {
             'scenarios': path.join(__dirname, 'src/scenarios'),
             'assets': path.join(__dirname, 'assets'),
             'templates': path.join(__dirname, 'src/scenarios/templates'),
+            'libs': path.join(__dirname, 'src/libs'),
+            'worker': path.join(__dirname, 'src/worker'),
         }
     },
 
     module: {
         rules: [
+            /*{
+                test: /\.worker\.js$/,
+                use: {
+                    loader: 'worker-loader',
+                    options: { 
+                        inline: true,
+                        fallback: false,
+                    },
+                }
+                
+            },*/
             {
                 test: /\.css$/,
                 //use: ['css-loader'],
                 loader: 'css-loader',
-                options: { url: false }
+                options: { 
+                    url: false,
+                },
             },
             {
                 test: /\.(jpe?g|png|gif|svg)$/i,
-                loader: "file-loader?name=/assets/[name].[ext]"
+                loader: 'file-loader?name=/assets/[name].[ext]',
             },
         ]
     },
@@ -66,9 +88,13 @@ module.exports = {
         new webpack.ProvidePlugin({
             $: "jquery",
             jQuery: "jquery",
-            "window.jQuery": "jquery"
+            //"window.jQuery": "jquery"
         }),
         new CopyPlugin(staticFiles),
+        new WorkerPlugin(),
+        new ServiceWorkerWebpackPlugin({
+            entry: path.join(__dirname, 'src/worker/service.worker.js'),
+        }),
     ],
 
     devServer: {

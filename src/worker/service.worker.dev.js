@@ -1,19 +1,10 @@
-import {registerRoute} from 'workbox-routing/registerRoute.mjs';
+import {registerRoute} from 'workbox-routing/registerRoute';
 import db from 'src/localdb';
 
 registerRoute(
     /\/local\/[0-9]+\//,
     localFile
 );
-registerRoute(
-    /\.js$/,
-    test
-);
-async function test(arg){
-    //console.log(arg);
-    //console.log(db.loadState());
-    return fetch(arg.request);
-}
 
 async function localFile(arg){
     try{

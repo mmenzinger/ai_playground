@@ -47,6 +47,12 @@ export function serialize(obj) {
                 timestamp: +new Date(value),
             }
         }
+        if (value instanceof Uint8Array) {
+            return {
+                type: '__Uint8Array__',
+                data: Array.from(value),
+            }
+        }
         if (value === undefined)
             return '__UNDEFINED__';
         if (value === Number.POSITIVE_INFINITY)
@@ -84,6 +90,9 @@ export function deserialize(json) {
             }
             if (value.type === '__DATE__') {
                 return new Date(value.timestamp);
+            }
+            if (value.type === '__Uint8Array__') {
+                return new Uint8Array(value.data);
             }
         }
         if (value === '__+INFINITY__')

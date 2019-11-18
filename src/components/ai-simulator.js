@@ -1,7 +1,7 @@
 import { html, LitElement } from 'lit-element';
 import { connect } from 'pwa-helpers/connect-mixin';
 import { store } from 'src/store';
-import {clearLog} from 'actions/log';
+import { addLog, clearLog } from 'actions/log';
 
 import 'components/c4f-console';
 
@@ -15,21 +15,23 @@ class AiSimulator extends connect(store)(LitElement) {
     render() {
         import('scenarios/ai-tictactoe');
         return html`
-            <button @click=${this.simStart}>reload</button>
+            <button @click=${this.simRun}>run</button>
             <button @click=${this.simTrain}>train</button>
+            <button @click=${this.simTerminate}>terminate</button>
             <ai-tictactoe active></ai-tictactoe>
         `;//<c4f-console></c4f-console>
     }
 
-    simStart(){
+    simRun(){
         store.dispatch(clearLog());
         this._scenario = this.shadowRoot.querySelector('[active]');
-        this._scenario.onInit(this._sandbox.simUpdate, this._sandbox.simFinish);
         const state = store.getState();
         const project = state.projects.currentProject;
         this._sandbox.store = store;
-        this._sandbox.simStart(`local/${project}/index.js`, this._scenario).catch(e => {
-            console.log(`simStart error: ${e.message}`);
+        this._sandbox.simRun(`local/${project}/index.js`, this._scenario).catch(e => {
+            const msg = `simRun error: ${e.message}`;
+            store.dispatch(addLog({type: 'error', args: [msg]}));
+            console.log(msg);
         });
     }
 
@@ -40,8 +42,17 @@ class AiSimulator extends connect(store)(LitElement) {
         const project = state.projects.currentProject;
         this._sandbox.store = store;
         this._sandbox.simTrain(`local/${project}/index.js`, this._scenario).catch(e => {
-            console.log(`simTrain error: ${e.message}`);
+            const msg = `simTrain error: ${e.message}`;
+            store.dispatch(addLog({type: 'error', args: [msg]}));
+            console.log(msg);
         });
+    }
+
+    simTerminate(){
+        this._sandbox.simTerminate();
+        const msg = `simulation terminated!`;
+        store.dispatch(addLog({type: 'warn', args: [msg]}));
+        console.warn('msg');
     }
 
     firstUpdated() {
@@ -55,7 +66,7 @@ class AiSimulator extends connect(store)(LitElement) {
         this.shadowRoot.appendChild(iframe);
         this._sandbox = iframe.contentWindow;
         iframe.onload = () => {
-            this.simStart();
+            this.simRun();
         }
     }
 

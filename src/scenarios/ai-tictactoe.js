@@ -25,23 +25,18 @@ class AiTicTacToe extends LazyElement {
         ];
     }
 
-    constructor() {
-        super();
-        this._state = {
-            board: [],
-            player: scenario.Player.None,
-        };
-        this._updateCallback = () => {};
-        this._finishCallback = () => {};
-        this._playerWon = scenario.Player.None;
-    }
-
-    get files(){
+    static get files(){
         return ['scenario/tictactoe.js'];
     }
 
-    get state() {
-        return deepCopy(this._state);
+    constructor() {
+        super();
+        this._state = {
+            board: [[0,0,0],[0,0,0],[0,0,0]],
+            player: Player.None,
+        };
+        this._playerWon = Player.None;
+        this._update_resolve = undefined;
     }
 
     render() {
@@ -52,9 +47,9 @@ class AiTicTacToe extends LazyElement {
             let colId = 0;
             row.forEach(col => {
                 if (col === 0)
-                    cols.push(html`<td class="symbol${col}" @click=${this.onClick} data-row=${rowId} data-col=${colId}></td>`);
+                    cols.push(html`<td class="empty" @click=${this.onClick} data-row=${rowId} data-col=${colId}></td>`);
                 else
-                    cols.push(html`<td class="symbol${col}"></td>`);
+                    cols.push(html`<td><img src="assets/tictactoe/${col == 1 ? 'x' : 'o'}.png"></td>`);
                 colId++;
             });
             rows.push(html`<tr>${cols}</tr>`)
@@ -62,84 +57,68 @@ class AiTicTacToe extends LazyElement {
         });
         let winner = html``;
         switch(this._playerWon){
-            case scenario.Player.Human:
+            case Player.Human:
                 winner = html`<p>You have won!</p>`;
                 break;
-            case scenario.Player.Computer:
+            case Player.Computer:
                 winner = html`<p>You have lost!</p>`;
                 break;
-            case scenario.Player.Both:
+            case Player.Both:
                 winner = html`<p>Draw!</p>`;
                 break;
         }
         return html`
             <h1>Tic-Tac-Toe</h1>
+            Starting player: <select id="player"><option value="1">1 (Computer)</option><option value="2" selected>2 (Human)</option></select>
             <table>${rows}</table>
             ${winner}
         `;
     }
 
     onClick(event) {
-        if (this._currentTurn === scenario.Player.Human && this._playerWon === scenario.Player.None) {
+        if(this._update_resolve instanceof Function){
             try {
                 const row = Number(event.target.dataset.row);
                 const col = Number(event.target.dataset.col);
-                const action = { type: 'PLACE', player: scenario.Player.Human, row, col };
-                this._state = scenario.performAction(this._state, action);
-                const winner = scenario.getWinner(this._state) ;
-                if(winner !== scenario.Player.None){
-                    const score = scenario.getScore(this._state);
-                    this._playerWon = winner;
-                    this._finishCallback(this._state, score);
-                }
-                else{
-                    const actions = scenario.getActions(this._state);
-                    this._updateCallback(this._state, actions).then(action => {
-                        this.onUpdate(action);
-                    });
-                }
-                //this.requestUpdate();
+                const action = { type: 'PLACE', player: this._state.player, row, col };
+                this._update_resolve(action);
+                this._update_resolve = undefined;
             }
             catch (error) {
                 console.warn('invalid move: ', error.message);
             }
         }
+        else if(this._state.player === Player.None){
+            console.log("game not started...");
+        }
         else {
             if(this._playerWon === Player.None)
-                console.log("its the computers turn, give him some time...");
+                console.log("its the computers turn, give it some time...");
         }
     }
 
-    onInit(updateCallback, finishCallback) {
-        this._state = {
-            board: [
-                [scenario.Player.None, scenario.Player.None, scenario.Player.None],
-                [scenario.Player.None, scenario.Player.None, scenario.Player.None],
-                [scenario.Player.None, scenario.Player.None, scenario.Player.None],
-            ],
-            player: scenario.Player.Human,
+    getSettings(){
+        const player = Number(this.shadowRoot.getElementById('player').value);
+        return {
+            startingPlayer: player,
         };
-        this._updateCallback = updateCallback;
-        this._finishCallback = finishCallback;
-        this._currentTurn = scenario.Player.Human;
-        this._playerWon = scenario.Player.None;
     }
 
-    onUpdate(action) {
-        try {
-            this._state = scenario.performAction(this._state, action);
-            const winner = scenario.getWinner(this._state) ;
-            if(winner !== scenario.Player.None){
-                const score = scenario.getScore(this._state);
-                this._playerWon = winner;
-                this._finishCallback(this._state, score);
-            }
-            //this.requestUpdate();
-        }
-        catch (error) {
-            console.error('the computer made an invalid move: ', error.message);
-            this._currentTurn = Player.Human;
-        }
+    async onInit(state){
+        this._state = state;
+        this._playerWon = Player.None;
+    }
+
+    async onUpdate(state, actions){
+        this._state = state;
+        return new Promise((resolve, reject) => {
+            this._update_resolve = resolve;
+        });
+    }
+
+    async onFinish(state, score){
+        this._state = state;
+        this._playerWon = state.player;
     }
 }
 
