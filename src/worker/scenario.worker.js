@@ -1,4 +1,5 @@
-importScripts('util.worker.js');
+//importScripts('util.worker.js');
+import './util.worker.js';
 
 self.window = self;
 
@@ -41,7 +42,7 @@ self.localStorage = {
     },
 
     removeItem(key) {
-        if(localStorageCache.delete(key))
+        if (localStorageCache.delete(key))
             saveLocalStorage();
     },
 
@@ -56,9 +57,17 @@ onmessage = async m => {
         switch (m.data.type) {
             case 'run': {
                 await localStorageLoaded;
-                importScripts(...m.data.files);
+                const promises = [];
+                const modules = {};
+                m.data.files.forEach(file => {
+                    promises.push(import(file.path).then(module => {
+                        modules[file.name] = module;
+                    }));
+                });
+                await Promise.all(promises);
+                self.S = modules.scenario;
 
-                const scenario = createScenario(m.data.settings);
+                const scenario = modules.scenario.createScenario(m.data.state, m.data.settings, modules.index);
                 await scenario.run();
 
                 m.ports[0].postMessage({ type: 'run_return' });
@@ -67,9 +76,17 @@ onmessage = async m => {
 
             case 'train': {
                 await localStorageLoaded;
-                importScripts(...m.data.files);
-
-                await train();
+                const promises = [];
+                const modules = {};
+                m.data.files.forEach(file => {
+                    promises.push(import(file.path).then(module => {
+                        modules[file.name] = module;
+                    }));
+                });
+                await Promise.all(promises);
+                self.S = modules.scenario;
+                console.log("-----", modules.index);
+                await modules.index.train();
 
                 m.ports[0].postMessage({ type: 'train_return' });
                 break;
@@ -77,6 +94,6 @@ onmessage = async m => {
         }
     }
     catch (error) {
-        console.error("importScripts error:", error.message);
+        console.error("importScripts error:", error);
     }
 }

@@ -5,9 +5,8 @@ import { createFile, saveFile } from 'actions/files';
 import db from 'src/localdb';
 
 const libs = [
-    //'tf.min.js',
-    'tau-prolog.js',
-    'tf.js',
+    {name: 'pl', path:'./tau-prolog.js'},
+    {name: 'tf', path:'./tf.js'},
 ]
 
 let worker;
@@ -17,7 +16,7 @@ function simSetup(scenario) {
         worker.terminate();
     }
     const state = store.getState();
-    worker = new Worker(String(`scenario.worker.js?project=${state.projects.currentProject}`), { type: "module" }); // waiting for module support...
+    worker = new Worker(`scenario.worker.js?project=${state.projects.currentProject}`, { type: "module" }); // waiting for module support...
 
     worker.onmessage = async (m) => {
         switch (m.data.type) {
@@ -28,9 +27,12 @@ function simSetup(scenario) {
                 break;
             }
             case 'store_json': {
-                const file = await db.loadFileByName(m.data.project, m.data.filename);
+                let project = 0; // global
+                if(m.data.project === 'project')
+                    project = state.projects.currentProject;
+                const file = await db.loadFileByName(project, m.data.filename);
                 if (file === undefined) {
-                    const id = await store.dispatch(createFile(m.data.filename, m.data.project, m.data.json));
+                    const id = await store.dispatch(createFile(m.data.filename, project, m.data.json));
                 }
                 else {
                     await store.dispatch(saveFile(file.id, m.data.json));
@@ -72,8 +74,7 @@ window.simRun = (index, scenario) => {
         worker.postMessage({
             type: 'run',
             files: [...libs, ...scenario.constructor.files, index],
-            state: scenario.state,
-            settings: scenario.getSettings(),
+            state: scenario.getInitialState(),
         }, [channel.port2]);
     });
 }

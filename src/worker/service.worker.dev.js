@@ -2,11 +2,11 @@ import {registerRoute} from 'workbox-routing/registerRoute';
 import db from 'src/localdb';
 
 registerRoute(
-    /\/local\/[0-9]+\//,
-    localFile
+    /\/(global|project|[0-9]+)\//,
+    userFile
 );
 
-async function localFile(arg){
+async function userFile(arg){
     try{
         const init = { 
             status: 200, 
@@ -14,11 +14,20 @@ async function localFile(arg){
             headers: {'Content-Type': 'application/javascript'}
         };
         const path = arg.url.pathname.split('/');
-        const file = await db.loadFileByName(Number(path[2]), path[3]);
+        let id = 0;
+        let filename = path[2];
+        if(path[1] === 'project'){
+            const state = await db.getState();
+            id = state.projects.currentProject;
+        }
+        else if( ! isNaN(path[1])){ // if is number
+            id = Number(path[1])
+        }
+        const file = await db.loadFileByName(id, filename);
         return new Response(file.content, init);
     }
     catch(error){
-        console.warn(error);
+        console.log(`could not load user file '${arg.url.pathname}'`, error);
         return fetch(arg.request);
     }
 }

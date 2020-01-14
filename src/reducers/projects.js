@@ -24,6 +24,7 @@ function openProject(state, action) {
     return {
         ...state,
         currentProject: action.id,
+        currentScenario: action.scenario,
     };
 }
 

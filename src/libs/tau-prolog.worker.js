@@ -1,5 +1,5 @@
-self.pl = require('tau-prolog');
-require('tau-prolog/modules/lists')(pl);
+self.pl = require('./pl-core-fix');
+/*require('tau-prolog/modules/lists')(pl);
 
 // fix consult to handle local user generated files
 pl.type.Session.prototype.consult = async function( path, options ) {
@@ -9,4 +9,4 @@ pl.type.Session.prototype.consult = async function( path, options ) {
 		program = await getFileContent(path);
 	}
 	return this.thread.consult(program, options);
-};
+};*/

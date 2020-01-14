@@ -1,23 +1,15 @@
 import { serialize, deserialize } from 'src/util';
 
 
+
 /***********************************************************************************************
  *  imports and file handling
  */
-self.project = (filename) => {
-    const urlParams = new URLSearchParams(location.search);
-    return `local/${urlParams.get('project')}/${filename}`;
-}
-
-self.global = (filename) => {
-    return `local/0/${filename}`;
-}
-
 self.storeJson = (path, object) => {
     return new Promise((resolve, reject) => {
         path = fixPath(path, '.json');
         const filename = path.match(/[^\/]+$/)[0];
-        const project = Number(path.match(/^local\/([0-9]+)\//)[1]);
+        const project = path.match(/^\/(project|global)\//)[1];
         const timeout = setTimeout(() => {
             reject(Error(`could not store file ${filename}`));
         }, 500);
@@ -37,14 +29,6 @@ self.loadJson = async (path) => {
     return deserialize(json);
 }
 
-self.include = (path) => {
-    try { importScripts(path); }
-    catch (e) {
-        try { importScripts(project(path)); }
-        catch (e) { importScripts(self.global(path)); } // why is self needed here?
-    }
-}
-
 async function getFileContent(path) {
     path = fixPath(path);
     const body = await fetch(path);
@@ -54,8 +38,10 @@ async function getFileContent(path) {
 }
 
 function fixPath(path, ending = '') {
-    if (! /^local\/[0-9]+\//.test(path))
-        path = project(path);
+    if (! /^\//.test(path))
+        path = '/' + path;
+    if (! /^\/(project|global)\//.test(path))
+        path = '/project' + path;
     if (!path.endsWith(ending))
         path += ending;
     return path;

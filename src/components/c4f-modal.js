@@ -50,6 +50,11 @@ class C4fModal extends connect(store)(LitElement) {
         const firstElement = this.shadowRoot.querySelector('input,select');
         if(firstElement)
             firstElement.focus();
+        if(this._data && this._data.change){
+            for(let [field, callback] of Object.entries(this._data.change)){
+                this.shadowRoot.getElementById(field).addEventListener('change', e => callback(e, this));
+            }
+        }
     }
 
     async onSubmit(){

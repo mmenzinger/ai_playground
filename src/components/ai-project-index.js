@@ -7,15 +7,9 @@ import { createProject } from 'actions/projects';
 
 import db from 'src/localdb';
 
-import TicTacToe from 'templates/tictactoe';
-import TicTacToeMinMax from 'templates/tictactoe-minmax';
-import TicTacToeQTable from 'templates/tictactoe-qtable';
+import { getTemplates, getExamples } from 'src/webpack-utils';
 
-const templates = [
-    TicTacToe,
-    TicTacToeMinMax,
-    TicTacToeQTable,
-];
+
 
 const sharedStyles = unsafeCSS(require('./shared-styles.css').toString());
 //const style = unsafeCSS(require('./ai-project-index.css').toString());
@@ -50,11 +44,13 @@ class AiProjectIndex extends LazyElement {
             <h1>Projects</h1>
             <ul>${elements}</ul>
             <button @click=${this.onNewProject}>New Project</button>
+            <button @click=${this.onNewExample}>Load Example</button>
         `;
     }
 
     async onNewProject() {
         try {
+            const templates = getTemplates();
             const options = [];
             for(let i = 0; i < templates.length; i++){
                 options.push(html`<option value="${i}">${templates[i].name}</option>`);
@@ -77,8 +73,48 @@ class AiProjectIndex extends LazyElement {
                 }
             }));
             
-            const template = templates[Number(modal.template)];
-            await store.dispatch(createProject(modal.name, template));
+            const template = templates[modal.template];
+            await store.dispatch(createProject(modal.name, template.scenario, template.files));
+            this._projects = await db.getProjects();
+        }
+        catch (error) {
+            console.warn(error);
+        }
+    }
+
+    async onNewExample() {
+        try {
+            const examples = getExamples();
+            const options = [];
+            for(let i = 0; i < examples.length; i++){
+                options.push(html`<option value="${i}">${examples[i].name}</option>`);
+            }
+            const modal = await store.dispatch(showModal({
+                title: 'Load Example',
+                content: html`
+                    <form>
+                        <select id="example">${options}</select>
+                        <input id="name" type="text" placeholder="name" value="${examples[0].name}">
+                    </form>`,
+                submit: 'Create',
+                abort: 'Cancel',
+                check: async (fields) => {
+                    if(fields.name.length === 0)
+                        return Error('Empty project name! Every project must have a name.');
+                    const project = await db.getProjectByName(fields.name);
+                    if(project !== undefined)
+                        return Error('Duplicate name! A project with that name already exists!');
+                },
+                change: {
+                    example: (e, that) => {
+                        const text = e.target.options[e.target.selectedIndex].innerHTML.replace(/<!---->/g, '').trim();
+                        that.shadowRoot.querySelector('#name').value = text;
+                    }
+                }
+            }));
+            
+            const example = examples[modal.example];
+            await store.dispatch(createProject(modal.name, example.scenario, example.files));
             this._projects = await db.getProjects();
         }
         catch (error) {

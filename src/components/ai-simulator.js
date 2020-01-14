@@ -13,22 +13,24 @@ class AiSimulator extends connect(store)(LitElement) {
     }
 
     render() {
-        import('scenarios/ai-tictactoe');
+        const state = store.getState();
+        const scenario = state.projects.currentScenario;
+        import(`scenarios/${scenario}/ai-scenario`);
         return html`
             <button @click=${this.simRun}>run</button>
             <button @click=${this.simTrain}>train</button>
             <button @click=${this.simTerminate}>terminate</button>
-            <ai-tictactoe active></ai-tictactoe>
+            <ai-scenario></ai-scenario>
         `;//<c4f-console></c4f-console>
     }
 
     simRun(){
         store.dispatch(clearLog());
-        this._scenario = this.shadowRoot.querySelector('[active]');
+        this._scenario = this.shadowRoot.querySelector('ai-scenario');
         const state = store.getState();
         const project = state.projects.currentProject;
         this._sandbox.store = store;
-        this._sandbox.simRun(`local/${project}/index.js`, this._scenario).catch(e => {
+        this._sandbox.simRun({name: 'index', path:`./project/index.js`}, this._scenario).catch(e => {
             const msg = `simRun error: ${e.message}`;
             store.dispatch(addLog({type: 'error', args: [msg]}));
             console.log(msg);
@@ -37,11 +39,11 @@ class AiSimulator extends connect(store)(LitElement) {
 
     simTrain(){
         store.dispatch(clearLog());
-        this._scenario = this.shadowRoot.querySelector('[active]');
+        this._scenario = this.shadowRoot.querySelector('ai-scenario');
         const state = store.getState();
         const project = state.projects.currentProject;
         this._sandbox.store = store;
-        this._sandbox.simTrain(`local/${project}/index.js`, this._scenario).catch(e => {
+        this._sandbox.simTrain({name: 'index', path:`./local/${project}/index.js`}, this._scenario).catch(e => {
             const msg = `simTrain error: ${e.message}`;
             store.dispatch(addLog({type: 'error', args: [msg]}));
             console.log(msg);

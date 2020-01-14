@@ -1,23 +1,33 @@
 const path = require('path');
 const webpack = require("webpack");
 const CopyPlugin = require('copy-webpack-plugin');
-const WorkerPlugin = require('worker-plugin');
-const ServiceWorkerWebpackPlugin = require('serviceworker-webpack-plugin');
+//const WorkerPlugin = require('worker-plugin');
+//const ServiceWorkerWebpackPlugin = require('serviceworker-webpack-plugin');
 
 const staticFiles = [
     'srcdoc.html',
     //'node_modules/ml5/dist/ml5.min.js',
     //'ml5js/dist/ml5.min.js',
     //'./src/tau-prolog.js',
-    'node_modules/@tensorflow/tfjs/dist/tf.min.js',
+    //'node_modules/@tensorflow/tfjs/dist/tf.min.js',
     //'node_modules/ml5/dist/ml5.min.js',
     { from: 'assets', to: 'assets' },
-    { from: './src/scenarios/ai-tictactoe-scenario.js', to: 'scenario/tictactoe.js'},
-    //{ from: './src/worker/scenario.worker.js', to: 'scenario.worker.js'},
+    //{ from: './src/scenarios/tictactoe/tictactoe.js', to: 'scenario/tictactoe.js'},
+    { from: './src/worker/scenario.worker.js', to: 'scenario.worker.js' },
     //'.htaccess',
     //{from: 'src/scenarios/test.js', to: 'test.js'}
     //'service-worker.js',
     //{from: 'node_modules/workbox-sw/build/workbox-sw.js', to: 'workbox-sw.js'},
+    {
+        from: './src/scenarios/*/index.js',
+        to: 'scenarios/[1]/index.js',
+        test: /([^/]+)\/index\.js$/,
+    },
+    {
+        from: './src/scenarios/*/assets/*',
+        to: 'scenarios/[1]/assets/[name].[ext]',
+        test: /([^/]+)\/assets\/[^/]+$/,
+    },
 ];
 
 
@@ -26,7 +36,7 @@ module.exports = {
         'app': './src/components/ai-app.js',
         'sandbox': './src/sandbox.js',
         //'service-worker': './src/worker/service.worker.js',
-        //'util.worker': './src/worker/util.worker.js',
+        'util.worker': './src/worker/util.worker.js',
         //'scenario-worker': './src/worker/scenario.worker.js',
         'tau-prolog': './src/libs/tau-prolog.worker.js',
         //'ml5': './src/libs/ml5.js',
@@ -70,10 +80,22 @@ module.exports = {
                 
             },*/
             {
+                test: /(examples|templates)\/[^/]+\/.+\.js$/,
+                include: path.join(__dirname, 'src/scenarios/'),
+                use: [
+                  {
+                    loader: 'raw-loader',
+                    options: {
+                      esModule: true,
+                    },
+                  },
+                ],
+              },
+            {
                 test: /\.css$/,
                 //use: ['css-loader'],
                 loader: 'css-loader',
-                options: { 
+                options: {
                     url: false,
                 },
             },
@@ -91,10 +113,10 @@ module.exports = {
             //"window.jQuery": "jquery"
         }),
         new CopyPlugin(staticFiles),
-        new WorkerPlugin(),
-        new ServiceWorkerWebpackPlugin({
+        //new WorkerPlugin(),
+        /*new ServiceWorkerWebpackPlugin({
             entry: path.join(__dirname, 'src/worker/service.worker.js'),
-        }),
+        }),*/
     ],
 
     devServer: {

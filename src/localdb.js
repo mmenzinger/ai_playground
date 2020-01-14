@@ -8,7 +8,7 @@ class LocalDB {
     initDb(user) {
         this.db = new Dexie(user);
         this.db.version(1).stores({
-            states: '',
+            state: '&key,value',
             files: '++id,&[project+name],project',
             projects: '++id,&name',
         });
@@ -33,10 +33,6 @@ class LocalDB {
         return this.db.files.where('id').equals(id).delete();
     }
 
-    async getProjectFiles(project){
-        return this.db.files.where('project').equals(project).toArray();
-    }
-
     async loadFileByName(projectId, fileName){
         //let projectId = 0;
         /*if(path === 'project'){
@@ -49,14 +45,14 @@ class LocalDB {
     //------------------------------------------------------------------------------------------
     // P r o j e c t s
     //------------------------------------------------------------------------------------------
-    async createProject(name) {
-        return this.db.projects.add({ name });
+    async createProject(name, scenario) {
+        return this.db.projects.add({ name, scenario });
     }
 
     async removeProject(id){
         return this.transaction('w', this.db.projects, this.db.files, async () => {
             this.db.files.where('project').equals(id).delete();
-            return this.db.files.where('id').equals(id).delete();
+            return this.db.projects.where('id').equals(id).delete();
         });
     }
 
@@ -68,19 +64,28 @@ class LocalDB {
         return this.db.projects.where({name}).first();
     }
 
+    async getProject(id){
+        return this.db.projects.where({id}).first();
+    }
+
+    async getProjectFiles(project){
+        return this.db.files.where('project').equals(project).toArray();
+    }
+
     //------------------------------------------------------------------------------------------
     // S t a t e
     //------------------------------------------------------------------------------------------
-    /*async saveState(state){
-        return this.db.states.bulkPut([state.app, state.files], ['app', 'files']);
+    async saveState(state){
+        return this.db.state.bulkPut(
+            [{key: 'projects', value: state.projects}],
+        );
     }
 
     async getState(){
         return {
-            app: await this.db.states.get('app'),
-            files: await this.db.states.get('files'),
+            projects: (await this.db.state.get('projects')).value,
         };
-    }*/
+    }
 }
 
 export const db = new LocalDB();
