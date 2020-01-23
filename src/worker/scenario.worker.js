@@ -68,7 +68,7 @@ onmessage = async m => {
                 await Promise.all(promises);
                 self.S = modules.scenario;
 
-                const scenario = modules.scenario.createScenario(m.data.state, m.data.settings, modules.index);
+                const scenario = modules.scenario.createScenario(m.data.settings, modules.index);
                 await scenario.run();
 
                 m.ports[0].postMessage({ type: 'run_return' });

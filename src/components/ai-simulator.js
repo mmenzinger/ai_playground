@@ -53,7 +53,6 @@ class AiSimulator extends connect(store)(LitElement) {
     simRun() {
         store.dispatch(clearLog());
         const scenario = this.shadowRoot.querySelector('[active]');
-        console.log(scenario.constructor.files);
         const state = store.getState();
         const project = state.projects.currentProject;
         this._sandbox.store = store;

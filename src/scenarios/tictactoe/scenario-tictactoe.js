@@ -105,14 +105,6 @@ class ScenarioTicTacToe extends LazyElement {
         };
     }
 
-    getInitialState(){
-        const player = Number(this.shadowRoot.getElementById('player').value);
-        return {
-            board: [[0,0,0], [0,0,0], [0,0,0]],
-            player: player,
-        };
-    }
-
     async onInit(state){
         this._state = state;
         this._playerWon = Player.None;

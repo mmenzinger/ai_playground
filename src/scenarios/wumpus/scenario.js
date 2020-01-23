@@ -1,170 +1,212 @@
+class Random{
+    constructor(seed){
+        this.mask = 0xffffffff;
+        this.m_w = (123456789 + seed) & this.mask;
+        this.m_z = (987654321 - seed) & this.mask;
+        
+    }
+
+    // Returns number between 0 (inclusive) and 1.0 (exclusive),
+    random()
+    {
+        this.m_z = (36969 * (this.m_z & 65535) + (this.m_z >> 16)) & this.mask;
+        this.m_w = (18000 * (this.m_w & 65535) + (this.m_w >> 16)) & this.mask;
+        var result = ((this.m_z << 16) + (this.m_w & 65535)) >>> 0;
+        result /= 4294967296;
+        return result;
+    }
+}
+
+
 function deepCopy(obj) {
     return JSON.parse(JSON.stringify(obj));
 }
 
-export const Player = Object.freeze({
-    None: 0,
-    Computer: 1,
-    Human: 2,
-    Both: 3,
-    Player1: 1,
-    Player2: 2,
+function updateGUI(state, map, events) {
+    return new Promise((resolve, reject) => {
+        const channel = new MessageChannel();
+        channel.port1.onmessage = _ => {
+            resolve();
+        }
+        postMessage({ type: 'call', functionName: 'updateGUI', args: [state, map, events] }, [channel.port2]);
+    });
+}
+
+
+const ActionType = Object.freeze({
+    Wait: 0,
+    Move: 1 << 2,
+    Shoot: 1 << 3,
 });
 
+const Direction = Object.freeze({
+    Up: 0,
+    Right: 1,
+    Down: 2,
+    Left: 3,
+});
 
-export function getScore(state, player) {
-    const winner = getWinner(state);
-    if (winner === player)
-        return 1;
-    if (winner === Player.Both || winner == Player.None)
-        return 0;
-    return -1;
-}
+export const Percept = Object.freeze({
+    None: 0,
+    Bump: 1 << 1,
+    Breeze: 1 << 2,
+    Stench: 1 << 3,
+    Scream: 1 << 4,
+    Gold: 1 << 5,
+});
 
-export function getWinner(state) {
-    const board = state.board;
-    // check rows
-    for (let i = 0; i < 3; i++)
-        if (board[i].every(p => (p === board[i][0] && p !== Player.None))) return board[i][0];
-    // check cols
-    for (let i = 0; i < 3; i++)
-        if (board.every(row => (row[i] === board[0][i] && row[i] !== Player.None))) return board[0][i];
-    // check diagonals
-    if (board[1][1] !== Player.None) {
-        if (board[1][1] === board[0][0] && board[1][1] === board[2][2]) return board[1][1];
-        if (board[1][1] === board[2][0] && board[1][1] === board[0][2]) return board[1][1];
-    }
+export const Action = Object.freeze({
+    Wait: 0,
+    MoveUp: ActionType.Move | Direction.Up,
+    MoveDown: ActionType.Move | Direction.Down,
+    MoveLeft: ActionType.Move | Direction.Left,
+    MoveRight: ActionType.Move | Direction.Right,
+    ShootUp: ActionType.Shoot | Direction.Up,
+    ShootDown: ActionType.Shoot | Direction.Down,
+    ShootLeft: ActionType.Shoot | Direction.Left,
+    ShootRight: ActionType.Shoot | Direction.Right,
+});
 
-    // check draw
-    if (!board.flat().includes(Player.None))
-        return Player.Both;
+export const Tile = Object.freeze({
+    Empty: 0,
+    Pit: 1,
+    Wumpus: 2,
+    Gold: 3,
+});
 
-    return Player.None;
-}
-
-export function getActions(state) {
-    const actions = [];
-    for (let row = 0; row < 3; row++) {
-        for (let col = 0; col < 3; col++) {
-            if (state.board[row][col] === Player.None)
-                actions.push({ type: 'PLACE', row, col, player: state.player });
-        }
-    }
-    return actions;
-}
-
-export function validateAction(state, action) {
-    if (action.type !== 'PLACE') throw Error(`unknown action type '${action.type}'`);
-    if (action.row < 0 || action.row > 2) throw Error(`row index must be between 0 and 2 (was ${action.row})`);
-    if (action.col < 0 || action.col > 2) throw Error(`col index must be between 0 and 2 (was ${action.col})`);
-    if (state.board[action.row][action.col] !== Player.None) throw Error(`position (${action.row}, ${action.col}) not empty`);
-    if (action.player !== state.player) throw Error(`invalid player ${action.player}`);
-}
-
-export function validAction(state, action) {
-    try {
-        validateAction(state, action);
-        return true;
-    }
-    catch (e) {
-        return false;
-    }
-}
-
-export function performAction(state, action) {
-    validateAction(state, action);
-    const newState = deepCopy(state);
-    newState.board[action.row][action.col] = action.player;
-    if (getWinner(newState) === Player.None) {
-        newState.player = state.player === Player.Computer ? Player.Human : Player.Computer;
-    }
-    return newState;
-}
-
-export function createScenario(defaultState = {
-    board: [[0, 0, 0], [0, 0, 0], [0, 0, 0]],
-    player: 1
-}, settings = {}, index = {}) {
-    const state = deepCopy(defaultState);
-
-    const defaultPlayer1 = {
-        init: typeof index.init !== 'undefined' ? index.init : undefined, // optional
-        update: index.update, // required
-        finish: typeof index.finish !== 'undefined' ? index.finish : undefined, // optional
+export function getInitialState(size) {
+    const state = {
+        map: Array.from({ length: size }, e => Array(size).fill(null)),
+        position: { x: 0, y: 0 },
+        percepts: Percept.None,
+        score: 0,
+        alive: true,
+        arrows: 1,
     };
-    const defaultPlayer2 = {
-        init: (state) => new Promise((resolve, reject) => {
-            const channel = new MessageChannel();
-            channel.port1.onmessage = m => {
-                resolve();
-            }
-            postMessage({ type: 'init', args: [state] }, [channel.port2]);
-        }),
-        update: (state, actions) => new Promise((resolve, reject) => {
-            const channel = new MessageChannel();
-            channel.port1.onmessage = m => {
-                resolve(m.data.result);
-            }
-            postMessage({ type: 'update', args: [state, actions] }, [channel.port2]);
-        }),
-        finish: (state, score) => new Promise((resolve, reject) => {
-            const channel = new MessageChannel();
-            channel.port1.onmessage = m => {
-                resolve();
-            }
-            postMessage({ type: 'finish', args: [state, score] }, [channel.port2]);
-        }),
+    state.map[state.position.y][state.position.x] = {
+        type: Tile.Empty,
+        percepts: Percept.None,
     };
+    return state;
+}
+
+export function getMap(size, seed) {
+    const rand = new Random(seed);
+
+    const map = Array.from({ length: size }, e => Array.from({ length: size }, e => {
+        let tile = Tile.Empty;
+        if (rand.random() < 0.2)
+            tile = Tile.Pit;
+        return { type: tile, percept: Percept.None };
+    }));
+    map[Math.round(rand.random() * (size - 1))][Math.round(rand.random() * (size - 1))] = {
+        type: Tile.Wumpus,
+        percept: Percept.Stench,
+    };
+    map[Math.round(rand.random() * (size - 1))][Math.round(rand.random() * (size - 1))] = {
+        type: Tile.Gold,
+        percept: Percept.Gold,
+    };
+    return map;
+}
+
+export function createScenario(settings, index) {
+    const state = getInitialState(settings.size);
+    const map = getMap(settings.size, settings.seed);
 
     return Object.freeze({
         getState() { return deepCopy(state); },
-        getScore(player) { return getScore(state, player); },
-        getWinner() { return getWinner(state); },
-        getActions() { return getActions(state); },
-        validateAction(action) { validateAction(state, action); },
-        validAction(action) { return validAction(state, action); },
+        hasWon() { return state.percept & Percept.Gold; },
 
-        performAction(action) {
-            validateAction(state, action);
-            state.board[action.row][action.col] = action.player;
-            const winner = getWinner(state);
-            if (winner === Player.None) {
-                state.player = state.player % 2 + 1;
+        getActions() {
+            const actions = [];
+            for (let [key, value] of Object.entries(Action)) {
+                if (state.arrows <= 0 && value & ActionType.Shoot)
+                    continue;
+                actions.push({ type: key });
             }
-            return winner;
+            return actions;
         },
 
-        async run(player1 = undefined, player2 = undefined) {
-            player1 = player1 || defaultPlayer1;
-            player2 = player2 || defaultPlayer2;
-            const players = [player1, player2];
-            if (player1.init instanceof Function)
-                await player1.init(this.getState());
-            if (player2.init instanceof Function)
-                await player2.init(this.getState());
+        validateAction(action) {
+            for (let a of Object.keys(Action)) {
+                //console.log(a, action);
+                if (a === action.type)
+                    return true;
+            }
+            throw Error(`invalid action ${action.type}`);
+        },
 
-            let winner = Player.None;
-            while (winner === Player.None) {
-                const currentPlayer = players[state.player - 1];
+        validAction(action) {
+            try {
+                this.validateAction(action);
+                return true;
+            }
+            catch (e) {
+                return false;
+            }
+        },
+
+        performAction(action) {
+            this.validateAction(action);
+
+            if (Action[action.type] & ActionType.Move) {
+                if ((Action[action.type] & 3) === Direction.Right) { state.position.x++; }
+                if ((Action[action.type] & 3) === Direction.Left) { state.position.x--; }
+                if ((Action[action.type] & 3) === Direction.Up) { state.position.y--; }
+                if ((Action[action.type] & 3) === Direction.Down) { state.position.y++; }
+            }
+            if (state.position.x < 0) { state.percept |= Percept.Bump; state.position.x = 0; }
+            if (state.position.x >= settings.size) { state.percept |= Percept.Bump; state.position.x = settings.size - 1; }
+            if (state.position.y < 0) { state.percept |= Percept.Bump; state.position.y = 0; }
+            if (state.position.y >= settings.size) { state.percept |= Percept.Bump; state.position.y = settings.size - 1; }
+
+            state.map[state.position.y][state.position.x] = map[state.position.y][state.position.x];
+            state.percept |= state.map[state.position.y][state.position.x].percept;
+
+            if (Action[action.type] & ActionType.Shoot) {
+                state.arrows--;
+            }
+
+            if (state.map[state.position.y][state.position.x].type === Tile.Pit
+                || state.map[state.position.y][state.position.x].type === Tile.Wumpus) {
+                state.alive = false;
+            }
+
+            let score = -1;
+            if (!state.alive)
+                score = -1000;
+            if (state.percept & Percept.Gold)
+                score = 1000;
+
+            state.score += score;
+            return score;
+        },
+
+        async run() {
+            await updateGUI(state, map);
+            if (index.init instanceof Function)
+                await index.init(this.getState());
+
+            while (!this.hasWon() && state.alive && state.score > -1000) {
                 const oldState = this.getState();
                 const actions = this.getActions();
-                const action = await currentPlayer.update(oldState, actions);
-                winner = this.performAction(action);
-                if (currentPlayer.result instanceof Function)
-                    await currentPlayer.result(oldState, action, this.getState(), this.getScore(state.player));
+                const action = await index.update(oldState, actions);
+                const score = this.performAction(action);
+                const events = [action.type];
+                if(state.alive === false)
+                    events.push('You died!');
+                if(this.hasWon())
+                    events.push('You found the gold!');
+                await updateGUI(state, map, events);
+                if (index.result instanceof Function)
+                    await index.result(oldState, action, this.getState(), score);
             }
-            state.player = winner;
-            if (player1.finish instanceof Function) {
-                const score1 = this.getScore(Player.Player1);
+
+            if (index.finish instanceof Function) {
                 const state = this.getState();
-                await player1.finish(state, score1);
+                await index.finish(state);
             }
-            if (player2.finish instanceof Function) {
-                const score2 = this.getScore(Player.Player2);
-                const state = this.getState();
-                await player2.finish(state, score2);
-            }
-            return winner;
         }
     });
 }

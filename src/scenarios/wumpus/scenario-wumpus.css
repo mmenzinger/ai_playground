@@ -4,26 +4,30 @@ table{
 }
 
 td{
-    padding-top: 33%;
     border: 1px solid rgb(64,64,64);
-    width: 33%;
     position: relative;
 }
 
-td.empty:hover{
-    background: rgb(177, 177, 177);
-}
+td.w4{ width: 25%; }
+td.h4{ padding-top: 25%; }
+td.w6{ width: 16.67%; }
+td.h6{ padding-top: 16.67%; }
+td.w8{ width: 12.5%; }
+td.h8{ padding-top: 12.5%; }
+td.w10{ width: 10%; }
+td.h10{ padding-top: 10%; }
 
-td.empty{ 
-    background: rgb(206, 206, 206);
-}
 
-td > img{
+td.t0{ background: rgb(206, 206, 206); }
+td.t1{ background: rgb(0, 68, 255); }
+td.t2{ background: url('scenarios/wumpus/assets/wumpus.svg') center center/cover no-repeat rgb(206, 206, 206); }
+td.t3{ background: url('scenarios/wumpus/assets/gold.svg') center center/cover no-repeat rgb(206, 206, 206); }
+td.u{ filter: brightness(50%); }
+
+td > img.player{
     position: absolute;
-    top: 0;
     bottom: 0;
     left: 0;
-    right: 0;
-    max-width: 100%;
-    max-height: 100%;
+    max-width: 75%;
+    max-height: 75%;
 }

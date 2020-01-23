@@ -38,13 +38,13 @@ registerRoute(
 
 async function userFile(arg){
     try{
-        const init = { 
-            status: 200, 
+        const init = {
+            status: 200,
             statusText: 'OK',
             headers: {'Content-Type': 'application/javascript'}
         };
         const path = arg.url.pathname.split('/');
-        let id = 0;
+        let id = 0; // default to global
         let filename = path[2];
         if(path[1] === 'project'){
             const state = await db.getState();

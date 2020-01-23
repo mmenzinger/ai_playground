@@ -8,8 +8,8 @@ registerRoute(
 
 async function userFile(arg){
     try{
-        const init = { 
-            status: 200, 
+        const init = {
+            status: 200,
             statusText: 'OK',
             headers: {'Content-Type': 'application/javascript'}
         };

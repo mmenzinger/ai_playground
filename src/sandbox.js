@@ -56,6 +56,11 @@ function simSetup(scenario) {
                 m.ports[0].postMessage({ result });
                 break;
             }
+            case 'call':{
+                const result = await scenario[m.data.functionName](...m.data.args);
+                m.ports[0].postMessage({ result });
+                break;
+            }
         }
     }
 
@@ -68,13 +73,13 @@ window.simRun = (index, scenario) => {
     return new Promise((resolve, reject) => {
         simSetup(scenario);
         const channel = new MessageChannel();
-        channel.port1.onmessage = m => {
+        channel.port1.onmessage = _ => {
             resolve();
         }
         worker.postMessage({
             type: 'run',
             files: [...libs, ...scenario.constructor.files, index],
-            state: scenario.getInitialState(),
+            settings: scenario.getSettings(),
         }, [channel.port2]);
     });
 }
@@ -83,7 +88,7 @@ window.simTrain = async (index, scenario) => {
     return new Promise((resolve, reject) => {
         simSetup();
         const channel = new MessageChannel();
-        channel.port1.onmessage = m => {
+        channel.port1.onmessage = _ => {
             resolve();
         }
         worker.postMessage({

@@ -81,11 +81,11 @@ export function performAction(state, action) {
     return newState;
 }
 
-export function createScenario(defaultState = {
-    board: [[0, 0, 0], [0, 0, 0], [0, 0, 0]],
-    player: 1
-}, settings = {}, index = {}) {
-    const state = deepCopy(defaultState);
+export function createScenario(settings, index) {
+    const state = {
+        board: [[0, 0, 0], [0, 0, 0], [0, 0, 0]],
+        player: settings.startingPlayer,
+    };
 
     const defaultPlayer1 = {
         init: typeof index.init !== 'undefined' ? index.init : undefined, // optional
