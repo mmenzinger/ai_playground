@@ -1,10 +1,18 @@
 import { serialize, deserialize } from 'src/util';
 
 
-
 /***********************************************************************************************
  *  imports and file handling
  */
+self.project = (filename) => {
+    const urlParams = new URLSearchParams(location.search);
+    return `/${urlParams.get('project')}/${filename}`;
+}
+
+self.global = (filename) => {
+    return `/0/${filename}`;
+}
+
 self.storeJson = (path, object) => {
     return new Promise((resolve, reject) => {
         path = fixPath(path, '.json');
@@ -40,9 +48,12 @@ async function getFileContent(path) {
 function fixPath(path, ending = '') {
     if (! /^\//.test(path))
         path = '/' + path;
-    if (! /^\/(project|global)\//.test(path))
-        path = '/project' + path;
-    if (!path.endsWith(ending))
+    if (! /^\/[0-9]+\//.test(path)){
+        const params = new URLSearchParams(self.location.search);
+        const project = params.get('project');
+        path = `/${project}${path}`;
+    }
+    if (! path.endsWith(ending))
         path += ending;
     return path;
 }
@@ -84,6 +95,7 @@ function getCaller(args) {
             throw Error('')
         }
         catch (error) {
+            // TODO: correct ...
             return error.stack.match(/(local\/\d+\/.*?:[0-9]+):[0-9]+/)[1];
         }
     }

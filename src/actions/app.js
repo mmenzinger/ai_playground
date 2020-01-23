@@ -3,7 +3,7 @@ export const UPDATE_OFFLINE = 'UPDATE_OFFLINE';
 
 import store from 'src/store';
 
-import { openProject } from 'actions/projects';
+import { openProject, closeProject } from 'actions/projects';
 
 export const navigate = (path, search) => (dispatch) => {
     const urlParams = new URLSearchParams(search);
@@ -19,19 +19,17 @@ export const navigate = (path, search) => (dispatch) => {
 const loadPage = (page, params) => async dispatch => {
     // lazy load pages
     switch (page) {
-        case 'index':
-            import('components/ai-project-index.js');
-            params = {};
-            break;
         case 'project':
             import('components/ai-project.js');
             const id = Number(params['id']);
             if(id)
                 await store.dispatch(openProject(id));
             break;
+        case 'index':
         default:
             import('components/ai-project-index.js');
             page = 'index';
+            await store.dispatch(closeProject());
     }
 
     dispatch({

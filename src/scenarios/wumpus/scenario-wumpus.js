@@ -6,12 +6,12 @@ function deepCopy(obj) {
 }
 
 const sharedStyles = unsafeCSS(require('components/shared-styles.css').toString());
-const style = unsafeCSS(require('./ai-scenario.css').toString());
+const style = unsafeCSS(require('./scenario-wumpus.css').toString());
 
-import { Player } from './index';
+import { Player } from './scenario';
 
 
-class AiScenario extends LitElement {
+class ScenarioWumpus extends LazyElement {
     static get properties() {
         return {
             _state: { type: Object },
@@ -27,7 +27,7 @@ class AiScenario extends LitElement {
     }
 
     static get files(){
-        return [{ name:'scenario', path:'./scenarios/tictactoe/index.js'}];
+        return [{ name:'scenario', path:'./scenarios/wumpus/scenario.js'}];
     }
 
     constructor() {
@@ -69,8 +69,8 @@ class AiScenario extends LitElement {
                 break;
         }
         return html`
-            <h1>Tic-Tac-Toe</h1>
-            Starting player: <select id="player"><option value="1">1 (Computer)</option><option value="2" selected>2 (Human)</option></select>
+            <h1>Wumpus World</h1>
+            Complexity: <select id="complexity"><option value="1">Easy</option><option value="2" selected>Advanced</option></select>
             <table>${rows}</table>
             ${winner}
         `;
@@ -99,14 +99,14 @@ class AiScenario extends LitElement {
     }
 
     getSettings(){
-        const player = Number(this.shadowRoot.getElementById('player').value);
+        const player = Number(this.shadowRoot.getElementById('complexity').value);
         return {
             startingPlayer: player,
         };
     }
 
     getInitialState(){
-        const player = Number(this.shadowRoot.getElementById('player').value);
+        const player = Number(this.shadowRoot.getElementById('complexity').value);
         return {
             board: [[0,0,0], [0,0,0], [0,0,0]],
             player: player,
@@ -131,4 +131,4 @@ class AiScenario extends LitElement {
     }
 }
 
-window.customElements.define('ai-scenario', AiScenario);
+window.customElements.define('scenario-wumpus', ScenarioWumpus);

@@ -19,9 +19,9 @@ const staticFiles = [
     //'service-worker.js',
     //{from: 'node_modules/workbox-sw/build/workbox-sw.js', to: 'workbox-sw.js'},
     {
-        from: './src/scenarios/*/index.js',
-        to: 'scenarios/[1]/index.js',
-        test: /([^/]+)\/index\.js$/,
+        from: './src/scenarios/*/scenario.js',
+        to: 'scenarios/[1]/scenario.js',
+        test: /([^/]+)\/scenario\.js$/,
     },
     {
         from: './src/scenarios/*/assets/*',

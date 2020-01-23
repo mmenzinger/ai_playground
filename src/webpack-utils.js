@@ -24,6 +24,13 @@ export function getScenarios(){
             content: require(`scenarios/${path.substring(2)}`).default,
         });
     });
+    const components = rc.keys().filter(path => new RegExp(`/scenario-[^/]+\.(js|ts)$`).test(path));
+    components.forEach(component => {
+        const match = component.match(new RegExp(`^\./([^/]+)/([^/]+)\.(js|ts)$`));
+        const type = match[1];
+        const name = match[2];
+        scenarios[type].component = name;
+    });
     return scenarios;
 }
 
@@ -45,4 +52,12 @@ export function getExamples(){
         }
     }
     return examples;
+}
+
+export function getComponents(){
+    const components = [];
+    for(let scenario of Object.values(getScenarios())){
+        components.push(scenario.component);
+    }
+    return components;
 }

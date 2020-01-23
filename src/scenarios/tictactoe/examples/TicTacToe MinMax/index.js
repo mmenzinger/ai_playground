@@ -1,3 +1,5 @@
+// TODO: make real minmax...
+
 function recGetScore(state, action){
     const newState = S.performAction(state, action);
     const winner = S.getWinner(newState);

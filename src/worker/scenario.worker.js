@@ -64,6 +64,7 @@ onmessage = async m => {
                         modules[file.name] = module;
                     }));
                 });
+                
                 await Promise.all(promises);
                 self.S = modules.scenario;
 
@@ -85,7 +86,6 @@ onmessage = async m => {
                 });
                 await Promise.all(promises);
                 self.S = modules.scenario;
-                console.log("-----", modules.index);
                 await modules.index.train();
 
                 m.ports[0].postMessage({ type: 'train_return' });

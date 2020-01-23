@@ -32,6 +32,7 @@ function closeProject(state, action) {
     return {
         ...state,
         currentProject: 0,
+        currentScenario: undefined,
     };
 }
 
