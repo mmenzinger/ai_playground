@@ -24,10 +24,34 @@ td.t2{ background: url('scenarios/wumpus/assets/wumpus.svg') center center/cover
 td.t3{ background: url('scenarios/wumpus/assets/gold.svg') center center/cover no-repeat rgb(206, 206, 206); }
 td.u{ filter: brightness(50%); }
 
-td > img.player{
+td > img{
     position: absolute;
+}
+
+img.player{
     bottom: 0;
     left: 0;
     max-width: 75%;
     max-height: 75%;
+}
+
+img.breeze{
+    top: 0;
+    left: 0;
+    max-width: 25%;
+    max-height: 25%;
+}
+img.stench{
+    position: absolute;
+    top: 0;
+    right: 0;
+    max-width: 25%;
+    max-height: 25%;
+}
+img.glitter{
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    max-width: 25%;
+    max-height: 25%;
 }

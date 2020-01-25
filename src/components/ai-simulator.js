@@ -65,7 +65,7 @@ class AiSimulator extends connect(store)(LitElement) {
 
     simTrain() {
         store.dispatch(clearLog());
-        const scenario = this.shadowRoot.querySelector('ai-scenario');
+        const scenario = this.shadowRoot.querySelector('[active]');
         const state = store.getState();
         const project = state.projects.currentProject;
         this._sandbox.store = store;
@@ -95,14 +95,18 @@ class AiSimulator extends connect(store)(LitElement) {
         
         iframe.onload = () => {
             this._sandbox = iframe.contentWindow;
-            this.simRun();
+            const scenario = this.shadowRoot.querySelector('[active]');
+            if(scenario.constructor.autorun)
+                this.simRun();
         }
     }
 
     updated(){
         if(this._sandbox && this._scenario){
-            // wait for renderer to catch up
-            setTimeout(() => this.simRun(), 0);
+            const scenario = this.shadowRoot.querySelector('[active]');
+            if(scenario.constructor.autorun)
+                // wait for renderer to catch up
+                setTimeout(() => this.simRun(), 0);
         }
     }
 

@@ -1,7 +1,7 @@
 import { html, unsafeCSS, LitElement } from 'lit-element';
 import { LazyElement } from 'components/lazy-element.js';
 
-import { getInitialState, getMap } from './scenario';
+import { getInitialState, getMap, Percept } from './scenario';
 
 const sharedStyles = unsafeCSS(require('components/shared-styles.css').toString());
 const style = unsafeCSS(require('./scenario-wumpus.css').toString());
@@ -13,6 +13,7 @@ class ScenarioWumpus extends LazyElement {
             _state: { type: Object },
             _map: { type: Object },
             _events: { type: Array },
+            _settings: { type: Object },
         };
     }
 
@@ -27,11 +28,17 @@ class ScenarioWumpus extends LazyElement {
         return [{ name: 'scenario', path: './scenarios/wumpus/scenario.js' }];
     }
 
+    static get autorun() { return false; }
+
     constructor() {
         super();
-        this._state = getInitialState(4);
-        this._map = getMap(4, 42);
-        this._events = [];
+        this._settings = {
+            complexity: 1,
+            size: 4,
+            seed: 42,
+            delay: Infinity,
+        };
+        this.resetWorld();
     }
 
     render() {
@@ -53,7 +60,19 @@ class ScenarioWumpus extends LazyElement {
                 let player = html``;
                 if (this._state.position.x === col && this._state.position.y === row)
                     player = html`<img class="player" src="scenarios/wumpus/assets/explorer.svg">`;
-                cols.push(html`<td class="w${this._state.map.length} h${this._state.map[0].length} t${type}${unknown}">${player}</td>`);
+
+                let breeze = html``;
+                if(this._map[row][col].percept & Percept.Breeze)
+                    breeze = html`<img class="breeze" src="scenarios/wumpus/assets/breeze.svg">`;
+
+                let stench = html``;
+                if(this._map[row][col].percept & Percept.Stench)
+                    stench = html`<img class="stench" src="scenarios/wumpus/assets/stench.svg">`;
+
+                let glitter = html``;
+                if(this._map[row][col].percept & Percept.Glitter)
+                    glitter = html`<img class="glitter" src="scenarios/wumpus/assets/glitter.svg">`;
+                cols.push(html`<td class="w${this._state.map.length} h${this._state.map[0].length} t${type}${unknown}">${breeze}${stench}${glitter}${player}</td>`);
             }
             rows.push(html`<tr>${cols}</tr>`);
         }
@@ -66,30 +85,53 @@ class ScenarioWumpus extends LazyElement {
 
         return html`
             <h1>Wumpus World</h1>
-            Complexity: <select id="complexity">
+            Complexity: <select id="complexity" @change=${_=>{this.resetWorld()}}>
                 <option value="1">Easy</option>
                 <option value="2">Advanced</option>
             </select>
             <br>
-            Map Size: <select id="size">
+            Map Size: <select id="size" @change=${_=>{this.resetWorld()}}>
                 <option value="4">4x4 (Small)</option>
                 <option value="6">6x6 (Medium)</option>
                 <option value="8">8x8 (Big)</option>
                 <option value="10">10x10 (Huge)</option>
             </select>
             <br>
-            Seed: <input id="seed" value="42">
-            Delay: <select id="delay">
-                <option value="None">None</option>
+            Seed: <input id="seed" type="number" value="42" min="0" max="4294967295" @keyup=${_=>{this.resetWorld()}} @change=${_=>{this.resetWorld()}}>
+            Delay: <select id="delay" @change=${_=>{this.updateSettings()}}>
+                <option value="0">None</option>
                 <option value="100" selected>100ms</option>
                 <option value="500">500ms</option>
                 <option value="1000">1s</option>
-                <option value="Inf">Manual</option>
+                <option value="Infinity">Manual</option>
             </select>
             <button @click=${this.onNextStep}>next</button>
             <table id="map">${rows}</table>
             <ul id="events">${events}</ul>
         `;
+    }
+
+    resetWorld(){
+        this.updateSettings();
+        console.log(this._settings);
+        this._state = getInitialState(this._settings.size);
+        this._map = getMap(this._settings.size, this._settings.seed);
+        this._events = [];
+    }
+
+    updateSettings(){
+        const complexity = this.shadowRoot.getElementById('complexity');
+        const size = this.shadowRoot.getElementById('size');
+        const seed = this.shadowRoot.getElementById('seed');
+        const delay = this.shadowRoot.getElementById('delay');
+        if(complexity && size && seed && delay){
+            this._settings = {
+                complexity: Number(complexity.value),
+                size: Number(size.value),
+                seed: Number(seed.value) || 42,
+                delay: Number(delay.value),
+            };
+        }
     }
 
     updateGUI(state, map, events) {
@@ -99,7 +141,6 @@ class ScenarioWumpus extends LazyElement {
             this._events = [];
         }
         else{
-            
             for(let event of events)
                 this._events.push(event);
         }
@@ -122,14 +163,7 @@ class ScenarioWumpus extends LazyElement {
     }
 
     getSettings() {
-        const complexity = Number(this.shadowRoot.getElementById('complexity').value);
-        const size = Number(this.shadowRoot.getElementById('size').value);
-        const seed = Number(this.shadowRoot.getElementById('seed').value);
-        return {
-            complexity,
-            size,
-            seed,
-        };
+        return this._settings;
     }
 }
 

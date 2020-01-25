@@ -52,7 +52,7 @@ export const Percept = Object.freeze({
     Breeze: 1 << 2,
     Stench: 1 << 3,
     Scream: 1 << 4,
-    Gold: 1 << 5,
+    Glitter: 1 << 5,
 });
 
 export const Action = Object.freeze({
@@ -93,12 +93,59 @@ export function getInitialState(size) {
 export function getMap(size, seed) {
     const rand = new Random(seed);
 
-    const map = Array.from({ length: size }, e => Array.from({ length: size }, e => {
-        let tile = Tile.Empty;
-        if (rand.random() < 0.2)
-            tile = Tile.Pit;
-        return { type: tile, percept: Percept.None };
+    const map = Array.from({ length: size }, _ => Array.from({ length: size }, _ => {
+        return { type: Tile.Empty, percept: Percept.None };
     }));
+
+    const maxTries = 10;
+
+    function addPercept(percept, x, y){
+        if(x >= 0 && x < size && y >= 0 && y < size){
+            map[y][x].percept |= percept;
+        }
+    }
+
+    function setTile(type, percept, perceptPos, validPos){
+        let x = Math.round(rand.random()*(size - 1));
+        let y = Math.round(rand.random()*(size - 1));
+        for(let tries = 0; tries < maxTries && (!validPos(x, y) || map[y][x].type !== Tile.Empty); tries++){
+            x = Math.round(rand.random()*(size - 1));
+            y = Math.round(rand.random()*(size - 1));
+        }
+        map[y][x].type = type;
+        for(let pos of perceptPos){
+            addPercept(percept, x+pos[0], y+pos[1]);
+        }
+    }
+
+    const spot = [[0,0]];
+    const cross = [[0,0],[-1,0],[1,0],[0,-1],[0,1]];
+
+    for(let pit = 0; pit < size**2 * 0.2 - 1; pit++)
+        setTile(Tile.Pit, Percept.Breeze, cross, (x,y) => x>1 || y>1);
+    setTile(Tile.Wumpus, Percept.Stench, cross, (x,y) => x>1 || y>1);
+    setTile(Tile.Gold, Percept.Glitter, spot, (x,y) => x>=size/2 || y>=size/2);
+    
+/*
+    x = Math.round(rand.random()*(size - 1));
+    y = Math.round(rand.random()*(size - 1));
+    for(let tries = 0; tries < maxTries && (((x < 2 && y < 2) || map[y][x].type === Tile.Empty)); tries++){
+        x = Math.round(rand.random()*(size - 1));
+        y = Math.round(rand.random()*(size - 1));
+    }
+    map[y][x].type = Tile.Wumpus;
+    addPercept(Percept.Stench, x, y);
+    addPercept(Percept.Stench, x-1, y-1);
+    addPercept(Percept.Stench, x-1, y+1);
+    addPercept(Percept.Stench, x+1, y-1);
+    addPercept(Percept.Stench, x+1, y+1);
+
+    // 20% pits
+    for(let pit = 0; pit < size**2 * 0.2; pit++){
+        for(let i = 0; i < 10; i++){
+
+        }
+    }
     map[Math.round(rand.random() * (size - 1))][Math.round(rand.random() * (size - 1))] = {
         type: Tile.Wumpus,
         percept: Percept.Stench,
@@ -106,17 +153,17 @@ export function getMap(size, seed) {
     map[Math.round(rand.random() * (size - 1))][Math.round(rand.random() * (size - 1))] = {
         type: Tile.Gold,
         percept: Percept.Gold,
-    };
+    };*/
     return map;
 }
 
-export function createScenario(settings, index) {
+export function createScenario(settings) {
     const state = getInitialState(settings.size);
     const map = getMap(settings.size, settings.seed);
 
     return Object.freeze({
         getState() { return deepCopy(state); },
-        hasWon() { return state.percept & Percept.Gold; },
+        hasWon() { return state.percept & Percept.Glitter; },
 
         getActions() {
             const actions = [];
@@ -176,36 +223,38 @@ export function createScenario(settings, index) {
             let score = -1;
             if (!state.alive)
                 score = -1000;
-            if (state.percept & Percept.Gold)
+            if (state.percept & Percept.Glitter)
                 score = 1000;
 
             state.score += score;
             return score;
         },
 
-        async run() {
-            await updateGUI(state, map);
-            if (index.init instanceof Function)
-                await index.init(this.getState());
+        async run(player, update = true) {
+            if(update)
+                await updateGUI(state, map);
+            if (player.init instanceof Function)
+                await player.init(this.getState());
 
             while (!this.hasWon() && state.alive && state.score > -1000) {
                 const oldState = this.getState();
                 const actions = this.getActions();
-                const action = await index.update(oldState, actions);
+                const action = await player.update(oldState, actions);
                 const score = this.performAction(action);
                 const events = [action.type];
                 if(state.alive === false)
                     events.push('You died!');
                 if(this.hasWon())
                     events.push('You found the gold!');
-                await updateGUI(state, map, events);
-                if (index.result instanceof Function)
-                    await index.result(oldState, action, this.getState(), score);
+                if(update)
+                    await updateGUI(state, map, events);
+                if (player.result instanceof Function)
+                    await player.result(oldState, action, this.getState(), score);
             }
 
-            if (index.finish instanceof Function) {
+            if (player.finish instanceof Function) {
                 const state = this.getState();
-                await index.finish(state);
+                await player.finish(state);
             }
         }
     });
