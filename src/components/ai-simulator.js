@@ -1,11 +1,11 @@
 import { html, LitElement, unsafeCSS } from 'lit-element';
 import { unsafeHTML } from 'lit-html/directives/unsafe-html';
 import { connect } from 'pwa-helpers/connect-mixin';
-import { store } from 'src/store';
-import { addLog, clearLog } from 'actions/log';
+import { store } from 'src/store.js';
+import { addLog, clearLog } from 'actions/log.js';
 
-import 'components/c4f-console';
-import { getComponents } from 'src/webpack-utils';
+import 'components/c4f-console.js';
+import { getComponents } from 'src/webpack-utils.js';
 
 const sharedStyles = unsafeCSS(require('./shared-styles.css').toString());
 const style = unsafeCSS(require('./ai-simulator.css').toString());

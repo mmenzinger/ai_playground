@@ -1,5 +1,5 @@
-import {registerRoute} from 'workbox-routing/registerRoute';
-import db from 'src/localdb';
+import {registerRoute} from 'workbox-routing/registerRoute.mjs';
+import db from 'src/localdb.js';
 
 registerRoute(
     /\/(global|project|[0-9]+)\//,

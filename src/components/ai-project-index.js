@@ -1,13 +1,13 @@
 import { html, unsafeCSS } from 'lit-element';
-import { LazyElement } from 'components/lazy-element';
-import { store } from 'src/store';
-import { showModal } from 'actions/modal';
+import { LazyElement } from 'components/lazy-element.js';
+import { store } from 'src/store.js';
+import { showModal } from 'actions/modal.js';
 
-import { createProject } from 'actions/projects';
+import { createProject } from 'actions/projects.js';
 
-import db from 'src/localdb';
+import db from 'src/localdb.js';
 
-import { getTemplates, getExamples } from 'src/webpack-utils';
+import { getTemplates, getExamples } from 'src/webpack-utils.js';
 
 
 

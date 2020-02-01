@@ -2,7 +2,7 @@ import {registerRoute} from 'workbox-routing/registerRoute';
 import {StaleWhileRevalidate} from 'workbox-strategies/StaleWhileRevalidate';
 import {CacheFirst} from 'workbox-strategies/CacheFirst';
 import {Plugin as ExpirationPlugin} from 'workbox-expiration/Plugin';
-import db from 'src/localdb';
+import db from 'src/localdb.js';
 
 /*registerRoute(
     /\.js$/,

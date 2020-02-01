@@ -1,9 +1,9 @@
 export const UPDATE_PAGE = 'UPDATE_PAGE';
 export const UPDATE_OFFLINE = 'UPDATE_OFFLINE';
 
-import store from 'src/store';
+import store from 'src/store.js';
 
-import { openProject, closeProject } from 'actions/projects';
+import { openProject, closeProject } from 'actions/projects.js';
 
 export const navigate = (path, search) => (dispatch) => {
     const urlParams = new URLSearchParams(search);

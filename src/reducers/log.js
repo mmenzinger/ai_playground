@@ -3,7 +3,7 @@ import {
     LOG_CLEAR,
     LOG_SUBSCRIBE,
     LOG_UNSUBSCRIBE,
-} from 'actions/log';
+} from 'actions/log.js';
 
 const INITIAL_STATE = {
     subscribers: new Set(),

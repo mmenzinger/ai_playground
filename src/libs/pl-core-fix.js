@@ -118,74 +118,6 @@
 			return true;
 		} 
 	};
-
-	// Virtual file system for Node.js
-	var nodejs_file_system = {
-		// Open file
-		open: function( path, type, mode ) {
-			var fs = require('fs');
-			var fd = fs.openSync( path, mode[0] );
-			if( mode === "read" && !fs.existsSync( path ) )
-				return null;
-			return {
-				get: function( length, position ) {
-					var buffer = new Buffer( length );
-					fs.readSync( fd, buffer, 0, length, position );
-					return buffer.toString();
-				},
-				put: function( text, position ) {
-					var buffer = Buffer.from( text );
-					if( position === "end_of_file" )
-						fs.writeSync( fd, buffer );
-					else if( position === "past_end_of_file" )
-						return null;
-					else
-						fs.writeSync( fd, buffer, 0, buffer.length, position );
-					return true;
-				},
-				get_byte: function( position ) {
-					return null;
-				},
-				put_byte: function( byte, position ) {
-					return null;
-				},
-				flush: function() {
-					return true;
-				},
-				close: function() {
-					fs.closeSync( fd );
-					return true;
-				}
-			};
-		}
-	};
-
-	// User input for Node.js
-	var nodejs_user_input = {
-		buffer: "",
-		get: function( length, _ ) {
-			var text;
-			var readlineSync = require('readline-sync');
-			while( nodejs_user_input.buffer.length < length )
-				nodejs_user_input.buffer += readlineSync.question();
-			text = nodejs_user_input.buffer.substr( 0, length );
-			nodejs_user_input.buffer = nodejs_user_input.buffer.substr( length );
-			return text;
-		}
-	};
-
-	// User output for Node.js
-	var nodejs_user_output = {
-		put: function( text, _ ) {
-			process.stdout.write( text );
-			return true;
-		},
-		flush: function() {
-			return true;
-		}
-	};
-	
-	
 	
 	// PARSER
 	
@@ -1244,13 +1176,13 @@
 		this.limit = limit;
 		this.streams = {
 			"user_input": new Stream(
-				typeof module !== 'undefined' && module.exports ? nodejs_user_input : tau_user_input,
+				tau_user_input,
 				"read", "user_input", "text", false, "reset" ),
 			"user_output": new Stream(
-				typeof module !== 'undefined' && module.exports ? nodejs_user_output : tau_user_output,
+				tau_user_output,
 				"write", "user_output", "text", false, "eof_code" )
 		};
-		this.file_system = typeof module !== 'undefined' && module.exports ? nodejs_file_system : tau_file_system;
+		this.file_system = tau_file_system;
 		this.standard_input = this.streams["user_input"];
 		this.standard_output = this.streams["user_output"];
 		this.current_input = this.streams["user_input"];
@@ -6093,7 +6025,7 @@
 			// NodeJS
 			nodejs: {
 				allowed: [new Term( "yes" ), new Term( "no" )],
-				value: new Term( typeof module !== 'undefined' && module.exports ? "yes" : "no" ),
+				value: new Term( "no" ),
 				changeable: false
 			}
 			

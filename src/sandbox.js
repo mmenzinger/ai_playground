@@ -1,8 +1,8 @@
 // store gets set by parent, else it would be a different store (scope iframe)
 // scenario gets set by parent
-import { addLog } from 'actions/log';
-import { createFile, saveFile } from 'actions/files';
-import db from 'src/localdb';
+import { addLog } from 'actions/log.js';
+import { createFile, saveFile } from 'actions/files.js';
+import db from 'src/localdb.js';
 
 const libs = [
     {name: 'pl', path:'./tau-prolog.js'},

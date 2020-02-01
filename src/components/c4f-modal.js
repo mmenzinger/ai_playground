@@ -2,7 +2,7 @@ import { html, unsafeCSS, css, LitElement } from 'lit-element';
 import { connect } from 'pwa-helpers/connect-mixin.js';
 import { store } from 'src/store.js';
 
-import { hideModal } from 'actions/modal';
+import { hideModal } from 'actions/modal.js';
 
 const sharedStyles = unsafeCSS(require('./shared-styles.css').toString());
 const style = unsafeCSS(require('./c4f-modal.css').toString());

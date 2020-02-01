@@ -5,22 +5,29 @@ const HtmlWebPackPlugin = require("html-webpack-plugin");
 
 module.exports = merge(common, {
     mode: 'development',
-    //devtool: 'inline-source-map',
-    devtool: 'cheap-module-eval-source-map',
+    devtool: 'inline-cheap-module-source-map',
 
     entry: {
-        'service-worker': './src/worker/service.worker.dev.js',
+        //'service-worker': './src/worker/service.worker.dev.js',
+    },
+
+    output: {
+        path: path.resolve(__dirname, 'build/dev'),
     },
 
     plugins: [
-        new HtmlWebPackPlugin({
+        /*new HtmlWebPackPlugin({
             template: "./index.html",
             filename: "./index.html",
-        }),
+        }),*/
     ],
 
     module: {
         rules: [
         ],
+    },
+
+    devServer: {
+        contentBase: path.join(__dirname, 'build/dev'),
     },
 });

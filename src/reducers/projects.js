@@ -3,7 +3,7 @@ import {
     PROJECT_CLOSE,
     PROJECT_CREATE,
     PROJECT_DELETE,
-} from 'actions/projects';
+} from 'actions/projects.js';
 
 const INITIAL_STATE = {
     currentProject: 0,

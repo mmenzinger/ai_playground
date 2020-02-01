@@ -1,4 +1,4 @@
-import db from 'src/localdb';
+import db from 'src/localdb.js';
 
 export const FILE_OPEN = 'FILE_OPEN';
 export const FILE_CLOSE = 'FILE_CLOSE';

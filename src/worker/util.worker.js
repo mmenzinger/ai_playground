@@ -1,4 +1,4 @@
-import { serialize, deserialize } from 'src/util';
+import { serialize, deserialize } from 'src/util.js';
 
 
 /***********************************************************************************************

@@ -1,10 +1,10 @@
 import { html, unsafeCSS, LitElement } from 'lit-element';
 import { connect } from 'pwa-helpers/connect-mixin';
-import { store } from 'src/store';
-import db from 'src/localdb';
+import { store } from 'src/store.js';
+import db from 'src/localdb.js';
 
-import { openFile } from 'actions/files';
-import { subscribeLog, LOG_ADD, LOG_CLEAR } from 'actions/log';
+import { openFile } from 'actions/files.js';
+import { subscribeLog, LOG_ADD, LOG_CLEAR } from 'actions/log.js';
 
 
 const sharedStyles = unsafeCSS(require('./shared-styles.css').toString());

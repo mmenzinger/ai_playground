@@ -1,7 +1,7 @@
-import store from 'src/store';
-import db from 'src/localdb';
+import store from 'src/store.js';
+import db from 'src/localdb.js';
 
-import { createFile, openFile, saveState } from 'actions/files';
+import { createFile, openFile } from 'actions/files.js';
 
 export const PROJECT_OPEN = 'PROJECT_OPEN';
 export const PROJECT_CLOSE = 'PROJECT_CLOSE';

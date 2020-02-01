@@ -12,13 +12,17 @@ module.exports = merge(common, {
         'service-worker': './src/worker/service.worker.js',
     },
 
+    output: {
+        path: path.resolve(__dirname, 'build/prod'),
+    },
+
     optimization: {
         minimize: true,
         minimizer: [new TerserPlugin()],
     },
 
     plugins: [
-        new CleanWebpackPlugin(),
+        /*new CleanWebpackPlugin(),
         new HtmlWebPackPlugin({
             template: "./index.html",
             filename: "./index.html",
@@ -28,7 +32,7 @@ module.exports = merge(common, {
                 minifyJS: true,
                 removeComments: true,
             }
-        }),
+        }),*/
     ],
 
     module: {
@@ -50,5 +54,9 @@ module.exports = merge(common, {
                 }
             },
         ],
+    },
+
+    devServer: {
+        contentBase: path.join(__dirname, 'build/prod'),
     },
 });

@@ -1,4 +1,5 @@
-const stringify = require('json-stringify-pretty-compact');
+//const stringify = require('json-stringify-pretty-compact');
+import stringify from 'json-stringify-pretty-compact';
 
 
 export function deepCopy(obj) {

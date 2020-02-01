@@ -1,10 +1,10 @@
 import { html, unsafeCSS, css, LitElement } from 'lit-element';
 import { connect } from 'pwa-helpers/connect-mixin';
-import { store } from 'src/store';
+import { store } from 'src/store.js';
 import { ResizeObserver } from 'resize-observer';
-import { saveFile } from 'actions/files';
+import { saveFile } from 'actions/files.js';
 
-import db from '../localdb';
+import db from '../localdb.js';
 
 
 
