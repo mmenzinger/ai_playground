@@ -18,10 +18,10 @@ td.w10{ width: 10%; }
 td.h10{ padding-top: 10%; }
 
 
-td.t0{ background: rgb(206, 206, 206); }
-td.t1{ background: rgb(0, 68, 255); }
-td.t2{ background: url('scenarios/wumpus/assets/wumpus.svg') center center/cover no-repeat rgb(206, 206, 206); }
-td.t3{ background: url('scenarios/wumpus/assets/gold.svg') center center/cover no-repeat rgb(206, 206, 206); }
+td.Empty{ background: rgb(206, 206, 206); }
+td.Pit{ background: url('scenarios/wumpus/assets/pit.svg') center center/cover no-repeat rgb(224, 107, 107); }
+td.Wumpus{ background: url('scenarios/wumpus/assets/wumpus.svg') center center/cover no-repeat rgb(224, 107, 107); }
+td.Gold{ background: url('scenarios/wumpus/assets/gold.svg') center center/cover no-repeat rgb(206, 206, 206); }
 td.u{ filter: brightness(50%); }
 
 td > img{

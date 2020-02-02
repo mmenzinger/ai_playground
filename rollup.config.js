@@ -7,7 +7,8 @@ import replace from '@rollup/plugin-replace';
 const alias = require('./webpack.alias.js');
 const glob = require('glob');
 const path = require('path');
-console.log(Object.entries(alias).map(e => ({ find: e[0], replacement: e[1]})));
+
+
 let OUTPUT_DIR = path.join(__dirname, 'build/dev');
 
 
@@ -53,7 +54,6 @@ export default async args => {
     }
 
     return [
-        packFile('src/worker/util.worker.js', 'util.worker.js'),
         packFile('src/libs/tau-prolog.worker.js', 'tau-prolog.js'),
         packFile('src/libs/tf.worker.js', 'tf.js'),
         packFile('src/sandbox.js', 'sandbox.js'),

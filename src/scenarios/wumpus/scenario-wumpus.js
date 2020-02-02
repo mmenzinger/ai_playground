@@ -62,17 +62,17 @@ class ScenarioWumpus extends LazyElement {
                     player = html`<img class="player" src="scenarios/wumpus/assets/explorer.svg">`;
 
                 let breeze = html``;
-                if(this._map[row][col].percept & Percept.Breeze)
+                if(this._map[row][col].percepts.has(Percept.Breeze))
                     breeze = html`<img class="breeze" src="scenarios/wumpus/assets/breeze.svg">`;
 
                 let stench = html``;
-                if(this._map[row][col].percept & Percept.Stench)
+                if(this._map[row][col].percepts.has(Percept.Stench))
                     stench = html`<img class="stench" src="scenarios/wumpus/assets/stench.svg">`;
 
                 let glitter = html``;
-                if(this._map[row][col].percept & Percept.Glitter)
+                if(this._map[row][col].percepts.has(Percept.Glitter))
                     glitter = html`<img class="glitter" src="scenarios/wumpus/assets/glitter.svg">`;
-                cols.push(html`<td class="w${this._state.map.length} h${this._state.map[0].length} t${type}${unknown}">${breeze}${stench}${glitter}${player}</td>`);
+                cols.push(html`<td class="w${this._state.map.length} h${this._state.map[0].length} ${type}${unknown}">${breeze}${stench}${glitter}${player}</td>`);
             }
             rows.push(html`<tr>${cols}</tr>`);
         }
@@ -128,7 +128,7 @@ class ScenarioWumpus extends LazyElement {
             this._settings = {
                 complexity: Number(complexity.value),
                 size: Number(size.value),
-                seed: Number(seed.value) || 42,
+                seed: seed.value || '42',
                 delay: Number(delay.value),
             };
         }
