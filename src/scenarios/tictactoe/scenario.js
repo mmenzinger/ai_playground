@@ -81,39 +81,10 @@ export function performAction(state, action) {
     return newState;
 }
 
-export function createScenario(settings, index) {
+export function createScenario(settings) {
     const state = {
         board: [[0, 0, 0], [0, 0, 0], [0, 0, 0]],
         player: settings.startingPlayer,
-    };
-
-    const defaultPlayer1 = {
-        init: typeof index.init !== 'undefined' ? index.init : undefined, // optional
-        update: index.update, // required
-        finish: typeof index.finish !== 'undefined' ? index.finish : undefined, // optional
-    };
-    const defaultPlayer2 = {
-        init: (state) => new Promise((resolve, reject) => {
-            const channel = new MessageChannel();
-            channel.port1.onmessage = m => {
-                resolve();
-            }
-            postMessage({ type: 'init', args: [state] }, [channel.port2]);
-        }),
-        update: (state, actions) => new Promise((resolve, reject) => {
-            const channel = new MessageChannel();
-            channel.port1.onmessage = m => {
-                resolve(m.data.result);
-            }
-            postMessage({ type: 'update', args: [state, actions] }, [channel.port2]);
-        }),
-        finish: (state, score) => new Promise((resolve, reject) => {
-            const channel = new MessageChannel();
-            channel.port1.onmessage = m => {
-                resolve();
-            }
-            postMessage({ type: 'finish', args: [state, score] }, [channel.port2]);
-        }),
     };
 
     return Object.freeze({
@@ -134,9 +105,29 @@ export function createScenario(settings, index) {
             return winner;
         },
 
-        async run(player1 = undefined, player2 = undefined) {
-            player1 = player1 || defaultPlayer1;
-            player2 = player2 || defaultPlayer2;
+        async run(player1, player2 = {
+            init: (state) => new Promise((resolve, reject) => {
+                const channel = new MessageChannel();
+                channel.port1.onmessage = m => {
+                    resolve();
+                }
+                postMessage({ type: 'init', args: [state] }, [channel.port2]);
+            }),
+            update: (state, actions) => new Promise((resolve, reject) => {
+                const channel = new MessageChannel();
+                channel.port1.onmessage = m => {
+                    resolve(m.data.result);
+                }
+                postMessage({ type: 'update', args: [state, actions] }, [channel.port2]);
+            }),
+            finish: (state, score) => new Promise((resolve, reject) => {
+                const channel = new MessageChannel();
+                channel.port1.onmessage = m => {
+                    resolve();
+                }
+                postMessage({ type: 'finish', args: [state, score] }, [channel.port2]);
+            }),
+        }) {
             const players = [player1, player2];
             if (player1.init instanceof Function)
                 await player1.init(this.getState());

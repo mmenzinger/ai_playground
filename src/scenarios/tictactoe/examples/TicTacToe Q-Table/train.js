@@ -19,8 +19,7 @@ export async function generateQTable(){
         let epsilon = epsilonStart;
         for(let episode = 0; episode < episodes; episode++){
             const scenario = S.createScenario({
-                board: [[0,0,0], [0,0,0], [0,0,0]],
-                player: episode % 2 + 1
+                startingPlayer: episode % 2 + 1
             });
             const memoryPlayer1 = [];
             const memoryPlayer2 = [];

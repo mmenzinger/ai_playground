@@ -1,8 +1,8 @@
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import setAlias from '@rollup/plugin-alias';
-import { terser } from 'rollup-plugin-terser';
 import replace from '@rollup/plugin-replace';
+import { terser } from 'rollup-plugin-terser';
 
 const alias = require('./webpack.alias.js');
 const glob = require('glob');
@@ -48,14 +48,14 @@ function getScenarioModules() {
 
 export default async args => {
     if (args.configProd) {
+        OUTPUT_DIR = path.join(__dirname, 'build/prod');
         // use terser to minify in production
         plugins.push(terser());
-        OUTPUT_DIR = path.join(__dirname, 'build/prod')
     }
 
     return [
-        packFile('src/libs/tau-prolog.worker.js', 'tau-prolog.js'),
-        packFile('src/libs/tf.worker.js', 'tf.js'),
+        packFile('src/libs/tau-prolog.js', 'tau-prolog.js'),
+        packFile('src/libs/tf.js', 'tf.js'),
         packFile('src/sandbox.js', 'sandbox.js'),
         packFile('src/worker/scenario.worker.js', 'scenario.worker.js'),
         args.configProd

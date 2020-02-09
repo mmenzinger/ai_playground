@@ -17,7 +17,7 @@ self.storeJson = (path, object) => {
     return new Promise((resolve, reject) => {
         path = fixPath(path, '.json');
         const filename = path.match(/[^\/]+$/)[0];
-        const project = path.match(/^\/(project|global)\//)[1];
+        const project = path.match(/^\/([0-9]+)\//)[1];
         const timeout = setTimeout(() => {
             reject(Error(`could not store file ${filename}`));
         }, 500);
@@ -37,7 +37,7 @@ self.loadJson = async (path) => {
     return deserialize(json);
 }
 
-async function getFileContent(path) {
+self.getFileContent = async function(path) {
     path = fixPath(path);
     const body = await fetch(path);
     if (body.status !== 200)
@@ -45,7 +45,7 @@ async function getFileContent(path) {
     return await body.text();
 }
 
-function fixPath(path, ending = '') {
+self.fixPath = function(path, ending = '') {
     if (! /^\//.test(path))
         path = '/' + path;
     if (! /^\/[0-9]+\//.test(path)){

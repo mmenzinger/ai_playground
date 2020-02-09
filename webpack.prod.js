@@ -7,10 +7,6 @@ const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 module.exports = merge(common, {
     mode: 'production',
 
-    entry: {
-        'service-worker': './src/worker/service.worker.js',
-    },
-
     output: {
         path: path.resolve(__dirname, 'build/prod'),
     },
@@ -21,32 +17,23 @@ module.exports = merge(common, {
     },
 
     plugins: [
-        /*new CleanWebpackPlugin(),
-        new HtmlWebPackPlugin({
-            template: "./index.html",
-            filename: "./index.html",
-            minify: {
-                collapseWhitespace: true,
-                minifyCSS: true,
-                minifyJS: true,
-                removeComments: true,
-            }
-        }),*/
     ],
+
+    performance: {
+        maxAssetSize: 1024000,
+    },
 
     module: {
         rules: [
             {
                 test: /\.js$/,
-                exclude: /node_modules/,
+                exclude: /(node_modules|examples|templates)/,
                 use: {
                     loader: 'minify-lit-html-loader',
                     options: {
                         htmlMinifier: {
                             ignoreCustomFragments: [
-                                /\@click=\${.*?(\s*})+/,
-                                /\?hidden=\${.*?(\s*})+/,
-                                /\?active=\${.*?(\s*})+/,
+                                /[@?]\w+=\${.*?(\s*})+/,
                             ]
                         }
                     }

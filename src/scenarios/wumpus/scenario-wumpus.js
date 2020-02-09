@@ -42,7 +42,7 @@ class ScenarioWumpus extends LazyElement {
     }
 
     render() {
-        console.log(this._state);
+        //console.log(this._state);
         const rows = [];
         for (let row = 0; row < this._state.map.length; row++) {
             const cols = [];
@@ -114,8 +114,8 @@ class ScenarioWumpus extends LazyElement {
     resetWorld(){
         this.updateSettings();
         console.log(this._settings);
-        this._state = getInitialState(this._settings.size);
-        this._map = getMap(this._settings.size, this._settings.seed);
+        this._state = getInitialState(this._settings);
+        this._map = getMap(this._settings);
         this._events = [];
     }
 
@@ -148,10 +148,10 @@ class ScenarioWumpus extends LazyElement {
         return new Promise((resolve, _) => {
             const delay = this.shadowRoot.getElementById('delay').value;
             this._updateResolve = resolve;
-            if (delay === "None") {
+            if (delay === "0") {
                 resolve();
             }
-            else if (delay !== "Inf") {
+            else if (delay !== "Infinity") {
                 setTimeout(resolve, Number(delay));
             }
         });

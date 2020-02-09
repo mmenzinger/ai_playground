@@ -1,29 +1,19 @@
 import seedrandom from 'seedrandom';
+import deepcopy from 'deepcopy';
 
 class Random {
     constructor(seed) {
         this._rng = new seedrandom(seed);
-        /*this.mask = 0xffffffff;
-        this.m_w = (123456789 + seed) & this.mask;
-        this.m_z = (987654321 - seed) & this.mask;*/
     }
 
     // Returns number between 0 (inclusive) and 1.0 (exclusive),
     random() {
         return this._rng();
-        /*this.m_z = (36969 * (this.m_z & 65535) + (this.m_z >> 16)) & this.mask;
-        this.m_w = (18000 * (this.m_w & 65535) + (this.m_w >> 16)) & this.mask;
-        var result = ((this.m_z << 16) + (this.m_w & 65535)) >>> 0;
-        result /= 4294967296;
-        return result;*/
     }
 }
 
-
-
-
 function deepCopy(obj) {
-    return JSON.parse(JSON.stringify(obj));
+    return deepcopy(obj);
 }
 
 function updateGUI(state, map, events) {
@@ -65,9 +55,9 @@ export const Tile = Object.freeze({
     Gold: 'Gold',
 });
 
-export function getInitialState(size) {
+export function getInitialState(settings) {
     const state = {
-        map: Array.from({ length: size }, e => Array(size).fill(null)),
+        map: Array.from({ length: settings.size }, e => Array(settings.size).fill(null)),
         position: { x: 0, y: 0 },
         percepts: new Set(),
         score: 0,
@@ -81,7 +71,10 @@ export function getInitialState(size) {
     return state;
 }
 
-export function getMap(size, seed) {
+export function getMap(settings) {
+    const size = settings.size;
+    const seed = settings.seed;
+    const pitchance = 0.15;
     const rand = new Random(`${seed}x${size}`);
 
     const map = Array.from({ length: size }, _ => Array.from({ length: size }, _ => {
@@ -113,17 +106,22 @@ export function getMap(size, seed) {
     }
 
     const spot = [[0, 0]];
-    const cross = [[0, 0], [-1, 0], [1, 0], [0, -1], [0, 1]];
+    const cross = [[0,0], [-1, 0], [1, 0], [0, -1], [0, 1]];
 
     setTile(Tile.Gold, Percept.Glitter, spot, (x, y) => x >= size / 2 || y >= size / 2);
     setTile(Tile.Wumpus, Percept.Stench, cross, (x, y) => x > 1 || y > 1);
-    for (let pit = 0; pit < size ** 2 * 0.2 - 1; pit++) {
+    for (let pit = 0; pit < size ** 2 * pitchance - 1; pit++) {
         setTile(Tile.Pit, Percept.Breeze, cross, (x, y) => {
-            if (x <= 1 && y <= 1) return false;
-            // pits must be 1 tile apart in each direction (even diagonally)
-            for (const pos of [[x - 1, y - 1], [x, y - 1], [x + 1, y - 1], [x - 1, y], [x + 1, y], [x - 1, y + 1], [x, y + 1], [x + 1, y + 1]]) {
-                if (pos[0] >= 0 && pos[0] < size && pos[1] >= 0 && pos[1] < size && map[pos[1]][pos[0]].type === Tile.Pit)
-                    return false;
+            if(x <= 1 && y <= 1)
+                return false;
+            for(let row = y-2; row <= y+2; row++){
+                for(let col = x-2; col <= x+2; col++){
+                    if(row !== y && col !== x
+                        && row >= 0 && row < size
+                        && col >= 0 && col < size
+                        && map[row][col].type === Tile.Pit)
+                        return false;
+                }
             }
             return true;
         });
@@ -133,8 +131,8 @@ export function getMap(size, seed) {
 }
 
 export function createScenario(settings) {
-    const state = getInitialState(settings.size);
-    const map = getMap(settings.size, settings.seed);
+    const state = getInitialState(settings);
+    const map = getMap(settings);
 
     return Object.freeze({
         getState() { return deepCopy(state); },
@@ -192,7 +190,7 @@ export function createScenario(settings) {
 
         performAction(action) {
             this.validateAction(action);
-            state.percept = new Set();
+            state.percepts = new Set();
 
             if (action.type === Action.MoveUp) state.position.y--;
             if (action.type === Action.MoveDown) state.position.y++;
@@ -238,8 +236,7 @@ export function createScenario(settings) {
             }
 
             state.map[y][x] = map[y][x];
-            if(map[y][x].percepts.size > 0)
-                state.percepts.add(...map[y][x].percepts);
+            map[y][x].percepts.forEach(percept => state.percepts.add(percept) );
 
             if (state.map[y][x].type === Tile.Pit
                 || state.map[y][x].type === Tile.Wumpus) {
@@ -257,10 +254,10 @@ export function createScenario(settings) {
         },
 
         async run(player, update = true) {
-            if (update)
-                await updateGUI(state, map);
             if (player.init instanceof Function)
                 await player.init(this.getState());
+            if (update)
+                await updateGUI(state, map);
 
             while (!this.hasWon() && state.alive && state.score > -1000) {
                 const oldState = this.getState();
@@ -272,16 +269,15 @@ export function createScenario(settings) {
                 if(event === Action.MoveTo)
                     event += ` ${action.x},${action.y}`;
                 const events = [event];
-                console.log(state.percepts);
                 events.push(`Percepts: [${[...state.percepts].join(',')}]`);
                 if (state.alive === false)
                     events.push('You died!');
                 if (this.hasWon())
                     events.push('You found the gold!');
-                if (update)
-                    await updateGUI(state, map, events);
                 if (player.result instanceof Function)
                     await player.result(oldState, action, this.getState(), score);
+                if (update)
+                    await updateGUI(state, map, events);
             }
 
             if (player.finish instanceof Function) {

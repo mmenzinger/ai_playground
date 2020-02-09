@@ -1,8 +1,13 @@
 import {registerRoute} from 'workbox-routing/registerRoute';
-import {StaleWhileRevalidate} from 'workbox-strategies/StaleWhileRevalidate';
+//import {StaleWhileRevalidate} from 'workbox-strategies/StaleWhileRevalidate';
 import {CacheFirst} from 'workbox-strategies/CacheFirst';
 import {Plugin as ExpirationPlugin} from 'workbox-expiration/Plugin';
 import db from 'src/localdb.js';
+
+registerRoute(
+    /\/(global|project|[0-9]+)\//,
+    userFile
+);
 
 /*registerRoute(
     /\.js$/,
@@ -29,11 +34,6 @@ registerRoute(
             }),
         ],
     }),
-);
-
-registerRoute(
-    /\/(global|project|[0-9]+)\//,
-    userFile
 );
 
 async function userFile(arg){

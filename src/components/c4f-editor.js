@@ -6,17 +6,15 @@ import { saveFile } from 'actions/files.js';
 
 import db from '../localdb.js';
 
-
-
-import ace from 'ace-builds';
+import ace from 'ace-builds/src-min-noconflict/ace.js';
 import 'ace-builds/src-noconflict/mode-plain_text';
 import 'ace-builds/src-noconflict/mode-javascript';
 import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/mode-prolog';
-ace.config.setModuleUrl('ace/mode/javascript_worker', require('file-loader?name=[name].[ext]!ace-builds/src-noconflict/worker-javascript'));
-ace.config.setModuleUrl('ace/mode/json_worker', require('file-loader?name=[name].[ext]!ace-builds/src-noconflict/worker-json'));
-ace.config.setModuleUrl('ace/theme/chrome', require('file-loader?name=[name].[ext]!ace-builds/src-noconflict/theme-chrome'));
-ace.config.setModuleUrl('ace/ext/language_tools', require('file-loader?name=[name].[ext]!ace-builds/src-noconflict/ext-language_tools'));
+ace.config.setModuleUrl('ace/mode/javascript_worker', require('file-loader?name=ace/[name].[ext]!ace-builds/src-min-noconflict/worker-javascript'));
+ace.config.setModuleUrl('ace/mode/json_worker', require('file-loader?name=ace/[name].[ext]!ace-builds/src-min-noconflict/worker-json'));
+ace.config.setModuleUrl('ace/theme/chrome', require('file-loader?name=ace/[name].[ext]!ace-builds/src-min-noconflict/theme-chrome'));
+ace.config.setModuleUrl('ace/ext/language_tools', require('file-loader?name=ace/[name].[ext]!ace-builds/src-min-noconflict/ext-language_tools'));
 
 const sharedStyles = unsafeCSS(require('./shared-styles.css').toString());
 

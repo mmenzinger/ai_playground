@@ -4,11 +4,6 @@ import { addLog } from 'actions/log.js';
 import { createFile, saveFile } from 'actions/files.js';
 import db from 'src/localdb.js';
 
-const libs = [
-    {name: 'pl', path:'./tau-prolog.js'},
-    {name: 'tf', path:'./tf.js'},
-]
-
 let worker;
 
 function simSetup(scenario) {
@@ -27,9 +22,12 @@ function simSetup(scenario) {
                 break;
             }
             case 'store_json': {
-                let project = 0; // global
+                let project = Number(m.data.project);
                 if(m.data.project === 'project')
                     project = state.projects.currentProject;
+                else if(m.data.project === 'global')
+                    project = 0;
+
                 const file = await db.loadFileByName(project, m.data.filename);
                 if (file === undefined) {
                     const id = await store.dispatch(createFile(m.data.filename, project, m.data.json));
@@ -78,7 +76,7 @@ window.simRun = (index, scenario) => {
         }
         worker.postMessage({
             type: 'run',
-            files: [...libs, ...scenario.constructor.files, index],
+            files: [...scenario.constructor.files, index],
             settings: scenario.getSettings(),
         }, [channel.port2]);
     });
@@ -93,7 +91,7 @@ window.simTrain = async (index, scenario) => {
         }
         worker.postMessage({
             type: 'train',
-            files: [...libs, ...scenario.constructor.files, index],
+            files: [...scenario.constructor.files, index],
             state: scenario.state
         }, [channel.port2]);
     });

@@ -11,7 +11,6 @@ const staticFiles = [
         to: 'scenarios/[1]/assets/[name].[ext]',
         test: /([^/]+)\/assets\/[^/]+$/,
     },
-    //{ from: 'dist_rollup', to: '' },
 ];
 
 const alias = require('./webpack.alias.js');
@@ -32,7 +31,7 @@ module.exports = {
     module: {
         rules: [
             {
-                test: /(examples|templates)\/[^/]+\/.+\.js$/,
+                test: /\/scenarios\/[^/]+\/(examples|templates)\//,
                 include: path.join(__dirname, 'src/scenarios/'),
                 use: [
                     {
@@ -44,8 +43,12 @@ module.exports = {
                 ],
             },
             {
+                test: /\/scenarios\/[^/]+\/assets\//,
+                include: path.join(__dirname, 'src/scenarios/'),
+                loader: 'ignore-loader',
+            },
+            {
                 test: /\.css$/,
-                //use: ['css-loader'],
                 loader: 'css-loader',
                 options: {
                     url: false,
@@ -53,6 +56,7 @@ module.exports = {
             },
             {
                 test: /\.(jpe?g|png|gif|svg)$/i,
+                exclude: path.join(__dirname, 'src/scenarios/'),
                 loader: 'file-loader',
                 options: {
                     name: '/assets/[name].[ext]',
