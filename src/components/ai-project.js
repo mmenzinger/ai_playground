@@ -72,23 +72,14 @@ class AiProject extends connect(store)(LazyElement) {
         ]);
 
         return html`
-            <golden-layout content=${content} components=${components} settings=${settings}></golden-layout>
+            <golden-layout content=${content} components=${components} settings=${settings} save="true"></golden-layout>
         `;
     }
 
     firstUpdated() {
-     /*   store.dispatch(fileAction.createFile('test',0,'content'));
-        store.dispatch(fileAction.createFile('test2',1,'content2'));
-        store.dispatch(fileAction.createFile('test3',2,'content3'));
-        store.dispatch(fileAction.renameFile(1,'test3'));
-        store.dispatch(fileAction.changeFile(2,'test2'));
-        store.dispatch(fileAction.deleteFile(1));*/
     }
 
     stateChanged(state) {
-        //console.log("----------------");
-        //console.log(state.files.parents);
-        //console.log(state.files.files);
     }
 }
 

@@ -118,6 +118,7 @@ class FileTree extends connect(store)(LitElement) {
                             <option value="js">.js</option>
                             <option value="json">.json</option>
                             <option value="pl">.pl</option>
+                            <option value="md">.md</option>
                         </select>
                     </form>
                 `,
