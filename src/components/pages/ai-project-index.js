@@ -1,5 +1,5 @@
 import { html, unsafeCSS } from 'lit-element';
-import { LazyElement } from 'components/lazy-element.js';
+import { LazyElement } from 'components/elements/lazy-element.js';
 import { store } from 'src/store.js';
 import { showModal } from 'actions/modal.js';
 
@@ -11,7 +11,7 @@ import { getTemplates, getExamples } from 'src/webpack-utils.js';
 
 
 
-const sharedStyles = unsafeCSS(require('./shared-styles.css').toString());
+const sharedStyles = unsafeCSS(require('components/shared-styles.css').toString());
 //const style = unsafeCSS(require('./ai-project-index.css').toString());
 
 class AiProjectIndex extends LazyElement {

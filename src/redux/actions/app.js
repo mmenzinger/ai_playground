@@ -20,14 +20,14 @@ const loadPage = (page, params) => async dispatch => {
     // lazy load pages
     switch (page) {
         case 'project':
-            import('components/ai-project.js');
+            import('components/pages/ai-project.js');
             const id = Number(params['id']);
             if(id)
                 await store.dispatch(openProject(id));
             break;
         case 'index':
         default:
-            import('components/ai-project-index.js');
+            import('components/pages/ai-project-index.js');
             page = 'index';
             await store.dispatch(closeProject());
     }

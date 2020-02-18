@@ -7,7 +7,7 @@ import { openFile } from 'actions/files.js';
 import { subscribeLog, LOG_ADD, LOG_CLEAR } from 'actions/log.js';
 
 
-const sharedStyles = unsafeCSS(require('./shared-styles.css').toString());
+const sharedStyles = unsafeCSS(require('components/shared-styles.css').toString());
 const style = unsafeCSS(require('./c4f-console.css').toString());
 
   

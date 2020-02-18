@@ -1,5 +1,5 @@
 import { html, unsafeCSS, LitElement } from 'lit-element';
-import { LazyElement } from 'components/lazy-element.js';
+import { LazyElement } from 'components/elements/lazy-element.js';
 
 import { getInitialState, getMap, Percept } from './scenario';
 

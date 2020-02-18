@@ -4,7 +4,7 @@ import { store } from 'src/store.js';
 
 import { hideModal } from 'actions/modal.js';
 
-const sharedStyles = unsafeCSS(require('./shared-styles.css').toString());
+const sharedStyles = unsafeCSS(require('components/shared-styles.css').toString());
 const style = unsafeCSS(require('./c4f-modal.css').toString());
 
 class C4fModal extends connect(store)(LitElement) {

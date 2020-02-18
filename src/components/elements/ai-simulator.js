@@ -4,10 +4,10 @@ import { connect } from 'pwa-helpers/connect-mixin';
 import { store } from 'src/store.js';
 import { addLog, clearLog } from 'actions/log.js';
 
-import 'components/c4f-console.js';
+import 'components/elements/c4f-console.js';
 import { getComponents } from 'src/webpack-utils.js';
 
-const sharedStyles = unsafeCSS(require('./shared-styles.css').toString());
+const sharedStyles = unsafeCSS(require('components/shared-styles.css').toString());
 const style = unsafeCSS(require('./ai-simulator.css').toString());
 
 class AiSimulator extends connect(store)(LitElement) {

@@ -3,7 +3,7 @@ import { connect } from 'pwa-helpers/connect-mixin.js';
 
 import { store } from 'src/store.js';
 
-const sharedStyles = unsafeCSS(require('./shared-styles.css').toString());
+const sharedStyles = unsafeCSS(require('components/shared-styles.css').toString());
 const style = unsafeCSS(require('./ai-header.css').toString());
 
 class AiHeader extends connect(store)(LitElement) {

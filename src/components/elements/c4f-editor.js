@@ -4,7 +4,7 @@ import { store } from 'src/store.js';
 import { ResizeObserver } from 'resize-observer';
 import { saveFile } from 'actions/files.js';
 
-import db from '../localdb.js';
+import db from '../../localdb.js';
 
 import ace from 'ace-builds/src-min-noconflict/ace.js';
 import 'ace-builds/src-noconflict/mode-plain_text';
@@ -17,7 +17,7 @@ ace.config.setModuleUrl('ace/mode/json_worker', require('file-loader?name=ace/[n
 ace.config.setModuleUrl('ace/theme/chrome', require('file-loader?name=ace/[name].[ext]!ace-builds/src-min-noconflict/theme-chrome'));
 ace.config.setModuleUrl('ace/ext/language_tools', require('file-loader?name=ace/[name].[ext]!ace-builds/src-min-noconflict/ext-language_tools'));
 
-const sharedStyles = unsafeCSS(require('./shared-styles.css').toString());
+const sharedStyles = unsafeCSS(require('components/shared-styles.css').toString());
 const style = unsafeCSS(require('./c4f-editor.css').toString());
 
 const showdown = require('showdown');

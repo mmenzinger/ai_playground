@@ -1,9 +1,9 @@
 import { LitElement, html, unsafeCSS, css } from 'lit-element';
 import { connect } from 'pwa-helpers/connect-mixin.js';
 
-import { store } from '../store.js';
+import { store } from '../../store.js';
 
-const sharedStyles = unsafeCSS(require('./shared-styles.css').toString());
+const sharedStyles = unsafeCSS(require('components/shared-styles.css').toString());
 const goldenLayoutBase = unsafeCSS(require('golden-layout/src/css/goldenlayout-base.css'));
 const goldenLayoutTheme = unsafeCSS(require('golden-layout/src/css/goldenlayout-light-theme.css'));
 

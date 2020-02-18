@@ -9,7 +9,7 @@ import { showModal } from 'actions/modal.js';
 import db from 'src/localdb.js';
 
 
-const sharedStyles = unsafeCSS(require('./shared-styles.css').toString());
+const sharedStyles = unsafeCSS(require('components/shared-styles.css').toString());
 const style = unsafeCSS(require('./file-tree.css').toString());
 //const jstreeStyles = unsafeCSS(require('jstree/dist/themes/default/style.css').toString());
 //const icons32 = require('jstree/dist/themes/default/32px.png');
