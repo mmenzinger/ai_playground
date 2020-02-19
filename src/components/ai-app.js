@@ -12,11 +12,6 @@ import('components/elements/c4f-modal.js');
 const sharedStyles = unsafeCSS(require('components/shared-styles.css').toString());
 const style = unsafeCSS(require('./ai-app.css').toString());
 
-/*import runtime from 'serviceworker-webpack-plugin/lib/runtime';
- 
-if ('serviceWorker' in navigator) {
-  const registration = runtime.register();
-}*/
 
 class AiApp extends connect(store)(LitElement) {
     static get properties() {

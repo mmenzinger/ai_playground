@@ -24,8 +24,8 @@ class ScenarioWumpus extends LazyElement {
         ];
     }
 
-    static get files() {
-        return [{ name: 'scenario', path: './scenarios/wumpus/scenario.js' }];
+    static get file(){
+        return '/scenarios/wumpus/scenario.js';
     }
 
     static get autorun() { return false; }
@@ -59,19 +59,19 @@ class ScenarioWumpus extends LazyElement {
                 }
                 let player = html``;
                 if (this._state.position.x === col && this._state.position.y === row)
-                    player = html`<img class="player" src="scenarios/wumpus/assets/explorer.svg">`;
+                    player = html`<img class="player" src="assets/wumpus/explorer.svg">`;
 
                 let breeze = html``;
                 if(this._map[row][col].percepts.has(Percept.Breeze))
-                    breeze = html`<img class="breeze" src="scenarios/wumpus/assets/breeze.svg">`;
+                    breeze = html`<img class="breeze" src="assets/wumpus/breeze.svg">`;
 
                 let stench = html``;
                 if(this._map[row][col].percepts.has(Percept.Stench))
-                    stench = html`<img class="stench" src="scenarios/wumpus/assets/stench.svg">`;
+                    stench = html`<img class="stench" src="assets/wumpus/stench.svg">`;
 
                 let glitter = html``;
                 if(this._map[row][col].percepts.has(Percept.Glitter))
-                    glitter = html`<img class="glitter" src="scenarios/wumpus/assets/glitter.svg">`;
+                    glitter = html`<img class="glitter" src="assets/wumpus/glitter.svg">`;
                 cols.push(html`<td class="w${this._state.map.length} h${this._state.map[0].length} ${type}${unknown}">${breeze}${stench}${glitter}${player}</td>`);
             }
             rows.push(html`<tr>${cols}</tr>`);
@@ -113,7 +113,6 @@ class ScenarioWumpus extends LazyElement {
 
     resetWorld(){
         this.updateSettings();
-        console.log(this._settings);
         this._state = getInitialState(this._settings);
         this._map = getMap(this._settings);
         this._events = [];

@@ -54,8 +54,8 @@ export default async args => {
     }
 
     return [
-        packFile('src/libs/tau-prolog.js', 'tau-prolog.js'),
-        packFile('src/libs/tf.js', 'tf.js'),
+        packFile('src/libs/tau-prolog.js', 'libs/prolog.js'),
+        packFile('src/libs/tf.js', 'libs/tensorflow.js'),
         packFile('src/sandbox.js', 'sandbox.js'),
         packFile('src/worker/scenario.worker.js', 'scenario.worker.js'),
         args.configProd

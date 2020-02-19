@@ -1,6 +1,4 @@
 import { html, unsafeCSS } from 'lit-element';
-import { connect } from 'pwa-helpers/connect-mixin.js';
-import { store } from 'src/store.js';
 import { LazyElement } from 'components/elements/lazy-element.js';
 
 import 'components/elements/ai-header.js';
@@ -10,7 +8,7 @@ import 'components/elements/c4f-editor.js';
 import 'components/elements/ai-simulator.js';
 import 'components/elements/c4f-console.js';
 
-class AiProject extends connect(store)(LazyElement) {
+class AiProject extends LazyElement {
     render() {
         const settings = JSON.stringify({
             showPopoutIcon: false,
@@ -77,9 +75,6 @@ class AiProject extends connect(store)(LazyElement) {
     }
 
     firstUpdated() {
-    }
-
-    stateChanged(state) {
     }
 }
 

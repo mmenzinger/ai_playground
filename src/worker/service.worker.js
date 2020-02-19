@@ -4,6 +4,15 @@ import {CacheFirst} from 'workbox-strategies/CacheFirst';
 import {Plugin as ExpirationPlugin} from 'workbox-expiration/Plugin';
 import db from 'src/localdb.js';
 
+let project = 0;
+
+onmessage = m => {
+    if(m.data.type === 'setProject'){
+        project = m.data.project;
+        m.ports[0].postMessage({ project });
+    }
+};
+
 registerRoute(
     /\/(global|project|[0-9]+)\//,
     userFile

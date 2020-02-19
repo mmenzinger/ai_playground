@@ -22,7 +22,6 @@ export const openProject = (id) => async dispatch => {
         id, 
         scenario: project.scenario || 'tictactoe', // TODO: Remove fallback
     });
-    await db.saveState(store.getState());
     store.dispatch(openFile(file.id));
     return project;
 }

@@ -31,6 +31,7 @@ export function getScenarios(){
         const name = match[2];
         scenarios[type].component = name;
     });
+    
     return scenarios;
 }
 

@@ -26,7 +26,9 @@ class AiSimulator extends connect(store)(LitElement) {
 
     constructor() {
         super();
-        this._sandbox;
+        this._sandbox = new Promise((resolve, reject) => {
+            this.setSandbox = (sandbox) => resolve(sandbox);
+        });
     }
 
     render() {
@@ -50,34 +52,41 @@ class AiSimulator extends connect(store)(LitElement) {
         }
     }
 
-    simRun() {
+    async simRun() {
         store.dispatch(clearLog());
+        const sandbox = await this._sandbox;
         const scenario = this.shadowRoot.querySelector('[active]');
+        sandbox.store = store;
+        sandbox.scenario = scenario;
+        sandbox.simCall(scenario.constructor.file, 'run', [scenario.getSettings()]);
+        /*
         const state = store.getState();
-        const project = state.projects.currentProject;
-        this._sandbox.store = store;
-        this._sandbox.simRun({ name: 'index', path: `./project/index.js` }, scenario).catch(e => {
+        sandbox.store = store;
+        sandbox.simRun({ name: 'index', path: `./project/index.js` }, scenario).catch(e => {
             const msg = `simRun error: ${e.message}`;
             store.dispatch(addLog({ type: 'error', args: [msg] }));
             console.log(e);
-        });
+        });*/
     }
 
-    simTrain() {
+    async simTrain() {
         store.dispatch(clearLog());
-        const scenario = this.shadowRoot.querySelector('[active]');
+        const sandbox = await this._sandbox;
+        sandbox.store = store;
+        sandbox.simCall('/project/index.js', 'train');
+        /*const scenario = this.shadowRoot.querySelector('[active]');
         const state = store.getState();
-        const project = state.projects.currentProject;
-        this._sandbox.store = store;
-        this._sandbox.simTrain({ name: 'index', path: `./project/index.js` }, scenario).catch(e => {
+        sandbox.store = store;
+        sandbox.simTrain({ name: 'index', path: `./project/index.js` }, scenario).catch(e => {
             const msg = `simTrain error: ${e.message}`;
             store.dispatch(addLog({ type: 'error', args: [msg] }));
             console.log(e);
-        });
+        });*/
     }
 
-    simTerminate() {
-        this._sandbox.simTerminate();
+    async simTerminate() {
+        const sandbox = await this._sandbox;
+        sandbox.simTerminate();
         const msg = `simulation terminated!`;
         store.dispatch(addLog({ type: 'warn', args: [msg] }));
         console.warn(msg);
@@ -94,15 +103,16 @@ class AiSimulator extends connect(store)(LitElement) {
         this.shadowRoot.appendChild(iframe);
         
         iframe.onload = () => {
-            this._sandbox = iframe.contentWindow;
+            this.setSandbox(iframe.contentWindow);
             const scenario = this.shadowRoot.querySelector('[active]');
             if(scenario.constructor.autorun)
                 this.simRun();
         }
     }
 
-    updated(){
-        if(this._sandbox && this._scenario){
+    async updated(){
+        const sandbox = await this._sandbox;
+        if(this._scenario){
             const scenario = this.shadowRoot.querySelector('[active]');
             if(scenario.constructor.autorun)
                 // wait for renderer to catch up

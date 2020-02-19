@@ -1,3 +1,5 @@
+//import * as scenario from '/scenarios/tictactoe/scenario.js';
+
 export async function init(state){
     console.log('initial state: ', state);
 }

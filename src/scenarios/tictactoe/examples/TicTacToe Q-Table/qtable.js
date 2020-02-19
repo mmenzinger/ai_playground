@@ -1,3 +1,5 @@
+import { Player, validAction } from '/scenarios/tictactoe/scenario.js';
+
 function shuffle(a) {
     for (let i = a.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -23,7 +25,7 @@ export class QTable{
             type: "PLACE",
             row: Math.floor(id / 3),
             col: id % 3,
-            player: S.Player.Computer,
+            player: Player.Computer,
         }
     }
     
@@ -67,7 +69,7 @@ export class QTable{
         let bestAction;
         for(let i = 0; i < actions.length; i++){
             bestAction = this.idToAction(actions[i][0]);
-            if(S.validAction(state, bestAction))
+            if(validAction(state, bestAction))
                 break;
         }
         

@@ -1,7 +1,4 @@
 import { LitElement, html, unsafeCSS, css } from 'lit-element';
-import { connect } from 'pwa-helpers/connect-mixin.js';
-
-import { store } from '../../store.js';
 
 const sharedStyles = unsafeCSS(require('components/shared-styles.css').toString());
 const goldenLayoutBase = unsafeCSS(require('golden-layout/src/css/goldenlayout-base.css'));
@@ -12,7 +9,7 @@ const goldenLayout = require("golden-layout");
 let autoId = 0;
 
 // TODO: react to attribute change
-class GoldenLayout extends connect(store)(LitElement) {
+class GoldenLayout extends LitElement {
     static get properties() {
         return {
             settings: { type: Object },

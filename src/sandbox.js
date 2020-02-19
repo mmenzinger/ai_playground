@@ -3,17 +3,19 @@
 import { addLog } from 'actions/log.js';
 import { createFile, saveFile } from 'actions/files.js';
 import db from 'src/localdb.js';
+import { messageWithResult } from 'src/util.js';
 
 let worker;
 
-function simSetup(scenario) {
+async function simSetup() {
     if (worker) {
         worker.terminate();
     }
     const state = store.getState();
-    worker = new Worker(`scenario.worker.js?project=${state.projects.currentProject}`, { type: "module" }); // waiting for module support...
+    worker = new Worker(`scenario.worker.js?project=${state.projects.currentProject}`, { type: "module" });
 
     worker.onmessage = async (m) => {
+        let result = undefined;
         switch (m.data.type) {
             case 'log':
             case 'error':
@@ -35,66 +37,37 @@ function simSetup(scenario) {
                 else {
                     await store.dispatch(saveFile(file.id, m.data.json));
                 }
-
-                m.ports[0].postMessage({ type: 'store_json_return' });
-                break;
-            }
-            case 'init':{
-                const result = await scenario.onInit(...m.data.args);
-                m.ports[0].postMessage({ result });
-                break;
-            }
-            case 'update':{
-                const result = await scenario.onUpdate(...m.data.args);
-                m.ports[0].postMessage({ result });
-                break;
-            }
-            case 'finish':{
-                const result = await scenario.onFinish(...m.data.args);
-                m.ports[0].postMessage({ result });
                 break;
             }
             case 'call':{
-                const result = await scenario[m.data.functionName](...m.data.args);
-                m.ports[0].postMessage({ result });
+                result = await scenario[m.data.functionName](...m.data.args);
                 break;
             }
+        }
+        if(m.ports.length > 0){
+            m.ports[0].postMessage({ result });
         }
     }
 
     worker.onerror = (m) => {
         console.error(m);
     }
+
+    const registration = await navigator.serviceWorker.ready;
+    await messageWithResult({
+        type: 'setProject',
+        project: state.projects.currentProject,
+    }, null, registration.active);
 }
 
-window.simRun = (index, scenario) => {
-    return new Promise((resolve, reject) => {
-        simSetup(scenario);
-        const channel = new MessageChannel();
-        channel.port1.onmessage = _ => {
-            resolve();
-        }
-        worker.postMessage({
-            type: 'run',
-            files: [...scenario.constructor.files, index],
-            settings: scenario.getSettings(),
-        }, [channel.port2]);
-    });
-}
-
-window.simTrain = async (index, scenario) => {
-    return new Promise((resolve, reject) => {
-        simSetup();
-        const channel = new MessageChannel();
-        channel.port1.onmessage = _ => {
-            resolve();
-        }
-        worker.postMessage({
-            type: 'train',
-            files: [...scenario.constructor.files, index],
-            state: scenario.state
-        }, [channel.port2]);
-    });
+window.simCall = async (file, functionName, args = []) => {
+    await simSetup();
+    await messageWithResult({
+        type: 'call',
+        file,
+        functionName,
+        args,
+    }, null, worker);
 }
 
 window.simTerminate = () => {

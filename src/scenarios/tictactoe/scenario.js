@@ -1,6 +1,4 @@
-function deepCopy(obj) {
-    return JSON.parse(JSON.stringify(obj));
-}
+import { messageWithResult, deepCopy } from 'src/util.js';
 
 export const Player = Object.freeze({
     None: 0,
@@ -106,27 +104,9 @@ export function createScenario(settings) {
         },
 
         async run(player1, player2 = {
-            init: (state) => new Promise((resolve, reject) => {
-                const channel = new MessageChannel();
-                channel.port1.onmessage = m => {
-                    resolve();
-                }
-                postMessage({ type: 'init', args: [state] }, [channel.port2]);
-            }),
-            update: (state, actions) => new Promise((resolve, reject) => {
-                const channel = new MessageChannel();
-                channel.port1.onmessage = m => {
-                    resolve(m.data.result);
-                }
-                postMessage({ type: 'update', args: [state, actions] }, [channel.port2]);
-            }),
-            finish: (state, score) => new Promise((resolve, reject) => {
-                const channel = new MessageChannel();
-                channel.port1.onmessage = m => {
-                    resolve();
-                }
-                postMessage({ type: 'finish', args: [state, score] }, [channel.port2]);
-            }),
+            init: (state) => messageWithResult({ type: 'call', functionName: 'onInit', args: [state] }),
+            update: (state, actions) => messageWithResult({ type: 'call', functionName: 'onUpdate', args: [state, actions] }),
+            finish: (state, score) => messageWithResult({ type: 'call', functionName: 'onFinish', args: [state, score] }),
         }) {
             const players = [player1, player2];
             if (player1.init instanceof Function)
@@ -158,4 +138,10 @@ export function createScenario(settings) {
             return winner;
         }
     });
+}
+
+export async function run(settings){
+    const scenario = createScenario(settings);
+    const player1 = await hideImport('/project/index.js'); // gets ignored by webpack
+    await scenario.run(player1);
 }

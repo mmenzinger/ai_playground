@@ -1,5 +1,6 @@
+import { Action } from '/scenarios/wumpus/scenario.js';
 // import tau-prolog
-import pl from '/tau-prolog.js';
+import pl from '/libs/prolog.js';
 
 // global variable for knowledge base
 const kb = pl.create();
@@ -57,13 +58,13 @@ export async function update(state, actions){
     // shoot wumpus if possible
     if(state.arrows > 0 && state.percepts.has('Stench')){
         if(await kb.isTrue(`certainWumpus(${x-1}, ${y}).`))
-            return {type: S.Action.ShootLeft};
+            return {type: Action.ShootLeft};
         if(await kb.isTrue(`certainWumpus(${x+1}, ${y}).`))
-            return {type: S.Action.ShootRight};
+            return {type: Action.ShootRight};
         if(await kb.isTrue(`certainWumpus(${x}, ${y-1}).`))
-            return {type: S.Action.ShootUp};
+            return {type: Action.ShootUp};
         if(await kb.isTrue(`certainWumpus(${x}, ${y+1}).`))
-            return {type: S.Action.ShootDown};
+            return {type: Action.ShootDown};
     }
     
     // make a save move whenever possible

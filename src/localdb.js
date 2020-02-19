@@ -8,7 +8,6 @@ class LocalDB {
     initDb(user) {
         this.db = new Dexie(user);
         this.db.version(1).stores({
-            state: '&key,value',
             files: '++id,&[project+name],project',
             projects: '++id,&name',
         });
@@ -70,21 +69,6 @@ class LocalDB {
 
     async getProjectFiles(project){
         return this.db.files.where('project').equals(project).toArray();
-    }
-
-    //------------------------------------------------------------------------------------------
-    // S t a t e
-    //------------------------------------------------------------------------------------------
-    async saveState(state){
-        return this.db.state.bulkPut(
-            [{key: 'projects', value: state.projects}],
-        );
-    }
-
-    async getState(){
-        return {
-            projects: (await this.db.state.get('projects')).value,
-        };
     }
 }
 

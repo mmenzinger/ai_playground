@@ -1,34 +1,19 @@
-import { serialize, deserialize } from 'src/util.js';
+import { serialize, deserialize, messageWithResult } from 'src/util.js';
 
 
 /***********************************************************************************************
- *  imports and file handling
+ *  file handling
  */
-self.project = (filename) => {
-    const urlParams = new URLSearchParams(location.search);
-    return `/${urlParams.get('project')}/${filename}`;
-}
 
-self.global = (filename) => {
-    return `/0/${filename}`;
-}
-
-self.storeJson = (path, object) => {
-    return new Promise((resolve, reject) => {
-        path = fixPath(path, '.json');
-        const filename = path.match(/[^\/]+$/)[0];
-        const project = path.match(/^\/([0-9]+)\//)[1];
-        const timeout = setTimeout(() => {
-            reject(Error(`could not store file ${filename}`));
-        }, 500);
-        const json = serialize(object);
-        const channel = new MessageChannel();
-        channel.port1.onmessage = m => {
-            clearTimeout(timeout);
-            resolve();
-        }
-        postMessage({ type: 'store_json', project, filename, json }, [channel.port2]);
-    });
+self.storeJson = (path, data) => {
+    path = fixPath(path, '.json');
+    const filename = path.match(/[^\/]+$/)[0];
+    const project = path.match(/^\/([0-9]+)\//)[1];
+    const json = serialize(data);
+    return messageWithResult({ type: 'store_json', project, filename, json }, 500)
+        .catch(timeout => {
+            throw Error(`could not store file ${filename}`);
+        });
 }
 
 self.loadJson = async (path) => {

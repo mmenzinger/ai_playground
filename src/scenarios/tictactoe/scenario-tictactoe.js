@@ -26,9 +26,11 @@ class ScenarioTicTacToe extends LazyElement {
         ];
     }
 
-    static get files(){
-        return [{ name:'scenario', path:'./scenarios/tictactoe/scenario.js'}];
+    static get file(){
+        return '/scenarios/tictactoe/scenario.js';
     }
+
+    static get autorun() { return true; }
 
     constructor() {
         super();
@@ -50,7 +52,7 @@ class ScenarioTicTacToe extends LazyElement {
                 if (col === 0)
                     cols.push(html`<td class="empty" @click=${this.onClick} data-row=${rowId} data-col=${colId}></td>`);
                 else
-                    cols.push(html`<td><img src="scenarios/tictactoe/assets/${col == 1 ? 'x' : 'o'}.png"></td>`);
+                    cols.push(html`<td><img src="assets/tictactoe/${col == 1 ? 'x' : 'o'}.svg"></td>`);
                 colId++;
             });
             rows.push(html`<tr>${cols}</tr>`)

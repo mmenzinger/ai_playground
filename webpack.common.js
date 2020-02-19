@@ -8,7 +8,8 @@ const staticFiles = [
     { from: 'assets', to: 'assets' },
     {
         from: './src/scenarios/*/assets/*',
-        to: 'scenarios/[1]/assets/[name].[ext]',
+        //to: 'scenarios/[1]/assets/[name].[ext]',
+        to: 'assets/[1]/[name].[ext]',
         test: /([^/]+)\/assets\/[^/]+$/,
     },
 ];
@@ -31,7 +32,7 @@ module.exports = {
     module: {
         rules: [
             {
-                test: /\/scenarios\/[^/]+\/(examples|templates)\//,
+                test: /\/scenarios\/[^/]+\/(examples|templates|scenario\.js)\//,
                 include: path.join(__dirname, 'src/scenarios/'),
                 use: [
                     {
@@ -71,6 +72,7 @@ module.exports = {
             jQuery: "jquery",
         }),
         new CopyPlugin(staticFiles),
+        new webpack.IgnorePlugin({ resourceRegExp: /\/project\// }),
     ],
 
     devServer: {

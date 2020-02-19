@@ -1,9 +1,24 @@
 //const stringify = require('json-stringify-pretty-compact');
 import stringify from 'json-stringify-pretty-compact';
+import deepCopy from 'deepcopy';
 
+export { deepCopy };
 
-export function deepCopy(obj) {
-    return JSON.parse(JSON.stringify(obj));
+export async function messageWithResult(msg, timeout = null, target = self){
+    return new Promise((resolve, reject) => {
+        let to = undefined;
+        if(timeout){
+            to = setTimeout(() => {
+                reject(Error(`message timeout: ${msg}`));
+            }, timeout);
+        }
+        const channel = new MessageChannel();
+        channel.port1.onmessage = m => {
+            clearTimeout(to);
+            resolve(m.data.result);
+        }
+        target.postMessage(msg, [channel.port2]);
+    });
 }
 
 export function deepMap(obj, func) {

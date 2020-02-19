@@ -1,19 +1,15 @@
-import seedrandom from 'seedrandom';
-import deepcopy from 'deepcopy';
+import SeedRandom from 'seedrandom';
+import { deepCopy } from 'src/util.js';
 
 class Random {
     constructor(seed) {
-        this._rng = new seedrandom(seed);
+        this._rng = new SeedRandom(seed);
     }
 
     // Returns number between 0 (inclusive) and 1.0 (exclusive),
     random() {
         return this._rng();
     }
-}
-
-function deepCopy(obj) {
-    return deepcopy(obj);
 }
 
 function updateGUI(state, map, events) {
@@ -286,4 +282,10 @@ export function createScenario(settings) {
             }
         }
     });
+}
+
+export async function run(settings){
+    const scenario = createScenario(settings);
+    const player = await hideImport('/project/index.js'); // gets ignored by webpack
+    await scenario.run(player);
 }
