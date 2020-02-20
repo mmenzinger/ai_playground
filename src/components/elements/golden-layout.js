@@ -40,7 +40,7 @@ class GoldenLayout extends LitElement {
             hasHeaders: true,
             constrainDragToContainer: true,
             showPopoutIcon: false,
-            showMaximiseIcon: true,
+            showMaximiseIcon: false,
         };
 
         this.dimensions = {

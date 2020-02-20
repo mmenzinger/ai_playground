@@ -56,7 +56,6 @@ export default async args => {
     return [
         packFile('src/libs/tau-prolog.js', 'libs/prolog.js'),
         packFile('src/libs/tf.js', 'libs/tensorflow.js'),
-        packFile('src/sandbox.js', 'sandbox.js'),
         packFile('src/worker/scenario.worker.js', 'scenario.worker.js'),
         args.configProd
             ? packFile('src/worker/service.worker.js', 'service-worker.js', 'esm', [replace({'process.env.NODE_ENV': "'production'"})])

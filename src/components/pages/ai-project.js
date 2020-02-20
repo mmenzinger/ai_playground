@@ -12,7 +12,7 @@ class AiProject extends LazyElement {
     render() {
         const settings = JSON.stringify({
             showPopoutIcon: false,
-            showMaximiseIcon: true,
+            showMaximiseIcon: false,
             reorderEnabled: false,
             showCloseIcon: false,
         });

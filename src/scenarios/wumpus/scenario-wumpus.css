@@ -19,9 +19,9 @@ td.h10{ padding-top: 10%; }
 
 
 td.Empty{ background: rgb(206, 206, 206); }
-td.Pit{ background: url('scenarios/wumpus/assets/pit.svg') center center/cover no-repeat rgb(224, 107, 107); }
-td.Wumpus{ background: url('scenarios/wumpus/assets/wumpus.svg') center center/cover no-repeat rgb(224, 107, 107); }
-td.Gold{ background: url('scenarios/wumpus/assets/gold.svg') center center/cover no-repeat rgb(206, 206, 206); }
+td.Pit{ background: url('assets/wumpus/pit.svg') center center/cover no-repeat rgb(224, 107, 107); }
+td.Wumpus{ background: url('assets/wumpus/wumpus.svg') center center/cover no-repeat rgb(224, 107, 107); }
+td.Gold{ background: url('assets/wumpus/gold.svg') center center/cover no-repeat rgb(206, 206, 206); }
 td.u{ filter: brightness(50%); }
 
 td > img{

@@ -53,11 +53,10 @@ async function userFile(arg){
             headers: {'Content-Type': 'application/javascript'}
         };
         const path = arg.url.pathname.split('/');
-        let id = 0; // default to global
+        let id = 0;
         let filename = path[2];
         if(path[1] === 'project'){
-            const state = await db.getState();
-            id = state.projects.currentProject;
+            id = project;
         }
         else if( ! isNaN(path[1])){ // if is number
             id = Number(path[1])

@@ -6,14 +6,17 @@ import { addLog, clearLog } from 'actions/log.js';
 
 import 'components/elements/c4f-console.js';
 import { getComponents } from 'src/webpack-utils.js';
+import { Sandbox } from 'src/sandbox.js';
+import { defer } from 'src/util.js';
 
 const sharedStyles = unsafeCSS(require('components/shared-styles.css').toString());
 const style = unsafeCSS(require('./ai-simulator.css').toString());
 
+
 class AiSimulator extends connect(store)(LitElement) {
     static get properties() {
         return {
-            _scenario: { type: String }
+            _scenarioType: { type: String }
         };
     }
 
@@ -26,18 +29,23 @@ class AiSimulator extends connect(store)(LitElement) {
 
     constructor() {
         super();
-        this._sandbox = new Promise((resolve, reject) => {
-            this.setSandbox = (sandbox) => resolve(sandbox);
-        });
+        this._sandbox = defer();
+        this._scenarioLoaded = defer();
+        this._scenario = null;
     }
 
     render() {
-        const state = store.getState();
-        const scenario = this._scenario;
-        if(scenario){
-            import(`scenarios/${scenario}/scenario-${scenario}`);
+        if(this._sandbox.resolved)
+            this._sandbox.value.terminate();
+        this._sandbox = defer();
+        this._scenarioLoaded = defer();
+        const type = this._scenarioType;
+        if(type){
+            import(`scenarios/${type}/scenario-${type}`).then(_ => {
+                this._scenarioLoaded.resolve(true);
+            });
             const components = getComponents().map(name => {
-                const active = name.substr(9) === scenario ? ' active' : '';
+                const active = name.substr(9) === type ? ' active' : '';
                 return unsafeHTML(`<${name}${active}></${name}>`);
             });
             return html`
@@ -45,7 +53,7 @@ class AiSimulator extends connect(store)(LitElement) {
                 <button @click=${this.simTrain}>train</button>
                 <button @click=${this.simTerminate}>terminate</button>
                 ${components}
-            `;//<c4f-console></c4f-console>
+            `;
         }
         else{
             return html``;
@@ -55,74 +63,39 @@ class AiSimulator extends connect(store)(LitElement) {
     async simRun() {
         store.dispatch(clearLog());
         const sandbox = await this._sandbox;
-        const scenario = this.shadowRoot.querySelector('[active]');
         sandbox.store = store;
-        sandbox.scenario = scenario;
-        sandbox.simCall(scenario.constructor.file, 'run', [scenario.getSettings()]);
-        /*
-        const state = store.getState();
-        sandbox.store = store;
-        sandbox.simRun({ name: 'index', path: `./project/index.js` }, scenario).catch(e => {
-            const msg = `simRun error: ${e.message}`;
-            store.dispatch(addLog({ type: 'error', args: [msg] }));
-            console.log(e);
-        });*/
+        sandbox.scenario = this._scenario;
+        sandbox.call(this._scenario.constructor.file, 'run', [this._scenario.getSettings()]);
     }
 
     async simTrain() {
         store.dispatch(clearLog());
         const sandbox = await this._sandbox;
         sandbox.store = store;
-        sandbox.simCall('/project/index.js', 'train');
-        /*const scenario = this.shadowRoot.querySelector('[active]');
-        const state = store.getState();
-        sandbox.store = store;
-        sandbox.simTrain({ name: 'index', path: `./project/index.js` }, scenario).catch(e => {
-            const msg = `simTrain error: ${e.message}`;
-            store.dispatch(addLog({ type: 'error', args: [msg] }));
-            console.log(e);
-        });*/
+        sandbox.scenario = this._scenario;
+        sandbox.call('/project/index.js', 'train');
     }
 
     async simTerminate() {
         const sandbox = await this._sandbox;
-        sandbox.simTerminate();
+        sandbox.terminate();
         const msg = `simulation terminated!`;
         store.dispatch(addLog({ type: 'warn', args: [msg] }));
         console.warn(msg);
     }
 
-    firstUpdated() {
-        const state = store.getState();
-        const iframe = document.createElement('iframe');
-        // 16.10.2019: srcdoc currently bugged in chrome, does not register service-worker requests
-        //iframe.srcdoc = '<script src="sandbox.js"></script>';
-        iframe.src = `srcdoc.html#${state.app.params[0]}`;
-        iframe._sandbox = 'allow-scripts allow-same-origin';
-        iframe.style.display = 'none';
-        this.shadowRoot.appendChild(iframe);
-        
-        iframe.onload = () => {
-            this.setSandbox(iframe.contentWindow);
-            const scenario = this.shadowRoot.querySelector('[active]');
-            if(scenario.constructor.autorun)
-                this.simRun();
-        }
-    }
-
     async updated(){
-        const sandbox = await this._sandbox;
-        if(this._scenario){
-            const scenario = this.shadowRoot.querySelector('[active]');
-            if(scenario.constructor.autorun)
-                // wait for renderer to catch up
-                setTimeout(() => this.simRun(), 0);
+        await this._scenarioLoaded;
+        this._scenario = this.shadowRoot.querySelector('[active]');
+        this._sandbox.resolve(new Sandbox(store, this._scenario));
+        if(this._scenario.constructor.autorun){   
+            this.simRun()
         }
     }
 
     stateChanged(state) {
-        if (state.projects.currentScenario !== this._scenario) {
-            this._scenario = state.projects.currentScenario;
+        if (state.projects.currentScenario !== this._scenarioType) {
+            this._scenarioType = state.projects.currentScenario;
         }
     }
 }

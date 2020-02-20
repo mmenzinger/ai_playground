@@ -1,3 +1,4 @@
-:host,.ace_editor{
+:host, #editor{
     height:100%;
+    width: 100%;
 }

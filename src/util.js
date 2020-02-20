@@ -28,6 +28,28 @@ export function deepMap(obj, func) {
     return func(obj);
 }
 
+export function defer(){
+    let res, rej;
+    const promise = new Promise((resolve, reject) => {
+        res = resolve;
+        rej = reject;
+    });
+    promise.resolve = function(val) {
+        promise.resolved = true;
+        promise.value = val;
+        res(val);
+    };
+    promise.reject = function(error) {
+        promise.resolved = true;
+        promise.value = val;
+        rej(error);
+    }
+    promise.resolved = false;
+    promise.value = undefined;
+    
+    return promise;
+}
+
 export function serialize(obj) {
     function replacer(key, value) {
         if (value instanceof Error)

@@ -34,7 +34,7 @@ module.exports = merge(common, {
                         htmlMinifier: {
                             ignoreCustomFragments: [
                                 /[@?]\w+=\${.*?(\s*})+/,
-                            ]2
+                            ]
                         }
                     }
                 }
