@@ -3,8 +3,7 @@ import { connect } from 'pwa-helpers/connect-mixin';
 import { store } from 'src/store.js';
 import { ResizeObserver } from 'resize-observer';
 import { saveFile } from 'actions/files.js';
-
-import db from '../../localdb.js';
+import { defer } from 'src/util.js';
 
 /*import ace from 'ace-builds/src-min-noconflict/ace.js';
 import 'ace-builds/src-noconflict/mode-plain_text';
@@ -20,8 +19,7 @@ ace.config.setModuleUrl('ace/ext/language_tools', require('file-loader?name=ace/
 const sharedStyles = unsafeCSS(require('components/shared-styles.css').toString());
 const style = unsafeCSS(require('./c4f-editor.css').toString());
 
-const showdown = require('showdown');
-const converter = new showdown.Converter();
+
 
 class C4fEditor extends connect(store)(LitElement) {
     static get styles() {
@@ -33,50 +31,10 @@ class C4fEditor extends connect(store)(LitElement) {
 
     constructor() {
         super();
-        this._currentFile = {
-            id: 0,
-            content: '',
-        };
-        this._currentMode = 'javascript';
-        this._lastChange = 0;
+        this._currentFile = undefined;
+        this._currentMode = 'plain_text';
         this._preventOnChange = false;
-        this._editor = new Promise((resolve, reject) => {
-            this.editorLoaded = (editor) => resolve(editor);
-        });
-
-        this.gl_settings = JSON.stringify({
-            showPopoutIcon: false,
-            showMaximiseIcon: false,
-            reorderEnabled: false,
-            showCloseIcon: false,
-        });
-
-        this.gl_content = JSON.stringify([{
-            type: 'stack',
-            content: [
-                {
-                    type: 'component',
-                    componentName: 'View',
-                    isClosable: false,
-                },
-                {
-                    type: 'component',
-                    componentName: 'Source',
-                    isClosable: false,
-                }
-            ]
-        }]);
-
-        this.gl_components = JSON.stringify([
-            {
-                name: 'View',
-                content: '<div id="markdown"></div>'
-            },
-            {
-                name: 'Source',
-                content: '<iframe id="editor" src="iframes/monaco.html"></iframe>`'
-            },
-        ]);
+        this._editor = defer();
     }
 
     render() {
@@ -90,7 +48,7 @@ class C4fEditor extends connect(store)(LitElement) {
             const editor = iframe.contentWindow.editor;
 
             editor.onDidChangeModelContent(async (e) => { // TODO: throttle
-                if (this._preventOnChange !== true) {
+                if (this._currentFile && this._preventOnChange !== true) {
                     this._currentFile.content = editor.getValue();
                     store.dispatch(saveFile(this._currentFile.id, this._currentFile.content)).then(ret => {
                         //console.log(ret);
@@ -98,53 +56,47 @@ class C4fEditor extends connect(store)(LitElement) {
                 }
             });
 
-            this.editorLoaded(editor);
-        
             new ResizeObserver(() => {
                 editor.layout();
             }).observe(iframe);
+
+            this._editor.resolve(editor);
         }
     }
 
-    stateChanged(state) {
-        if (state.files.currentFile !== this._currentFile.id) {
-            this._currentFile.id = state.files.currentFile;
-            this.loadFile(state.files.currentFile).then(() => {
-                this.requestUpdate();
-            });
+    async stateChanged(state) {
+        if(state.files.currentFile === undefined){
+            if(this._currentFile !== undefined){
+                this._currentFile = state.files.currentFile;
+                const editor = await this._editor;
+                this._preventOnChange = true;
+                // TODO prevent editor from checking browser dimensions
+                //editor.setLanguage('plain_text');
+                //editor.setValue('');
+                //editor.updateOptions({ readOnly: true });
+                this._preventOnChange = false;
+            }
         }
-    }
-
-    async loadFile(id) {
-        if (id > 0) {
-            const file = await db.loadFile(id);
+        else if (this._currentFile === undefined || state.files.currentFile.id !== this._currentFile.id) {
+            this._currentFile = state.files.currentFile;
             const editor = await this._editor;
             let mode = 'plain_text';
-            const ending = file.name.match(/\.([a-z]+)$/);
+            const ending = this._currentFile.name.match(/\.([a-z]+)$/);
             if (ending) {
                 switch (ending[1]) {
                     case 'js': mode = 'javascript'; break;
                     case 'json': mode = 'json'; break;
                     case 'pl': mode = 'prolog'; break;
                     case 'md': mode = 'markdown'; break;
-                    default: mode = '';
                 }
             }
             this._currentMode = mode;
-            this._currentFile = file;
-            
             this._preventOnChange = true;
             editor.setLanguage(mode);
-            editor.setValue(file.content);
+            editor.setValue(this._currentFile.content);
+            editor.updateOptions({ readOnly: false });
             this._preventOnChange = false;
         }
-    }
-
-    async updateMarkdown(content) {
-        /*const layout = await this.shadowRoot.querySelector('#gl').getLayout();
-        const element = layout.root.contentItems[0].contentItems[0].element.get()[0];
-        const container = element.querySelector('#markdown');
-        container.innerHTML = converter.makeHtml(content);*/
     }
 }
 

@@ -16,16 +16,16 @@ class LocalDB {
     //------------------------------------------------------------------------------------------
     // F i l e s
     //------------------------------------------------------------------------------------------
-    async createFile(name, project, content = '') {
-        return this.db.files.add({ project, name, content });
+    async createFile(name, project, content = '', lastChange = Date.now()) {
+        return this.db.files.add({ project, name, content, lastChange });
     }
 
     async loadFile(id) {
         return this.db.files.get(id);
     }
 
-    async saveFile(id, content) {
-        return this.db.files.update(id, {content});
+    async saveFile(id, content, lastChange = Date.now()) {
+        return this.db.files.update(id, {content, lastChange});
     }
 
     async removeFile(id){

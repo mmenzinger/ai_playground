@@ -2,7 +2,7 @@ require.config({ paths: { 'vs': 'monaco-editor/min/vs' }});
 require(['vs/editor/editor.main'], function() {
     const editor = monaco.editor.create(document.getElementById('container'), {
         value: '',
-        language: 'javascript',
+        language: 'plain_text',
         fontSize: '12px',
         scrollBeyondLastLine: false,
         scrollBeyondLastColumn: false,

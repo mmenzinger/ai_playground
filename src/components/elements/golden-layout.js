@@ -1,4 +1,5 @@
 import { LitElement, html, unsafeCSS, css } from 'lit-element';
+import { defer } from 'src/util.js';
 
 const sharedStyles = unsafeCSS(require('components/shared-styles.css').toString());
 const goldenLayoutBase = unsafeCSS(require('golden-layout/src/css/goldenlayout-base.css'));
@@ -32,9 +33,7 @@ class GoldenLayout extends LitElement {
     constructor() {
         super();
 
-        this._layout = new Promise((resolve, reject) => {
-            this.loaded = (layout) => resolve(layout);
-        });
+        this._layout = defer();
 
         this.settings = {
             hasHeaders: true,
@@ -102,7 +101,7 @@ class GoldenLayout extends LitElement {
         $(window).resize(() => {
             myLayout.updateSize();
         });
-        this.loaded(myLayout);
+        this._layout.resolve(myLayout);
     }
 
     disconnectedCallback(){

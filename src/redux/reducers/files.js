@@ -8,7 +8,7 @@ import {
 } from 'actions/files.js';
 
 const INITIAL_STATE = {
-    currentFile: 0,
+    currentFile: undefined,
     lastChangeFileTree: 0,
     lastChangeFileContent: 0,
     lastChangeFileId: 0,
@@ -29,14 +29,14 @@ const files = (state = INITIAL_STATE, action) => {
 function openFile(state, action) {
     return {
         ...state,
-        currentFile: action.id,
+        currentFile: action.file,
     };
 }
 
 function closeFile(state, action) {
     return {
         ...state,
-        currentFile: 0,
+        currentFile: undefined,
     };
 }
 
@@ -50,15 +50,18 @@ function createFile(state, action) {
 }
 
 function saveFile(state, action) {
-    return {
-        ...state,
-        lastChangeFileContent: action.timestamp,
-        lastChangeFileId: action.id,
-    };
+    const newState = {...state};
+    newState.currentFile = {
+        ...state.currentFile,
+        content: action.content,
+        lastChange: action.lastChange,
+    }
+    console.log(newState);
+    return newState;
 }
 
 function deleteFile(state, action) {
-    const currentFile = (state.currentFile === action.id) ? 0 : state.currentFile;
+    const currentFile = (state.currentFile.id === action.id) ? undefined : state.currentFile;
     return {
         ...state,
         currentFile,
