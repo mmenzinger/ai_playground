@@ -23,6 +23,11 @@ const staticFiles = [
     { from: 'node_modules/monaco-editor/min/vs/editor/editor.main.nls.js', to: 'iframes/monaco-editor/min/vs/editor/editor.main.nls.js' },
     { from: 'node_modules/monaco-editor/min/vs/language/typescript', to: 'iframes/monaco-editor/min/vs/language/typescript' },
     { from: 'node_modules/monaco-editor/min/vs/language/json', to: 'iframes/monaco-editor/min/vs/language/json' },
+    { from: 'node_modules/jstree/dist/jstree.min.js', to: 'iframes/jstree/jstree.min.js' },
+    { from: 'node_modules/jstree/dist/themes/default/style.min.css', to: 'iframes/jstree/jstree.min.css' },
+    { from: 'node_modules/jstree/dist/themes/default/32px.png', to: 'iframes/jstree/32px.png' },
+    { from: 'node_modules/jstree/dist/themes/default/throbber.gif', to: 'iframes/jstree/throbber.gif' },
+    { from: 'node_modules/jquery/dist/jquery.min.js', to: 'iframes/jquery.min.js' },
 ];
 
 const alias = require('./webpack.alias.js');

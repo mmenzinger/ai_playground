@@ -53,7 +53,23 @@ class C4fMarkdown extends connect(store)(LitElement) {
             this._currentFile = {...state.files.currentFile};
             const container = await this._markdownContainer;
             container.innerHTML = converter.makeHtml(this._currentFile.content);
+            this.updateHyperlinks(container);
         }
+    }
+
+    updateHyperlinks(element){
+        const anchors = element.querySelectorAll('a');
+        anchors.forEach(anchor => {
+            const href = anchor.getAttribute('href');
+            if(href[0] === '#'){
+                anchor.onclick = (event) => {
+                    event.preventDefault();
+                    const target = element.querySelector(href);
+                    if(target)
+                        target.scrollIntoView();
+                };
+            }
+        });
     }
 }
 

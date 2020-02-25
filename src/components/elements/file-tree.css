@@ -7,6 +7,10 @@
     background-color: #fff;
 }
 
+#filetree{
+    height: 100%;
+}
+
 img.icon{
     height: 1.1rem;
     position: relative;

@@ -72,7 +72,7 @@ class ScenarioTicTacToe extends LazyElement {
         }
         return html`
             <h1>Tic-Tac-Toe</h1>
-            Starting player: <select id="player"><option value="1">1 (Computer)</option><option value="2" selected>2 (Human)</option></select>
+            Starting player: <select id="player"><option value="1" selected>1 (Computer)</option><option value="2">2 (Human)</option></select>
             <table>${rows}</table>
             ${winner}
         `;

@@ -32,12 +32,13 @@ class C4fConsole extends LitElement {
     }
 
     render() {
-        return html`<div id="wrapper">${this._logs}</div>`;
+        return html`<div id="console">${this._logs}</div>`;
     }
 
     updated(){
+        const wrapper = this.shadowRoot.querySelector('div#console');
         // scroll to bottom
-        this.shadowRoot.querySelector('div#wrapper').scrollIntoView(false);
+        wrapper.scrollTop = wrapper.scrollHeight;
     }
 
     async onLog(action){

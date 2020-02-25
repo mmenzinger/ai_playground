@@ -1,0 +1,23 @@
+:host{
+    height: 100%;
+}
+#markdown{
+    background: var(--color-background-primary);
+    overflow: auto;
+    height: 100%;
+    padding: 0.5rem;
+    box-sizing: border-box;
+}
+ul{
+    padding-left: 1rem;
+}
+h2{
+    margin-top: 2rem;
+}
+h3{
+    margin-top: 1rem;
+    margin-bottom: -0.5rem;
+}
+code{
+    font-family: var(--font-code);
+}

@@ -47,3 +47,13 @@ require(['vs/editor/editor.main'], function() {
 
     window.editor = editor;
 });
+
+function dispatchMouseEvent(event){
+    parent.dispatchEvent(new MouseEvent(event.type, event));
+}
+
+onmousemove = dispatchMouseEvent;
+onmousedown = dispatchMouseEvent;
+onmouseup = dispatchMouseEvent;
+onmouseover = dispatchMouseEvent;
+onmouseenter = dispatchMouseEvent;

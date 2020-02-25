@@ -143,5 +143,5 @@ export function createScenario(settings) {
 export async function run(settings){
     const scenario = createScenario(settings);
     const player1 = await hideImport('/project/index.js'); // gets ignored by webpack
-    await scenario.run(player1);
+    return await scenario.run(player1);
 }

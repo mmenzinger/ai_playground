@@ -23,7 +23,6 @@
         // https://github.com/reactjs/redux/issues/2907
         window.process = { env: { NODE_ENV: 'production' } };
     </script>
-
     <style>
         @font-face {
             font-family: 'Roboto';
@@ -52,18 +51,18 @@
         :root {
             --color-background-primary: #fff;
             --color-background-secondary: #eee;
+            --color-border-secondary: #ddd;
             --color-highlight: #f82;
             --color-warning: #ffa;
             --color-border: #aaa;
             --color-text: #333;
-            --color-text-weak: #aaa;
+            --color-text-weak: #888;
             --color-shadow: rgba(0, 0, 0, 0.25);
 
             --font-serif: 'Roboto Slab', serif;
             --font-sans-serif: 'Roboto', sans-serif;
-            --font-monospace:
-                /*'Source Code Pro',*/
-                monospace;
+            --font-monospace: monospace;
+            --font-code: 'Source Code Pro', monospace;
         }
 
         body {
