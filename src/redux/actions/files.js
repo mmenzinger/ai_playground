@@ -8,8 +8,10 @@ export const FILE_DELETE = 'FILE_DELETE';
 export const FILE_MOVE = 'FILE_MOVE';
 export const FILE_RENAME = 'FILE_RENAME';
 
-export const openFile = (id) => async dispatch => {
+export const openFile = (id, state = undefined) => async dispatch => {
     const file = await db.loadFile(id);
+    if(state) // TODO: better merging
+        file.state = state;
     dispatch({ type: FILE_OPEN, file });
     return ;
 }

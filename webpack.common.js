@@ -65,6 +65,15 @@ module.exports = {
                 loader: 'ignore-loader',
             },
             {
+                test: /\/scenarios\/[^/]+\/scenario\.md$/,
+                include: path.join(__dirname, 'src/scenarios/'),
+                use: [
+                    {
+                        loader: 'raw-loader',
+                    },
+                ],
+            },
+            {
                 test: /\.css$/,
                 loader: 'css-loader',
                 options: {

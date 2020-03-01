@@ -1,4 +1,4 @@
-export function getScenarios(){
+export function getScenarios() {
     const rc = require.context('src/scenarios', true, /\.[a-z]+$/i);
     const paths = rc.keys().filter(path => new RegExp(`/(templates|examples)/[^/]+/[^/]+$`).test(path));
     const scenarios = {};
@@ -13,6 +13,10 @@ export function getScenarios(){
             name: type,
             templates: {},
             examples: {},
+            description: {
+                name: 'scenario.md',
+                content: require(`src/scenarios/${type}/scenario.md`).default,
+            }
         }
         scenarios[type][folder][name] = scenarios[type][folder][name] || {
             name,
@@ -31,33 +35,35 @@ export function getScenarios(){
         const name = match[2];
         scenarios[type].component = name;
     });
-    
+
     return scenarios;
 }
 
-export function getTemplates(){
+export function getTemplates() {
     const templates = [];
-    for(let scenario of Object.values(getScenarios())){
-        for( let template of Object.values(scenario.templates)){
+    for (let scenario of Object.values(getScenarios())) {
+        for (let template of Object.values(scenario.templates)) {
+            template.files.push(scenario.description);
             templates.push(template);
         }
     }
     return templates;
 }
 
-export function getExamples(){
+export function getExamples() {
     const examples = [];
-    for(let scenario of Object.values(getScenarios())){
-        for( let example of Object.values(scenario.examples)){
+    for (let scenario of Object.values(getScenarios())) {
+        for (let example of Object.values(scenario.examples)) {
+            example.files.push(scenario.description);
             examples.push(example);
         }
     }
     return examples;
 }
 
-export function getComponents(){
+export function getComponents() {
     const components = [];
-    for(let scenario of Object.values(getScenarios())){
+    for (let scenario of Object.values(getScenarios())) {
         components.push(scenario.component);
     }
     return components;

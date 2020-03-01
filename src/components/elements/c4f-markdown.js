@@ -3,17 +3,33 @@ import { connect } from 'pwa-helpers/connect-mixin';
 import { store } from 'src/store.js';
 import { defer } from 'src/util.js';
 
+import Prism from 'prismjs';
+import 'prismjs/plugins/line-numbers/prism-line-numbers';
+import 'prismjs/components/prism-prolog';
+import 'prismjs/components/prism-markdown';
+
 const sharedStyles = unsafeCSS(require('components/shared-styles.css').toString());
 const style = unsafeCSS(require('./c4f-markdown.css').toString());
+const prism = unsafeCSS(require('prismjs/themes/prism.css').toString());
+const prismLineNumbers = unsafeCSS(require('prismjs/plugins/line-numbers/prism-line-numbers.css').toString());
 
 const showdown = require('showdown');
-const converter = new showdown.Converter();
+const converter = new showdown.Converter({
+    ghCompatibleHeaderId: true,
+    parseImgDimensions: true,
+    strikethrough: true,
+    tables: true,
+    takslists: true,
+    smoothLivePreview: true,
+});
 
 class C4fMarkdown extends connect(store)(LitElement) {
     static get styles() {
         return [
             sharedStyles,
             style,
+            prism,
+            prismLineNumbers,
         ];
     }
 
@@ -54,6 +70,8 @@ class C4fMarkdown extends connect(store)(LitElement) {
             const container = await this._markdownContainer;
             container.innerHTML = converter.makeHtml(this._currentFile.content);
             this.updateHyperlinks(container);
+            this.updateCodeHighlight(container);
+            
         }
     }
 
@@ -70,6 +88,14 @@ class C4fMarkdown extends connect(store)(LitElement) {
                 };
             }
         });
+    }
+
+    updateCodeHighlight(element){
+        for(const pre of element.querySelectorAll('pre')){
+            pre.classList.add('line-numbers');
+        }
+
+        Prism.highlightAllUnder(element);
     }
 }
 

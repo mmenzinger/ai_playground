@@ -73,29 +73,28 @@ class C4fConsole extends LitElement {
         });
         try{ // add caller if valid
             const state = store.getState();
-            let matches = log.caller.match(/local\/(\d+)\/(\w+\.\w+):(\d+)$/);
-            if(matches === null){ // uncaught exception -> try files, project first
-                matches = log.caller.match(/(\w+\.\w+):(\d+)$/);
-                let file = await db.loadFileByName(state.projects.currentProject, matches[1]);
-                if(file)
-                    matches.splice(1, 0, state.projects.currentProject);
-                else
-                    matches.splice(1, 0, 0);
+            //console.log(log.caller);
+            const project = log.caller.project === 'project' ? state.projects.currentProject : 0;
+            const fileName = log.caller.fileName;
+            const lineNumber = log.caller.lineNumber;
+            const columnNumber = log.caller.columnNumber;
+            const functionName = log.caller.functionName;
+            const fileState = {
+                cursor: {
+                    line: lineNumber,
+                    column: lineNumber,
+                }
             }
-            const project = Number(matches[1]);
-            const filename = matches[2];
-            const linenumber = Number(matches[3]);
-            const file = await db.loadFileByName(project, filename);
-            return html`<p class="${log.type}"><a class="file" @click=${e=>{this.onClick(file)}}>${filename}:${linenumber}</a>${args}</p>`;
+            const file = await db.loadFileByName(project, fileName);
+            return html`<p class="${log.type}"><a class="file" @click=${e=>{this.onClick(file, fileState)}}>${fileName}:${functionName}:${lineNumber}</a>${args}</p>`;
         }
         catch(e){
             return html`<p class="${log.type}">${args.join(' ')}</p>`;
         }
-        
     }
 
-    onClick(file){
-        store.dispatch(openFile(file.id));
+    onClick(file, fileState){
+        store.dispatch(openFile(file.id, fileState));
     }
 }
 

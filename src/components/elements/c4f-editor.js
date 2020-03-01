@@ -95,6 +95,13 @@ class C4fEditor extends connect(store)(LitElement) {
             editor.setLanguage(mode);
             editor.setValue(this._currentFile.content);
             editor.updateOptions({ readOnly: false });
+            if(this._currentFile.state){
+                // TODO: move editor to cursor position
+                /*const position = {
+                    column: this._currentFile.state.cursor.column,
+                    lineNumber: this._currentFile.state.cursor.line,
+                };*/
+            }
             this._preventOnChange = false;
         }
     }

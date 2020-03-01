@@ -18,15 +18,6 @@ const style = unsafeCSS(require('./file-tree.css').toString());
 //const iconsThrobber = require('jstree/dist/themes/default/throbber.gif');
 
 class FileTree extends connect(store)(LitElement) {
-    static get properties() {
-        return {
-            /*_lastChanged: { type: Number },
-            _global: { type: Array },
-            _project: { type: Array },
-            _currentFile: { type: Number },
-            _currentProject: { type: Number },*/
-        };
-    }
     static get styles() {
         return [
             sharedStyles,
@@ -39,46 +30,12 @@ class FileTree extends connect(store)(LitElement) {
         this._global = [];
         this._project = [];
         this._filetree = defer();
+        this._currentFile = { id: 0 };
+        this._currentProject = 0;
     }
 
     render() {
-        /*const globalFiles = [];
-        this._global.forEach(file => {
-            let ending = file.name.match(/\.([a-z]+)$/);
-            ending = ending === null ? 'unknown' : ending[1];
-            globalFiles.push(html`
-                <li ?active=${this._currentFile === file.id}>
-                    <a @click=${e => { this.onFile(file) }}><img src="assets/filetree/${ending}.svg" class="icon">${file.name}</a>
-                    <a class="delete" @click=${e => { this.onDelete(file) }}>x</a>
-                </li>
-            `);
-        });
-        const global = html`
-            <li>global:<br>
-                <ul class="files">${globalFiles}</ul>
-                <button @click=${this.onAddFileGlobal}>Add</button>
-            </li>
-        `;
-        const projectFiles = [];
-        this._project.forEach(file => {
-            let ending = file.name.match(/\.([a-z]+)$/);
-            ending = ending === null ? 'unknown' : ending[1];
-            projectFiles.push(html`
-                <li ?active=${this._currentFile === file.id}>
-                    <a @click=${e => { this.onFile(file) }}><img src="assets/filetree/${ending}.svg" class="icon">${file.name}</a>
-                    <a class="delete" @click=${e => { this.onDelete(file) }}>x</a>
-                </li>
-            `);
-        });
-        const project = html`
-            <li>project:<br>
-                <ul class="files">${projectFiles}</ul>
-                <button @click=${this.onAddFileProject}>Add</button>
-            </li>
-        `;
-        return html`<ul class="folders">${global}${project}</ul><div id="jstree"></div>`;*/
         return html`<iframe id="filetree" src="iframes/jstree.html"></iframe>`;
-        //return html`<div id="jstree"></div>`;
     }
 
     async onDelete(file) {
@@ -161,23 +118,15 @@ class FileTree extends connect(store)(LitElement) {
     }
 
     async stateChanged(state) {
-        if (state.files.lastChangeFileTree !== this._lastChanged 
-            || state.files.currentFile !== this._currentFile
-            || state.projects.currentProject !== this._currentProject) {
-            this._lastChanged = state.files.lastChangeFileTree;
-            //const filetree = await this._filetree;
-            //const project = state.projects.currentProject;
-            /*db.getProjectFiles(project).then((files) => {
-                this._project = files.sort((a,b) => a.name.localeCompare(b.name));
-            });
-            db.getProjectFiles(0).then((files) => {
-                this._global = files.sort((a,b) => a.name.localeCompare(b.name));
-            });*/
-            //let project = await db.getProjectFiles(state.projects.currentProject);
-            //let global = await db.getProjectFiles(0);
-            //this._updateTree();
-            this._currentFile = state.files.currentFile;
+        if(state.projects.currentProject !== this._currentProject){
             this._currentProject = state.projects.currentProject;
+            await this.updateTree();
+        }
+        if (state.files.currentFile && state.files.currentFile.id !== this._currentFile.id) {
+            //console.log(this._currentFile, state.files.currentFile)
+            this._currentFile = state.files.currentFile;
+            const filetree = await this._filetree;
+            await filetree.selectFile(this._currentFile);
         }
     }
 
@@ -189,9 +138,20 @@ class FileTree extends connect(store)(LitElement) {
             db.getProjectFiles(state.projects.currentProject),
             db.getProjectFiles(0),
         ]);
-        project = project.sort((a,b) => a.name.localeCompare(b.name));
-        global = global.sort((a,b) => a.name.localeCompare(b.name));
+        project = project.sort(this.sort);
+        global = global.sort(this.sort);
         await filetree.updateFiles(global, project, state.files.currentFile);
+    }
+
+    sort(fileA, fileB) {
+        // sort first by file endings, then by name
+        const endingA = fileA.name.split('.').pop();
+        const endingB = fileB.name.split('.').pop();
+        let comp = endingA.localeCompare(endingB);
+        if( comp === 0 ){
+            comp = fileA.name.localeCompare(fileB.name);
+        }
+        return comp;
     }
 }
 

@@ -1,4 +1,5 @@
 import { serialize, deserialize, messageWithResult } from 'src/util.js';
+import StackTrace from 'stacktrace-js';
 
 self.window = self;
 self.hideImport = (file) => import(file);
@@ -103,39 +104,59 @@ self.__console = self.console;
 self.console = {
     log(...args) {
         if (typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope) {
-            postMessage({ type: 'log', args: args.map(serialize), caller: getCaller(args) });
+            getCaller(...args).then(caller => {
+                postMessage({ type: 'log', args: args.map(serialize), caller });
+            })
         }
         __console.log(...args);
     },
 
     warn(...args) {
         if (typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope) {
-            postMessage({ type: 'warn', args: args.map(serialize), caller: getCaller(args) });
+            getCaller(...args).then(caller => {
+                postMessage({ type: 'warn', args: args.map(serialize), caller });
+            })
         }
         __console.warn(...args);
     },
 
     error(...args) {
         if (typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope) {
-            postMessage({ type: 'error', args: args.map(serialize), caller: getCaller(args) });
+            getCaller(...args).then(caller => {
+                postMessage({ type: 'error', args: args.map(serialize), caller });
+            })
         }
         __console.error(...args);
     },
 }
 
-function getCaller(args) {
-    try {
-        if(args.length === 1 && args[0] instanceof Error){
-            return args[0].stack.match(/(\w+\.js:[0-9]+)/)[1];
+async function getCaller(arg1) {
+    try{
+        let frame;
+        if(arg1 instanceof Error){
+            const stack = await StackTrace.fromError(arg1);
+            frame = stack[0];
         }
-        try {
-            throw Error('')
+        else{
+            const stack = StackTrace.getSync();
+            frame = stack[2];
         }
-        catch (error) {
-            return error.stack.match(/(\w+\.js:[0-9]+)+/)[1];
+        const file = frame.fileName.match(/\/([^/]+)\/([^/]+)$/);
+        const project = file[1];
+        const fileName = file[2];
+        const functionName = frame.functionName.match(/([^.]+)$/)[1];
+        if(! fileName.startsWith('scenario.worker.js')){
+            return {
+                project,
+                fileName,
+                functionName,
+                lineNumber: frame.lineNumber,
+                columnNumber: frame.columnNumber,
+            }
         }
+        return undefined;
     }
-    catch (e) {
+    catch(e){
         return undefined;
     }
 }
@@ -158,6 +179,5 @@ onmessage = async m => {
     }
     catch (error) {
         console.error(error);
-        throw error; // hack to get syntax error error line endings in developer console
     }
 }

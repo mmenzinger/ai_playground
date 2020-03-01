@@ -32,39 +32,63 @@ onload = () => {
     $('#jstree').jstree({
         plugins: [ 'contextmenu' ],
         contextmenu: {
-            items: (node) => {
-                return {
-                    create: {
-                        label: 'create file',
-                        action: (obj) => {
-                            let parent = node.parent;
-                            if(parent === '#')
-                                parent = node.id;
-                            if(parent === 'global' && onAddFileGlobal)
-                                onAddFileGlobal();
-                            else if(parent === 'project' && onAddFileProject)
-                                onAddFileProject();
-                        },
-                    },
-                    delete: {
-                        label: 'delete file',
-                        action: (obj) => {
-                            if(node.parent === 'global' || node.parent === 'project' && onDelete)
-                                onDelete(node.data);
-                        },
-                    }
-                }
-            },
+            items: contextMenu,
+            show_at_node: true,
+        },
+        'core': {
+            'multiple': false,
         }
     });
     jstree.resolve($('#jstree').jstree(true));
+
+    let lastSelected = undefined;
+    let preventReload = false;
     $('#jstree').on('select_node.jstree', (e, data) => {
-        if(data.node.children.length > 0 || data.node.parent === '#'){
-            data.instance.deselect_node(data.node); 
+        if(data.node.parent === '#'){
+            data.instance.deselect_node(data.node);
+            preventReload = true;
+            data.instance.select_node(lastSelected);
+            preventReload = false;
         }
-        else if(onFile)
+        else if(onFile && !preventReload && lastSelected !== data.node){
+            lastSelected = data.node;
             onFile(data.node.data);
+            // TODO: prevent double load after activate_node
+        }
     });
+}
+
+function contextMenu(node){
+    let create = undefined;
+    let remove = undefined;
+    
+    let parent = node.parent;
+    if(node.parent === '#')
+        parent = node.id;
+    if(parent === 'global' && onAddFileGlobal){
+        create = {
+            label: 'create global file',
+            action: (obj) => onAddFileGlobal(),
+        };
+    }
+    else if(parent === 'project' && onAddFileProject){
+        create = {
+            label: 'create project file',
+            action: (obj) => onAddFileProject(),
+        };
+    }
+
+    if(! ['global', 'project', 'index.js', 'scenario.md'].includes(node.text) && onDelete){
+        remove = {
+            label: `delete file '${node.text}'`,
+            action: (obj) => onDelete(node.data),
+        }
+    }
+    
+    return {
+        create,
+        remove,
+    }
 }
 
 function getEnding(filename){
@@ -124,6 +148,11 @@ async function updateFiles(global, project, currentFile){
     const tree = await jstree;
     tree.settings.core.data = data;
     tree.refresh();
+}
+
+async function selectFile(currentFile){
+    const tree = await jstree;
+    tree.activate_node(currentFile.id);
 }
 
 function dispatchMouseEvent(event){
