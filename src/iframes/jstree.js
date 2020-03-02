@@ -155,12 +155,11 @@ async function selectFile(currentFile){
     tree.activate_node(currentFile.id);
 }
 
-function dispatchMouseEvent(event){
+/*function dispatchMouseEvent(event){
     parent.dispatchEvent(new MouseEvent(event.type, event));
 }
-
 onmousedown = dispatchMouseEvent;
 onmouseenter = dispatchMouseEvent;
 onmousemove = dispatchMouseEvent;
 onmouseup = dispatchMouseEvent;
-onmouseover = dispatchMouseEvent;
+onmouseover = dispatchMouseEvent;*/

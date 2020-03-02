@@ -235,22 +235,22 @@ async function run(agent1, agent2){
 ```
 [[Top](#tictactoe)]
 
-### Scenario.validateAction(action)
-Validates the given [action](#action) in relation to the current [state](#state).  
-Throws an error when there is something wrong.
-```javascript
-function validateAction(action) { 
-    throw Error('error message');
-}
-```
-[[Top](#tictactoe)]
-
 ### Scenario.validAction(action)
 Validates the given [action](#action) in relation to the current [state](#state).  
 Returns either true or false.
 ```javascript
 function validAction(action) {
     return Boolean;
+}
+```
+[[Top](#tictactoe)]
+
+### Scenario.validateAction(action)
+Validates the given [action](#action) in relation to the current [state](#state).  
+Throws an error when there is something wrong.
+```javascript
+function validateAction(action) { 
+    throw Error('error message');
 }
 ```
 [[Top](#tictactoe)]

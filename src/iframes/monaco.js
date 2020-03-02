@@ -47,7 +47,7 @@ require(['vs/editor/editor.main'], function() {
 
     window.editor = editor;
 });
-
+/*
 function dispatchMouseEvent(event){
     parent.dispatchEvent(new MouseEvent(event.type, event));
 }
@@ -57,3 +57,4 @@ onmousedown = dispatchMouseEvent;
 onmouseup = dispatchMouseEvent;
 onmouseover = dispatchMouseEvent;
 onmouseenter = dispatchMouseEvent;
+*/

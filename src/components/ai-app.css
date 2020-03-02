@@ -5,6 +5,8 @@
 }
 
 main{
+    /* hack to solve the tab-group-markdown-height problem */
+    height: calc(100vh - 50px);
     flex: 1;
 }
 
