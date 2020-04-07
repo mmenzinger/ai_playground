@@ -126,7 +126,8 @@ export function getMap(settings) {
     return map;
 }
 
-export function createScenario(settings) {
+export function createScenario(initState) {
+    const settings = initState.settings;
     const state = getInitialState(settings);
     const map = getMap(settings);
 
@@ -284,8 +285,8 @@ export function createScenario(settings) {
     });
 }
 
-export async function run(settings){
-    const scenario = createScenario(settings);
-    const player = await hideImport('/project/index.js'); // gets ignored by webpack
+export async function __run(state){
+    const scenario = createScenario(state);
+    const player = await import(/* webpackIgnore: true */'/project/index.js');
     await scenario.run(player);
 }

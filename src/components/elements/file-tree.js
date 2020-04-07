@@ -1,7 +1,7 @@
 import { html, unsafeCSS, css, LitElement } from 'lit-element';
 import { connect } from 'pwa-helpers/connect-mixin.js';
 import { store } from 'src/store.js';
-import { defer } from 'src/util.js';
+import { defer, dispatchIframeMouseEvents } from 'src/util.js';
 
 //import { modalShow, modalConsume } from 'actions/app.js';
 import { openFile, createFile, deleteFile } from 'actions/files.js';
@@ -115,13 +115,7 @@ class FileTree extends connect(store)(LitElement) {
             filetree.onAddFileProject = this.onAddFileProject.bind(this);
             filetree.onDelete = this.onDelete.bind(this);
 
-            // correct and dispatch mouse events
-            const contentWindow = iframe.contentWindow;
-            contentWindow.onmousedown = this.dispatchMouseEvent.bind(this);
-            contentWindow.onmouseenter = this.dispatchMouseEvent.bind(this);
-            contentWindow.onmousemove = this.dispatchMouseEvent.bind(this);
-            contentWindow.onmouseup = this.dispatchMouseEvent.bind(this);
-            contentWindow.onmouseover = this.dispatchMouseEvent.bind(this);
+            dispatchIframeMouseEvents(iframe);
         }
     }
 
@@ -160,24 +154,6 @@ class FileTree extends connect(store)(LitElement) {
             comp = fileA.name.localeCompare(fileB.name);
         }
         return comp;
-    }
-
-    dispatchMouseEvent(event) {
-        const cont = this.shadowRoot.querySelector('iframe');
-        const rect = cont.getBoundingClientRect();
-        const data = {
-            bubbles: event.bubbles,
-            cancelable: event.cancelable,
-            clientX: event.clientX + rect.x,
-            clientY: event.clientY + rect.y,
-            pageX: event.pageX + rect.x,
-            pageY: event.pageY + rect.y,
-            x: event.x + rect.x,
-            y: event.y + rect.y,
-            offsetX: event.offsetX + rect.x,
-            offsetY: event.offsetY + rect.y,
-        };
-        window.dispatchEvent(new MouseEvent(event.type, data));
     }
 }
 

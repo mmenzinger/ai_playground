@@ -13,10 +13,10 @@
     - [Action](#action)
     - [Agent](#agent)
     - [Scenario](#scenario)
-    - [Settings](#settings)
     - [State](#state)
 5. [Functions](#functions)
-    - [createScenario(settings)](#createscenariosettings)
+    - [createScenario(state)](#createscenariostate)
+    - [Scenario.clone()](#scenarioclone)
     - [Scenario.getActions()](#scenariogetactions)
     - [Scenario.getScore(player)](#scenariogetscoreplayer)
     - [Scenario.getState()](#scenariogetstate)
@@ -139,20 +139,14 @@ Contains the [state](#state) and all available [functions](#functions).
 ```
 [[Top](#tictactoe)]
 
-### Settings
-Contains the starting [player](#player).
-```javascript
-{
-    startingPlayer: Player,
-}
-```
-[[Top](#tictactoe)]
-
 ### State
-Contains the board and the active [player](#player).
+Contains the board and the active as well as the starting [player](#player).
 The board is a row-major 2d-array containing players (0 == Player.None).
 ```javascript
 {
+    settings: {
+        startingPlayer: Player,
+    },
     board: [[0, 0, 0], [0, 0, 0], [0, 0, 0]], // board of Players
     player: Player,
 }
@@ -162,10 +156,20 @@ The board is a row-major 2d-array containing players (0 == Player.None).
 
 ## Functions
 
-### createScenario(settings)
-Returns a new [scenario](#scenario) object based on the given [settings](#settings).
+### createScenario(state)
+Returns a new [scenario](#scenario) object based on the given [state](#state).
+Unset fields will be automatically initialized with default values.
 ```javascript
-function createScenario(settings) {
+function createScenario(state) {
+    return Scenario;
+}
+```
+[[Top](#tictactoe)]
+
+### Scenario.clone()
+Returns a clone of the current [scenario](#scenario) object.
+```javascript
+function clone() {
     return Scenario;
 }
 ```

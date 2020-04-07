@@ -71,7 +71,6 @@ class C4fMarkdown extends connect(store)(LitElement) {
             container.innerHTML = converter.makeHtml(this._currentFile.content);
             this.updateHyperlinks(container);
             this.updateCodeHighlight(container);
-            
         }
     }
 

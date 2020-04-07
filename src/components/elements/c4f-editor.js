@@ -3,7 +3,7 @@ import { connect } from 'pwa-helpers/connect-mixin';
 import { store } from 'src/store.js';
 import { ResizeObserver } from 'resize-observer';
 import { saveFile } from 'actions/files.js';
-import { defer } from 'src/util.js';
+import { defer, dispatchIframeMouseEvents } from 'src/util.js';
 
 /*import ace from 'ace-builds/src-min-noconflict/ace.js';
 import 'ace-builds/src-noconflict/mode-plain_text';
@@ -62,13 +62,7 @@ class C4fEditor extends connect(store)(LitElement) {
 
             this._editor.resolve(editor);
 
-            // correct and dispatch mouse events
-            const contentWindow = iframe.contentWindow;
-            contentWindow.onmousedown = this.dispatchMouseEvent.bind(this);
-            contentWindow.onmouseenter = this.dispatchMouseEvent.bind(this);
-            contentWindow.onmousemove = this.dispatchMouseEvent.bind(this);
-            contentWindow.onmouseup = this.dispatchMouseEvent.bind(this);
-            contentWindow.onmouseover = this.dispatchMouseEvent.bind(this);
+            dispatchIframeMouseEvents(iframe);
         }
     }
 
@@ -112,24 +106,6 @@ class C4fEditor extends connect(store)(LitElement) {
             }
             this._preventOnChange = false;
         }
-    }
-
-    dispatchMouseEvent(event) {
-        const cont = this.shadowRoot.querySelector('iframe');
-        const rect = cont.getBoundingClientRect();
-        const data = {
-            bubbles: event.bubbles,
-            cancelable: event.cancelable,
-            clientX: event.clientX + rect.x,
-            clientY: event.clientY + rect.y,
-            pageX: event.pageX + rect.x,
-            pageY: event.pageY + rect.y,
-            x: event.x + rect.x,
-            y: event.y + rect.y,
-            offsetX: event.offsetX + rect.x,
-            offsetY: event.offsetY + rect.y,
-        };
-        window.dispatchEvent(new MouseEvent(event.type, data));
     }
 }
 

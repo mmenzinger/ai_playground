@@ -49,7 +49,7 @@ class LocalDB {
     }
 
     async removeProject(id){
-        return this.transaction('w', this.db.projects, this.db.files, async () => {
+        return this.db.transaction('rw', this.db.projects, this.db.files, async () => {
             this.db.files.where('project').equals(id).delete();
             return this.db.projects.where('id').equals(id).delete();
         });

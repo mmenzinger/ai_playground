@@ -34,8 +34,9 @@ class AiApp extends connect(store)(LitElement) {
                 <ai-header title="AI Playground"></ai-header>
             </header>
             <main>
+                <ai-welcome class="page" ?active="${this._page === 'welcome'}"></ai-welcome>
                 <ai-project class="page" ?active="${this._page === 'project'}"></ai-project>
-                <ai-project-index class="page" ?active="${this._page === 'index'}"></ai-project-index>
+                <ai-project-index class="page" ?active="${this._page === 'projects'}"></ai-project-index>
             </main>
         `;
     }

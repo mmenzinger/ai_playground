@@ -19,9 +19,9 @@ export async function generateQTable(){
         
         let epsilon = epsilonStart;
         for(let episode = 0; episode < episodes; episode++){
-            const scenario = createScenario({
+            const scenario = createScenario({settings: {
                 startingPlayer: episode % 2 + 1
-            });
+            }});
             const memoryPlayer1 = [];
             const memoryPlayer2 = [];
             
@@ -32,7 +32,7 @@ export async function generateQTable(){
                         return actions[actionId];
                     }
                     else{ // use qtable to get best move
-                        return qtable.getBestValidAction(state);
+                        return qtable.getBestValidAction(scenario);
                     }
                 },
                 async result(oldState, action, newState, reward){

@@ -1,4 +1,4 @@
-import { Player, validAction } from '/scenarios/tictactoe/scenario.js';
+import { Player } from '/scenarios/tictactoe/scenario.js';
 
 function shuffle(a) {
     for (let i = a.length - 1; i > 0; i--) {
@@ -61,7 +61,8 @@ export class QTable{
         return this._data.get(key)[actionId];
     }
     
-    getBestValidAction(state){
+    getBestValidAction(scenario){
+        const state = scenario.getState();
         const actions = this.get(state).map((x,i) => [i, x]);
         shuffle(actions);
         actions.sort((a,b) => b[1] - a[1]);
@@ -69,7 +70,7 @@ export class QTable{
         let bestAction;
         for(let i = 0; i < actions.length; i++){
             bestAction = this.idToAction(actions[i][0]);
-            if(validAction(state, bestAction))
+            if(scenario.validAction(bestAction))
                 break;
         }
         

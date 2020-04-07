@@ -1,5 +1,6 @@
 import { QTable } from '/project/qtable.js';
 import { generateQTable } from '/project/train.js';
+import { createScenario } from '/scenarios/tictactoe/scenario.js';
 
 let qtable = new QTable();
 
@@ -10,7 +11,8 @@ export async function init(){
 }
 
 export async function update(state, actions){
-    const action = qtable.getBestValidAction(state);
+    const scenario = createScenario(state);
+    const action = qtable.getBestValidAction(scenario);
     return action;
 }
 

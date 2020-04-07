@@ -149,3 +149,29 @@ export function deserialize(json) {
         return value;
     });
 }
+
+export function dispatchIframeMouseEvents(iframe, target = window) {
+    const dispatchMouseEvent = (event) => {
+        const rect = iframe.getBoundingClientRect();
+        const data = {
+            bubbles: event.bubbles,
+            cancelable: event.cancelable,
+            clientX: event.clientX + rect.x,
+            clientY: event.clientY + rect.y,
+            pageX: event.pageX + rect.x,
+            pageY: event.pageY + rect.y,
+            x: event.x + rect.x,
+            y: event.y + rect.y,
+            offsetX: event.offsetX + rect.x,
+            offsetY: event.offsetY + rect.y,
+        };
+        if(data.bubbles && data.cancelable)
+            target.dispatchEvent(new MouseEvent(event.type, data));
+    }
+    const container = iframe.contentWindow;
+    container.onmousedown = dispatchMouseEvent;
+    container.onmouseenter = dispatchMouseEvent;
+    container.onmousemove = dispatchMouseEvent;
+    container.onmouseup = dispatchMouseEvent;
+    container.onmouseover = dispatchMouseEvent;
+}

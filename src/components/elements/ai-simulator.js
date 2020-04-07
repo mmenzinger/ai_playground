@@ -65,7 +65,7 @@ class AiSimulator extends connect(store)(LitElement) {
         const sandbox = await this._sandbox;
         sandbox.store = store;
         sandbox.scenario = this._scenario;
-        sandbox.call(this._scenario.constructor.file, 'run', [this._scenario.getSettings()]);
+        sandbox.call(this._scenario.constructor.file, '__run', [{settings: this._scenario.getSettings()}]);
     }
 
     async simTrain() {

@@ -51,12 +51,14 @@ function createFile(state, action) {
 
 function saveFile(state, action) {
     const newState = {...state};
-    newState.currentFile = {
-        ...state.currentFile,
-        content: action.content,
-        lastChange: action.lastChange,
+    // update if current
+    if(state.currentFile.id === action.id){
+        newState.currentFile = {
+            ...state.currentFile,
+            content: action.content,
+            lastChange: action.lastChange,
+        }
     }
-    console.log(newState);
     return newState;
 }
 

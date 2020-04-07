@@ -2,7 +2,6 @@ import { serialize, deserialize, messageWithResult } from 'src/util.js';
 import StackTrace from 'stacktrace-js';
 
 self.window = self;
-self.hideImport = (file) => import(file);
 
 /***********************************************************************************************
  *  file handling
@@ -166,6 +165,7 @@ async function getCaller(arg1) {
  *  message handling
  */
 onmessage = async m => {
+    
     try {
         switch (m.data.type) {
             case 'call': {

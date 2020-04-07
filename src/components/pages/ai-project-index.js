@@ -3,7 +3,7 @@ import { LazyElement } from 'components/elements/lazy-element.js';
 import { store } from 'src/store.js';
 import { showModal } from 'actions/modal.js';
 
-import { createProject } from 'actions/projects.js';
+import { createProject, deleteProject } from 'actions/projects.js';
 
 import db from 'src/localdb.js';
 
@@ -12,7 +12,7 @@ import { getTemplates, getExamples } from 'src/webpack-utils.js';
 
 
 const sharedStyles = unsafeCSS(require('components/shared-styles.css').toString());
-//const style = unsafeCSS(require('./ai-project-index.css').toString());
+const style = unsafeCSS(require('./ai-project-index.css').toString());
 
 class AiProjectIndex extends LazyElement {
     static get properties() {
@@ -24,7 +24,7 @@ class AiProjectIndex extends LazyElement {
     static get styles() {
         return [
             sharedStyles,
-            //style
+            style
         ];
     }
 
@@ -37,13 +37,31 @@ class AiProjectIndex extends LazyElement {
         const elements = [];
         this._projects.forEach(project => {
             elements.push(html`
-                <li><a href="?page=project&id=${project.id}">${project.name}</a></li>
+                <li>
+                    <header>
+                        <a href="?project=${project.id}">
+                            <h1>${project.name}</h1>
+                            <div class="logo" ><embed src="assets/${project.scenario}/logo.svg"></div>
+                        </a>
+                    </header>
+                    <footer>
+                        <a title="delete" @click=${() => this.onDeleteProject(project)}><img src="assets/interface/trash.svg"></a>
+                    </footer>
+                </li>
             `);
         });
+        elements.push(html`
+            <li>
+                <header>
+                    <a @click=${this.onNewProject}>
+                        <h1>New Project</h1>
+                        <div class="logo"><embed style="height:50%" src="assets/interface/add.svg"></div>
+                    </a>
+                </header>
+        `);
         return html`
             <h1>Projects</h1>
-            <ul>${elements}</ul>
-            <button @click=${this.onNewProject}>New Project</button>
+            <ul id="projects">${elements}</ul>
             <button @click=${this.onNewExample}>Load Example</button>
         `;
     }
@@ -59,8 +77,8 @@ class AiProjectIndex extends LazyElement {
                 title: 'New Project',
                 content: html`
                     <form>
-                        <input id="name" type="text" placeholder="name">
                         <select id="template">${options}</select>
+                        <input id="name" type="text" placeholder="Name" autocomplete="off" value="${templates[0].name}">
                     </form>`,
                 submit: 'Create',
                 abort: 'Cancel',
@@ -70,6 +88,12 @@ class AiProjectIndex extends LazyElement {
                     const project = await db.getProjectByName(fields.name);
                     if(project !== undefined)
                         return Error('Duplicate name! A project with that name already exists!');
+                },
+                change: {
+                    template: (e, that) => {
+                        const text = e.target.options[e.target.selectedIndex].innerHTML.replace(/<!---->/g, '').trim();
+                        that.shadowRoot.querySelector('#name').value = text;
+                    }
                 }
             }));
             
@@ -115,6 +139,25 @@ class AiProjectIndex extends LazyElement {
             
             const example = examples[modal.example];
             await store.dispatch(createProject(modal.name, example.scenario, example.files));
+            this._projects = await db.getProjects();
+        }
+        catch (error) {
+            console.warn(error);
+        }
+    }
+
+    async onDeleteProject(project) {
+        try {
+            const modal = await store.dispatch(showModal({
+                title: 'Permanently Delete Project',
+                content: html`
+                    <p>Are you sure you want to <em>permanently<em> delete the project '${project.name}'?<br>
+                    This operation can not be undone!</p>`,
+                submit: 'Delete',
+                abort: 'Cancel',
+            }));
+            
+            await store.dispatch(deleteProject(project.id));
             this._projects = await db.getProjects();
         }
         catch (error) {

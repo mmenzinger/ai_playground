@@ -36,7 +36,7 @@ export const deleteFile = (id) => async dispatch => {
 export const saveFile = (id, content) => async dispatch => {
     const lastChange = Date.now();
     const num = await db.saveFile(id, content, lastChange);
-    dispatch({ type: FILE_SAVE, content, lastChange });
+    dispatch({ type: FILE_SAVE, id, content, lastChange });
     return num;
 }
 
