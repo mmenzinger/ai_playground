@@ -19,6 +19,7 @@ export function createScenario(initState) {
         player: 1,
     };
     merge(state, initState);
+    state.player = state.settings.startingPlayer;
 
     return Object.freeze({
         clone() { return createScenario(deepCopy(state)); },

@@ -41,7 +41,7 @@ export function defer(){
     };
     promise.reject = function(error) {
         promise.resolved = true;
-        promise.value = val;
+        promise.value = error;
         rej(error);
     }
     promise.resolved = false;

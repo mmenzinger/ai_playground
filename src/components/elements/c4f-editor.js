@@ -67,8 +67,8 @@ class C4fEditor extends connect(store)(LitElement) {
     }
 
     async stateChanged(state) {
-        if(state.files.currentFile === undefined){
-            if(this._currentFile !== undefined){
+        if(!state.files.currentFile){
+            if(this._currentFile){
                 this._currentFile = state.files.currentFile;
                 const editor = await this._editor;
                 this._preventOnChange = true;
@@ -79,7 +79,7 @@ class C4fEditor extends connect(store)(LitElement) {
                 this._preventOnChange = false;
             }
         }
-        else if (this._currentFile === undefined || state.files.currentFile.id !== this._currentFile.id) {
+        else if (!this._currentFile || state.files.currentFile.id !== this._currentFile.id) {
             this._currentFile = state.files.currentFile;
             const editor = await this._editor;
             let mode = 'plain_text';

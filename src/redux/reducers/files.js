@@ -8,7 +8,7 @@ import {
 } from 'actions/files.js';
 
 const INITIAL_STATE = {
-    currentFile: undefined,
+    currentFile: null,
     lastChangeFileTree: 0,
     lastChangeFileContent: 0,
     lastChangeFileId: 0,
@@ -36,7 +36,7 @@ function openFile(state, action) {
 function closeFile(state, action) {
     return {
         ...state,
-        currentFile: undefined,
+        currentFile: null,
     };
 }
 

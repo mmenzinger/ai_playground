@@ -6,8 +6,8 @@ import { installOfflineWatcher } from 'pwa-helpers/network.js';
 
 import { navigate, updateOffline } from 'actions/app.js';
 
-import('components/elements/ai-header.js');
-import('components/elements/c4f-modal.js');
+import('elements/ai-header.js');
+import('elements/c4f-modal.js');
 
 const sharedStyles = unsafeCSS(require('components/shared-styles.css').toString());
 const style = unsafeCSS(require('./ai-app.css').toString());

@@ -63,8 +63,7 @@ class C4fMarkdown extends connect(store)(LitElement) {
             this._currentFile.id = 0;
         }
         // update markdown
-        if (state.files.currentFile !== undefined
-            && (state.files.currentFile.id !== this._currentFile.id || state.files.currentFile.lastChange !== this._currentFile.lastChange)
+        if (state.files.currentFile && (state.files.currentFile.id !== this._currentFile.id || state.files.currentFile.lastChange !== this._currentFile.lastChange)
             && state.files.currentFile.name.endsWith('.md')) {
             this._currentFile = {...state.files.currentFile};
             const container = await this._markdownContainer;

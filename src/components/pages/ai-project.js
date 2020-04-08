@@ -15,7 +15,7 @@ import 'components/elements/c4f-markdown.js';
 class AiProject extends connect(store)(LazyElement) {
     constructor(){
         super();
-        this._currentFile = { id: 0 };
+        this._currentFile = { id: null };
         this._editorTabGroup = defer();
     }
 
@@ -46,7 +46,7 @@ class AiProject extends connect(store)(LazyElement) {
     }
 
     async stateChanged(state) {
-        if(state.files.currentFile !== undefined && state.files.currentFile.id !== this._currentFile.id)
+        if(state.files.currentFile && state.files.currentFile.id !== this._currentFile.id)
         {
             this._currentFile = state.files.currentFile;
             const tabGroup = await this._editorTabGroup;

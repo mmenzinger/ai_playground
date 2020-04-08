@@ -7,6 +7,9 @@ import { defer, dispatchIframeMouseEvents } from 'src/util.js';
 import { openFile, createFile, deleteFile } from 'actions/files.js';
 import { showModal } from 'actions/modal.js';
 
+import { Modals, ModalAbort } from 'elements/c4f-modal.js';
+import { createFileTemplate, deleteFileTemplate } from 'modals/templates.js';
+
 import db from 'src/localdb.js';
 
 
@@ -40,18 +43,13 @@ class FileTree extends connect(store)(LitElement) {
 
     async onDelete(file) {
         try {
-            const project = file.project === 0 ? 'global' : 'project';
-            const modal = await store.dispatch(showModal({
-                title: 'Delete File',
-                content: html`<p>Are you sure you want to <em>permanently</em> delete the <em>${project}</em> file '${file.name}'?</p>`,
-                submit: 'Yes Delete',
-                abort: 'No',
-            }));
+            const modal = await store.dispatch(showModal(Modals.GENERIC, deleteFileTemplate(file)));
             await store.dispatch(deleteFile(file.id));
             this.updateTree();
         }
         catch (error) {
-            console.error(error);
+            if( ! (error instanceof ModalAbort) )
+                console.error(error);
         }
     }
 
@@ -71,36 +69,12 @@ class FileTree extends connect(store)(LitElement) {
 
     async addFile(project) {
         try {
-            const modal = await store.dispatch(showModal({
-                title: 'Create File',
-                content: html`
-                    <form>
-                        <input id="name" type="text" placeholder="filename">
-                        <select id="type">
-                            <option value="js">.js</option>
-                            <option value="json">.json</option>
-                            <option value="pl">.pl</option>
-                            <option value="md">.md</option>
-                        </select>
-                    </form>
-                `,
-                submit: 'Create File',
-                abort: 'Cancel',
-                check: async (fields) => {
-                    if (fields.name.length === 0)
-                        return Error('Empty filename! Every file must have a name.');
-                    if (!fields.name.match(/[a-zA-Z0-9_-]/))
-                        return Error('Invalid character! Only numbers, letters, _ and - are allowed.');
-                    const file = await db.loadFileByName(project, `${fields.name}.${fields.type}`);
-                    if (file !== undefined)
-                        return Error('Duplicate name! A file with that name and ending already exists!');
-                }
-            }));
-            
+            const modal = await store.dispatch(showModal(Modals.GENERIC, createFileTemplate(project)));
             const id = await store.dispatch(createFile(`${modal.name}.${modal.type}`, project, ''));
         }
         catch (error) {
-            console.error(error);
+            if( ! (error instanceof ModalAbort) )
+                console.error(error);
         }
     }
 
@@ -137,7 +111,7 @@ class FileTree extends connect(store)(LitElement) {
         let filetree, project, global;
         [filetree, project, global] = await Promise.all([
             this._filetree,
-            db.getProjectFiles(state.projects.currentProject),
+            state.projects.currentProject ? db.getProjectFiles(state.projects.currentProject) : [],
             db.getProjectFiles(0),
         ]);
         project = project.sort(this.sort);

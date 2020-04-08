@@ -6,7 +6,8 @@ import {
 } from 'actions/projects.js';
 
 const INITIAL_STATE = {
-    currentProject: 0,
+    currentProject: null,
+    currentScenario: null,
     lastChangeProjects: 0,
 };
 
@@ -31,8 +32,8 @@ function openProject(state, action) {
 function closeProject(state, action) {
     return {
         ...state,
-        currentProject: 0,
-        currentScenario: undefined,
+        currentProject: null,
+        currentScenario: null,
     };
 }
 

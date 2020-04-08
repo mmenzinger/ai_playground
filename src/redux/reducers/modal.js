@@ -4,9 +4,8 @@ import {
 } from 'actions/modal.js';
 
 const INITIAL_STATE = {
-    data: undefined,
-    resolve: undefined,
-    reject: undefined,
+    template: null,
+    data: null,
 };
 
 const modal = (state = INITIAL_STATE, action) => {
@@ -14,17 +13,11 @@ const modal = (state = INITIAL_STATE, action) => {
         case MODAL_SHOW:
             return {
                 ...state,
+                template: action.template,
                 data: action.data,
-                resolve: action.resolve,
-                reject: action.reject, 
             };
         case MODAL_HIDE:
-            return {
-                ...state,
-                data: undefined,
-                resolve: undefined,
-                reject: undefined, 
-            };
+            return INITIAL_STATE;
         default:
             return state;
     }

@@ -1,0 +1,13 @@
+#yes{
+    float: right;
+    background-color: #5e5;
+}
+
+#no{
+    float: left;
+    background-color: #e55;
+}
+
+form{
+    padding: 1rem 0;
+}

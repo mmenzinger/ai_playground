@@ -37,6 +37,11 @@ a:hover{
     text-decoration: underline;
 }
 
+em{
+  font-weight: bold;
+  font-style: normal;
+}
+
 *[hidden]{
   display: none;
 }
