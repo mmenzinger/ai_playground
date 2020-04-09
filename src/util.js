@@ -150,7 +150,7 @@ export function deserialize(json) {
     });
 }
 
-export function dispatchIframeMouseEvents(iframe, target = window) {
+export function dispatchIframeEvents(iframe, target = window) {
     const dispatchMouseEvent = (event) => {
         const rect = iframe.getBoundingClientRect();
         const data = {
@@ -165,13 +165,18 @@ export function dispatchIframeMouseEvents(iframe, target = window) {
             offsetX: event.offsetX + rect.x,
             offsetY: event.offsetY + rect.y,
         };
-        if(data.bubbles && data.cancelable)
-            target.dispatchEvent(new MouseEvent(event.type, data));
+        target.dispatchEvent(new MouseEvent(event.type, data));
     }
+
+    const dispatchKeyEvent = (event) => {
+        target.dispatchEvent(new KeyboardEvent(event.type, event));
+    }
+
     const container = iframe.contentWindow;
     container.onmousedown = dispatchMouseEvent;
-    container.onmouseenter = dispatchMouseEvent;
     container.onmousemove = dispatchMouseEvent;
     container.onmouseup = dispatchMouseEvent;
-    container.onmouseover = dispatchMouseEvent;
+    container.onkeydown = dispatchKeyEvent;
+    container.onkeypress = dispatchKeyEvent;
+    container.onkeyup = dispatchKeyEvent;
 }

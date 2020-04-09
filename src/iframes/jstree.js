@@ -28,6 +28,8 @@ var onAddFileGlobal = undefined;
 var onAddFileProject = undefined;
 var onDelete = undefined;
 
+let preventSelectNodeEvent = false;
+
 onload = () => {
     $('#jstree').jstree({
         plugins: [ 'contextmenu' ],
@@ -41,20 +43,25 @@ onload = () => {
     });
     jstree.resolve($('#jstree').jstree(true));
 
+    $('#jstree').on('refresh.jstree', () => {
+        jstree.resolve($('#jstree').jstree(true));
+    });
+
     let lastSelected = undefined;
-    let preventReload = false;
     $('#jstree').on('select_node.jstree', (e, data) => {
         if(data.node.parent === '#'){
             data.instance.deselect_node(data.node);
-            preventReload = true;
+            preventSelectNodeEvent = true;
             data.instance.select_node(lastSelected);
-            preventReload = false;
+            preventSelectNodeEvent = false;
         }
-        else if(onFile && !preventReload && lastSelected !== data.node){
+        else{
+            if(onFile && !preventSelectNodeEvent && lastSelected?.id !== data.node.id){
+                onFile(data.node.data);
+            }
             lastSelected = data.node;
-            onFile(data.node.data);
-            // TODO: prevent double load after activate_node
         }
+        
     });
 }
 
@@ -68,19 +75,26 @@ function contextMenu(node){
     if(parent === 'global' && onAddFileGlobal){
         create = {
             label: 'create global file',
+            icon: '../assets/interface/add.svg',
             action: (obj) => onAddFileGlobal(),
         };
     }
     else if(parent === 'project' && onAddFileProject){
         create = {
             label: 'create project file',
+            icon: '../assets/interface/add.svg',
             action: (obj) => onAddFileProject(),
         };
     }
 
     if(! ['global', 'project', 'index.js', 'scenario.md'].includes(node.text) && onDelete){
+        let name = node.text;
+        if(name.length > 10){
+            name = name.substring(0,8) + '...';
+        }
         remove = {
-            label: `delete file '${node.text}'`,
+            label: `delete file '${name}'`,
+            icon: '../assets/interface/trash.svg',
             action: (obj) => onDelete(node.data),
         }
     }
@@ -125,9 +139,6 @@ async function updateFiles(global, project, currentFile){
                 parent: 'project',
                 text: file.name,
                 icon: `../assets/filetree/${ending}.svg`,
-                state: {
-                    selected: currentFile && currentFile.id === file.id,
-                },
                 data: file,
             }
         }),
@@ -138,9 +149,6 @@ async function updateFiles(global, project, currentFile){
                 parent: 'global',
                 text: file.name,
                 icon: `../assets/filetree/${ending}.svg`,
-                state: {
-                    selected: currentFile && currentFile.id === file.id,
-                },
                 data: file,
             }
         }),
@@ -148,18 +156,15 @@ async function updateFiles(global, project, currentFile){
     const tree = await jstree;
     tree.settings.core.data = data;
     tree.refresh();
+    jstree = defer();
+    selectFile(currentFile);
 }
 
 async function selectFile(currentFile){
-    const tree = await jstree;
-    tree.activate_node(currentFile.id);
+    if(currentFile){
+        const tree = await jstree;
+        preventSelectNodeEvent = true;
+        tree.activate_node(currentFile.id);
+        preventSelectNodeEvent = false;
+    }
 }
-
-/*function dispatchMouseEvent(event){
-    parent.dispatchEvent(new MouseEvent(event.type, event));
-}
-onmousedown = dispatchMouseEvent;
-onmouseenter = dispatchMouseEvent;
-onmousemove = dispatchMouseEvent;
-onmouseup = dispatchMouseEvent;
-onmouseover = dispatchMouseEvent;*/

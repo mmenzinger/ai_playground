@@ -13,7 +13,6 @@ export const openFile = (id, state = undefined) => async dispatch => {
     if(state) // TODO: better merging
         file.state = state;
     dispatch({ type: FILE_OPEN, file });
-    return ;
 }
 
 export function closeFile() { 
@@ -21,26 +20,28 @@ export function closeFile() {
 }
 
 export const createFile = (name, project = 0, content = '') => async dispatch => {
-    const lastChange = Date.now();
-    const id = await db.createFile(name, project, content, lastChange);
-    dispatch({ type: FILE_CREATE, id, lastChange });
+    const timestamp = Date.now();
+    const id = await db.createFile(name, project, content, timestamp);
+    dispatch({ type: FILE_CREATE, timestamp });
     return id;
 }
 
 export const deleteFile = (id) => async dispatch => {
+    const timestamp = Date.now();
     const num = await db.removeFile(id);
-    dispatch({ type: FILE_DELETE, id });
+    dispatch({ type: FILE_DELETE, timestamp });
     return num;
 }
 
 export const saveFile = (id, content) => async dispatch => {
-    const lastChange = Date.now();
-    const num = await db.saveFile(id, content, lastChange);
-    dispatch({ type: FILE_SAVE, id, content, lastChange });
+    const timestamp = Date.now();
+    const num = await db.saveFile(id, content, timestamp);
+    dispatch({ type: FILE_SAVE, content, timestamp });
     return num;
 }
 
-export const renameFile = () => async dispatch => { 
+export const renameFile = () => async dispatch => {
+    const timestamp = Date.now();
     throw Error('not implemented');
-    return { type: FILE_RENAME };
+    return { type: FILE_RENAME, timestamp };
 }

@@ -16,13 +16,14 @@ export const openProject = (id) => async dispatch => {
         file = await db.loadFileByName(id, 'index.js');
     if(!file)
         file = {id:0};
+    await store.dispatch(openFile(file.id));
     const project = await db.getProject(id);
     dispatch({ 
         type: PROJECT_OPEN, 
         id, 
-        scenario: project.scenario || 'tictactoe', // TODO: Remove fallback
+        scenario: project.scenario,
     });
-    store.dispatch(openFile(file.id));
+    
     return project;
 }
 

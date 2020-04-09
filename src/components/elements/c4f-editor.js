@@ -3,7 +3,7 @@ import { connect } from 'pwa-helpers/connect-mixin';
 import { store } from 'src/store.js';
 import { ResizeObserver } from 'resize-observer';
 import { saveFile } from 'actions/files.js';
-import { defer, dispatchIframeMouseEvents } from 'src/util.js';
+import { defer, dispatchIframeEvents } from 'src/util.js';
 
 /*import ace from 'ace-builds/src-min-noconflict/ace.js';
 import 'ace-builds/src-noconflict/mode-plain_text';
@@ -62,7 +62,7 @@ class C4fEditor extends connect(store)(LitElement) {
 
             this._editor.resolve(editor);
 
-            dispatchIframeMouseEvents(iframe);
+            dispatchIframeEvents(iframe);
         }
     }
 

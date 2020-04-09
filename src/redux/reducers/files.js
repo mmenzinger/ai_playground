@@ -9,9 +9,10 @@ import {
 
 const INITIAL_STATE = {
     currentFile: null,
-    lastChangeFileTree: 0,
+    lastFilesChange: 0,
+    /*lastChangeFileTree: 0,
     lastChangeFileContent: 0,
-    lastChangeFileId: 0,
+    lastChangeFileId: 0,*/
 };
 
 const files = (state = INITIAL_STATE, action) => {
@@ -43,9 +44,10 @@ function closeFile(state, action) {
 function createFile(state, action) {
     return {
         ...state,
-        lastChangeFileTree: action.timestamp,
+        lastFilesChange: action.timestamp,
+        /*lastChangeFileTree: action.timestamp,
         lastChangeFileContent: action.timestamp,
-        lastChangeFileId: action.id,
+        lastChangeFileId: action.id,*/
     };
 }
 
@@ -56,7 +58,7 @@ function saveFile(state, action) {
         newState.currentFile = {
             ...state.currentFile,
             content: action.content,
-            lastChange: action.lastChange,
+            lastChange: action.timestamp,
         }
     }
     return newState;
@@ -67,14 +69,16 @@ function deleteFile(state, action) {
     return {
         ...state,
         currentFile,
-        lastChangeFileTree: action.timestamp,
+        lastFilesChange: action.timestamp,
+        //lastChangeFileTree: action.timestamp,
     };
 }
 
 function renameFile(state, action) {
     return {
         ...state,
-        lastChangeFileTree: action.timestamp,
+        lastFilesChange: action.timestamp,
+        //lastChangeFileTree: action.timestamp,
     };
 }
 

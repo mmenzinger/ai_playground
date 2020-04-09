@@ -30,6 +30,12 @@ class C4fModal extends connect(store)(LitElement) {
         ];
     }
 
+    constructor(){
+        super();
+        this._template = null;
+        this._data = null;
+    }
+
     render() {
         return html`
             <div id="background" ?active="${this._template !== null}">
@@ -41,6 +47,12 @@ class C4fModal extends connect(store)(LitElement) {
     }
 
     firstUpdated() {
+        window.onkeydown = (e) => {
+            if(this._template && ['Escape', 'Enter'].includes(e.key)){
+                this.shadowRoot.getElementById(this._template).onKeyDown(e.key);
+                e.preventDefault();
+            }
+        };
     }
 
     stateChanged(state) {

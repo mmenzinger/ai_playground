@@ -1,7 +1,7 @@
 import { html, unsafeCSS, css, LitElement } from 'lit-element';
 import { connect } from 'pwa-helpers/connect-mixin.js';
 import { store } from 'src/store.js';
-import { defer, dispatchIframeMouseEvents } from 'src/util.js';
+import { defer, dispatchIframeEvents } from 'src/util.js';
 
 //import { modalShow, modalConsume } from 'actions/app.js';
 import { openFile, createFile, deleteFile } from 'actions/files.js';
@@ -35,6 +35,7 @@ class FileTree extends connect(store)(LitElement) {
         this._filetree = defer();
         this._currentFile = { id: 0 };
         this._currentProject = 0;
+        this._lastFilesChange = 0;
     }
 
     render() {
@@ -44,8 +45,9 @@ class FileTree extends connect(store)(LitElement) {
     async onDelete(file) {
         try {
             const modal = await store.dispatch(showModal(Modals.GENERIC, deleteFileTemplate(file)));
+            const selectFile = await db.loadFileByName(this._currentProject, 'index.js');
+            await store.dispatch(openFile(selectFile.id));
             await store.dispatch(deleteFile(file.id));
-            this.updateTree();
         }
         catch (error) {
             if( ! (error instanceof ModalAbort) )
@@ -58,19 +60,18 @@ class FileTree extends connect(store)(LitElement) {
     }
 
     onAddFileGlobal() {
-        this.addFile(0).then(this.updateTree.bind(this));
+        this.addFile(0);
     }
 
     onAddFileProject() {
-        const state = store.getState();
-        const project = state.projects.currentProject;
-        this.addFile(project).then(this.updateTree.bind(this));
+        this.addFile(this._currentProject);
     }
 
     async addFile(project) {
         try {
             const modal = await store.dispatch(showModal(Modals.GENERIC, createFileTemplate(project)));
             const id = await store.dispatch(createFile(`${modal.name}.${modal.type}`, project, ''));
+            store.dispatch(openFile(id));
         }
         catch (error) {
             if( ! (error instanceof ModalAbort) )
@@ -82,27 +83,27 @@ class FileTree extends connect(store)(LitElement) {
         const iframe = this.shadowRoot.getElementById('filetree');
         iframe.onload = async () => {
             this._filetree.resolve(iframe.contentWindow);
-            await this.updateTree();
             const filetree = await this._filetree;
             filetree.onFile = this.onFile.bind(this);
             filetree.onAddFileGlobal = this.onAddFileGlobal.bind(this);
             filetree.onAddFileProject = this.onAddFileProject.bind(this);
             filetree.onDelete = this.onDelete.bind(this);
 
-            dispatchIframeMouseEvents(iframe);
+            dispatchIframeEvents(iframe);
         }
     }
 
     async stateChanged(state) {
-        if(state.projects.currentProject !== this._currentProject){
+        if(state.projects.currentProject && (state.projects.currentProject !== this._currentProject || state.files.lastFilesChange !== this._lastFilesChange)){
             this._currentProject = state.projects.currentProject;
+            this._lastFilesChange = state.files.lastFilesChange;
+            this._currentFile.id = state.files.currentFile.id;
             await this.updateTree();
         }
-        if (state.files.currentFile && state.files.currentFile.id !== this._currentFile.id) {
-            //console.log(this._currentFile, state.files.currentFile)
+        if (state.projects.currentProject && state.files.currentFile && state.files.currentFile.id !== this._currentFile.id) {
             this._currentFile = state.files.currentFile;
             const filetree = await this._filetree;
-            await filetree.selectFile(this._currentFile);
+            filetree.selectFile(this._currentFile);
         }
     }
 

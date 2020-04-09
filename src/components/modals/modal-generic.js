@@ -79,6 +79,13 @@ class ModalGeneric extends LazyElement {
         this._error = null;
         store.dispatch(rejectModal(new ModalAbort()));
     }
+
+    onKeyDown(key){
+        switch(key){
+            case 'Escape': this.onAbort(); break;
+            case 'Enter': this.onSubmit(); break;
+        }
+    }
 }
 
 window.customElements.define('modal-generic', ModalGeneric);
