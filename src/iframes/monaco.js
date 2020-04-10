@@ -40,9 +40,13 @@ require(['vs/editor/editor.main'], function() {
         }
     });
 
-    editor.setLanguage = function(lang){
+    editor.setLanguage = (lang) => {
         const model = editor.getModel();
         monaco.editor.setModelLanguage(model, lang);
+    }
+
+    editor.setTheme = (theme) => {
+        monaco.editor.setTheme(theme);
     }
 
     window.editor = editor;

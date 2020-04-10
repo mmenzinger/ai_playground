@@ -13,8 +13,11 @@ class Settings{
         localStorage.setItem(STORAGE_KEY, JSON.stringify(this._settings))
     }
 
-    get(key){
-        return this._settings[key];
+    get(key, fallback = undefined){
+        if(this._settings[key])
+            return this._settings[key];
+        else
+            return fallback;
     }
 }
 

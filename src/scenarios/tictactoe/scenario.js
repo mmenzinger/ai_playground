@@ -1,4 +1,4 @@
-import { messageWithResult, deepCopy } from 'src/util.js';
+import { messageWithResult, deepCopy, hideImport } from 'src/util.js';
 import merge from 'lodash/merge.js';
 
 export const Player = Object.freeze({
@@ -129,6 +129,6 @@ export function createScenario(initState) {
 
 export async function __run(state) {
     const scenario = createScenario(state);
-    const player1 = await import(/* webpackIgnore: true */'/project/index.js');
+    const player1 = await hideImport('/project/index.js');
     return await scenario.run(player1);
 }

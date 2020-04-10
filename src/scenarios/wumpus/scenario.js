@@ -1,5 +1,5 @@
 import SeedRandom from 'seedrandom';
-import { deepCopy } from 'src/util.js';
+import { deepCopy, hideImport } from 'src/util.js';
 
 class Random {
     constructor(seed) {
@@ -287,6 +287,6 @@ export function createScenario(initState) {
 
 export async function __run(state){
     const scenario = createScenario(state);
-    const player = await import(/* webpackIgnore: true */'/project/index.js');
+    const player = await hideImport('/project/index.js');
     await scenario.run(player);
 }

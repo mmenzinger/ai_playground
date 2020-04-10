@@ -1,10 +1,6 @@
 import { LitElement, html, unsafeCSS } from 'lit-element';
 import { connect } from 'pwa-helpers/connect-mixin.js';
 import { store } from 'src/store.js';
-import { installRouter } from 'pwa-helpers/router.js';
-import { installOfflineWatcher } from 'pwa-helpers/network.js';
-
-import { navigate, updateOffline } from 'actions/app.js';
 
 const sharedStyles = unsafeCSS(require('components/shared-styles.css').toString());
 const style = unsafeCSS(require('./c4f-modal.css').toString());

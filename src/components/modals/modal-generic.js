@@ -11,7 +11,7 @@ const style = unsafeCSS(require('./modal-generic.css').toString());
 class ModalGeneric extends LazyElement {
     static get properties() {
         return {
-            data: { type: Object },
+            data: { type: Object, hasChanged: () => true },
             _error: {type: String },
         }
     }
@@ -30,6 +30,7 @@ class ModalGeneric extends LazyElement {
     }
 
     render() {
+        console.log("render");
         if(this.data){
             return html`
                 <h1>${this.data.title}</h1>
@@ -45,12 +46,15 @@ class ModalGeneric extends LazyElement {
     }
 
     updated(){
+        if(this.data && this.data.init){
+            this.data.init(this.shadowRoot);
+        }
         const firstElement = this.shadowRoot.querySelector('input,select');
         if(firstElement)
             firstElement.focus();
         if(this.data && this.data.change){
             for(let [field, callback] of Object.entries(this.data.change)){
-                this.shadowRoot.getElementById(field).addEventListener('change', e => callback(e, this));
+                this.shadowRoot.getElementById(field).addEventListener('change', e => callback(e, this.shadowRoot));
             }
         }
     }

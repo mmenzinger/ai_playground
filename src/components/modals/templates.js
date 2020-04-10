@@ -20,6 +20,12 @@ export function newProjectTemplate(templates) {
                 <select id="template">${options}</select>
                 <input id="name" type="text" placeholder="Name" autocomplete="off" value="${templates[0].name}">
             </form>`,
+        
+        init: async (shadowRoot) => {
+            const template = shadowRoot.getElementById('template');
+            template.selectedIndex = 0;
+            shadowRoot.getElementById('name').value = template.options[0].innerHTML.replace(/<!---->/g, '').trim();
+        },
     
         check: async (fields) => {
             if(fields.name.length === 0)
@@ -30,11 +36,11 @@ export function newProjectTemplate(templates) {
         },
     
         change: {
-            template: (e, that) => {
+            template: (e, shadowRoot) => {
                 const text = e.target.options[e.target.selectedIndex].innerHTML.replace(/<!---->/g, '').trim();
-                that.shadowRoot.querySelector('#name').value = text;
+                shadowRoot.querySelector('#name').value = text;
             }
-        }
+        },
     };
 }
 
@@ -55,8 +61,14 @@ export function newExampleTemplate(examples) {
         content: html`
             <form>
                 <select id="example">${options}</select>
-                <input id="name" type="text" placeholder="name" value="${examples[0].name}">
+                <input id="name" type="text" placeholder="name" autocomplete="off" value="${examples[0].name}">
             </form>`,
+        
+        init: async (shadowRoot) => {
+            const template = shadowRoot.getElementById('example');
+            template.selectedIndex = 0;
+            shadowRoot.getElementById('name').value = template.options[0].innerHTML.replace(/<!---->/g, '').trim();
+        },
         
         check: async (fields) => {
             if(fields.name.length === 0)
@@ -67,11 +79,11 @@ export function newExampleTemplate(examples) {
         },
 
         change: {
-            example: (e, that) => {
+            example: (e, shadowRoot) => {
                 const text = e.target.options[e.target.selectedIndex].innerHTML.replace(/<!---->/g, '').trim();
-                that.shadowRoot.querySelector('#name').value = text;
+                shadowRoot.querySelector('#name').value = text;
             }
-        }
+        },
     }
 }
 
@@ -101,7 +113,7 @@ export function createFileTemplate(project){
 
         content: html`
             <form>
-                <input id="name" type="text" placeholder="filename">
+                <input id="name" type="text" autocomplete="off" placeholder="filename">
                 <select id="type">
                     <option value="js">.js</option>
                     <option value="json">.json</option>
@@ -111,6 +123,11 @@ export function createFileTemplate(project){
             </form>
         `,
 
+        init: async (shadowRoot) => {
+            shadowRoot.getElementById('name').value = '';
+            shadowRoot.getElementById('type').selectedIndex = 0;
+        },
+
         check: async (fields) => {
             if (fields.name.length === 0)
                 return Error('Empty filename! Every file must have a name.');
@@ -119,7 +136,7 @@ export function createFileTemplate(project){
             const file = await db.loadFileByName(project, `${fields.name}.${fields.type}`);
             if (file !== undefined)
                 return Error('Duplicate name! A file with that name and ending already exists!');
-        }
+        },
     };
 }
 

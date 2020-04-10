@@ -4,6 +4,7 @@ import { store } from 'src/store.js';
 import { ResizeObserver } from 'resize-observer';
 import { saveFile } from 'actions/files.js';
 import { defer, dispatchIframeEvents } from 'src/util.js';
+import settings from 'src/settings.js';
 
 /*import ace from 'ace-builds/src-min-noconflict/ace.js';
 import 'ace-builds/src-noconflict/mode-plain_text';
@@ -38,11 +39,20 @@ class C4fEditor extends connect(store)(LitElement) {
     }
 
     render() {
-        return html`<iframe id="editor" src="iframes/monaco.html"></iframe>`;
+        const theme = settings.get('editor-theme', 'vs');
+        return html`
+            <iframe id="editor" src="iframes/monaco.html"></iframe>
+            <select id="theme">
+                <option value="vs" ?selected="${theme === 'vs'}">Light</option>
+                <option value="vs-dark" ?selected="${theme === 'vs-dark'}">Dark</option>
+                <option value="hc-black" ?selected="${theme === 'hc-black'}">High Contrast</option>
+            </select>
+        `;
     }
 
     async firstUpdated() {
-        const iframe = this.shadowRoot.querySelector('#editor');
+        const iframe = this.shadowRoot.getElementById('editor');
+        const theme = this.shadowRoot.getElementById('theme');
 
         iframe.onload = () => {
             const editor = iframe.contentWindow.editor;
@@ -60,9 +70,18 @@ class C4fEditor extends connect(store)(LitElement) {
                 editor.layout();
             }).observe(iframe);
 
+            editor.setTheme(theme.options[theme.selectedIndex].value);
+
             this._editor.resolve(editor);
 
             dispatchIframeEvents(iframe);
+        }
+
+        theme.onchange = async (e) => {
+            const editor = await this._editor;
+            const selectedTheme = theme.options[theme.selectedIndex].value;
+            settings.set('editor-theme', selectedTheme);
+            editor.setTheme(selectedTheme);
         }
     }
 
@@ -70,13 +89,13 @@ class C4fEditor extends connect(store)(LitElement) {
         if(!state.files.currentFile){
             if(this._currentFile){
                 this._currentFile = state.files.currentFile;
-                const editor = await this._editor;
-                this._preventOnChange = true;
+                //const editor = await this._editor;
+                //this._preventOnChange = true;
                 // TODO prevent editor from checking browser dimensions
                 //editor.setLanguage('plain_text');
                 //editor.setValue('');
                 //editor.updateOptions({ readOnly: true });
-                this._preventOnChange = false;
+                //this._preventOnChange = false;
             }
         }
         else if (!this._currentFile || state.files.currentFile.id !== this._currentFile.id) {
@@ -96,13 +115,13 @@ class C4fEditor extends connect(store)(LitElement) {
             this._preventOnChange = true;
             editor.setLanguage(mode);
             editor.setValue(this._currentFile.content);
-            editor.updateOptions({ readOnly: false });
+            //editor.updateOptions({ readOnly: false });
             if(this._currentFile.state){
-                // TODO: move editor to cursor position
-                /*const position = {
-                    column: this._currentFile.state.cursor.column,
-                    lineNumber: this._currentFile.state.cursor.line,
-                };*/
+                const lineNumber = this._currentFile.state.cursor.line;
+                const column = this._currentFile.state.cursor.column;
+                editor.setPosition({column, lineNumber});
+                editor.revealLineInCenter(lineNumber);
+                editor.focus();
             }
             this._preventOnChange = false;
         }

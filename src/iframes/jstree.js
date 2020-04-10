@@ -23,7 +23,7 @@ function defer(){
 let jstree = defer();
 
 // get set by parent
-var onFile = undefined; 
+var onFile = undefined;
 var onAddFileGlobal = undefined;
 var onAddFileProject = undefined;
 var onDelete = undefined;

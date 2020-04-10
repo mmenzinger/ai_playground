@@ -180,3 +180,7 @@ export function dispatchIframeEvents(iframe, target = window) {
     container.onkeypress = dispatchKeyEvent;
     container.onkeyup = dispatchKeyEvent;
 }
+
+export function hideImport(path){
+    return import(path);
+}
