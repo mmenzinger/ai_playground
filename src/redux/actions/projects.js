@@ -46,3 +46,9 @@ export const deleteProject = (id) => async dispatch => {
     dispatch({ type: PROJECT_DELETE, timestamp: Date.now() });
     return num === 1;
 }
+
+export const importProject = (name, scenario, projectFiles, globalFiles, collision) => async dispatch => {
+    const project = await db.importProject(name, scenario, projectFiles, globalFiles, collision);
+    dispatch({ type: PROJECT_CREATE, timestamp: Date.now() });
+    return project;
+}

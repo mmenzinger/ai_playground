@@ -1,7 +1,7 @@
 # TicTacToe
 
 ## Table of Contents
-1. [Intorduction](#introduction)
+1. [Introduction](#introduction)
 2. [Callbacks](#callbacks)
     - [init(state)](#initstate)
     - [update(state, actions)](#updatestate-actions)

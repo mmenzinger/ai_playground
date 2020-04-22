@@ -7,7 +7,7 @@ let result = null;
 
 export const showModal = (template, data) => async dispatch => {
     // lazy load modal
-    import(`modals/modal-${template}.js`);
+    await import(`modals/modal-${template}.js`);
 
     if(result){
         result.reject(Error("Previous modal not closed!"));

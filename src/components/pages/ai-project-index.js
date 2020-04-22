@@ -3,16 +3,17 @@ import { LazyElement } from 'components/elements/lazy-element.js';
 import { store } from 'src/store.js';
 import { showModal } from 'actions/modal.js';
 
-import { createProject, deleteProject } from 'actions/projects.js';
+import { createProject, deleteProject, importProject } from 'actions/projects.js';
 
 import db from 'src/localdb.js';
 
 import { getTemplates, getExamples } from 'src/webpack-utils.js';
 
 import { Modals, ModalAbort } from 'elements/c4f-modal.js';
-import { newProjectTemplate, newExampleTemplate, deleteProjectTemplate } from 'modals/templates.js';
+import { newProjectTemplate, newExampleTemplate, deleteProjectTemplate, downloadProjectTemplate } from 'modals/templates.js';
 
-
+import JSZip from "jszip";
+import { saveAs } from 'file-saver';
 
 const sharedStyles = unsafeCSS(require('components/shared-styles.css').toString());
 const style = unsafeCSS(require('./ai-project-index.css').toString());
@@ -49,6 +50,7 @@ class AiProjectIndex extends LazyElement {
                     </header>
                     <footer>
                         <a title="delete" @click=${() => this.onDeleteProject(project)}><img src="assets/interface/trash.svg"></a>
+                        <a title="download" @click=${() => this.onDownloadProject(project)}><img src="assets/interface/download.svg"></a>
                     </footer>
                 </li>
             `);
@@ -61,6 +63,9 @@ class AiProjectIndex extends LazyElement {
                         <div class="logo"><embed style="height:50%" src="assets/interface/add.svg"></div>
                     </a>
                 </header>
+                <footer>
+                    <a title="upload" @click=${this.onUploadProject}><img src="assets/interface/upload.svg"></a>
+                </footer>
         `);
         return html`
             <h1>Projects</h1>
@@ -101,6 +106,50 @@ class AiProjectIndex extends LazyElement {
         try {
             const modal = await store.dispatch(showModal(Modals.GENERIC, deleteProjectTemplate(project)));
             await store.dispatch(deleteProject(project.id));
+            this._projects = await db.getProjects();
+        }
+        catch (error) {
+            if( ! (error instanceof ModalAbort) )
+                console.error(error);
+        }
+    }
+
+    async onDownloadProject(project) {
+        try{
+            const modal = await store.dispatch(showModal(Modals.GENERIC, downloadProjectTemplate(project)));
+            const zip = new JSZip();
+            const projectFolder = zip.folder('project');
+            const projectFiles = await db.getProjectFiles(project.id);
+            for(const file of projectFiles){
+                projectFolder.file(file.name, file.content);
+            }
+            if(modal.globals){
+                const globalFolder = zip.folder('global');
+                const globalFiles = await db.getProjectFiles(0);
+                for(const file of globalFiles){
+                    globalFolder.file(file.name, file.content);
+                }
+            }
+            zip.file('settings.json', JSON.stringify(project));
+            const zipFile = await zip.generateAsync({type:"blob"});
+            saveAs(zipFile, modal.name);
+        }
+        catch (error) {
+            if( ! (error instanceof ModalAbort) )
+                console.error(error);
+        }
+    }
+
+    async onUploadProject() {
+        try{
+            const modal = await store.dispatch(showModal(Modals.UPLOAD_PROJECT));
+            await store.dispatch(importProject(
+                modal.name,
+                modal.settings.scenario,
+                modal.projectFiles,
+                modal.globalFiles,
+                modal.collision
+            ));
             this._projects = await db.getProjects();
         }
         catch (error) {

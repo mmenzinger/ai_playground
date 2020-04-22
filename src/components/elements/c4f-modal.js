@@ -7,6 +7,7 @@ const style = unsafeCSS(require('./c4f-modal.css').toString());
 
 export const Modals = {
     GENERIC: 'generic',
+    UPLOAD_PROJECT: 'upload-project',
 }
 
 export class ModalAbort extends Error {};
@@ -37,15 +38,24 @@ class C4fModal extends connect(store)(LitElement) {
             <div id="background" ?active="${this._template !== null}">
                 <div id="content">
                     <modal-generic id="${Modals.GENERIC}" class="modal" ?active="${this._template === Modals.GENERIC}"></modal-generic>
+                    <modal-upload-project id="${Modals.UPLOAD_PROJECT}" class="modal" ?active="${this._template === Modals.UPLOAD_PROJECT}"></modal-upload-project>
                 </div>
             </div>
         `;
     }
 
+    updated() {
+        const modal = this.shadowRoot.getElementById(this._template);
+        if(modal && modal.onShow)
+            modal.onShow();
+    }
+
     firstUpdated() {
         window.onkeydown = (e) => {
             if(this._template && ['Escape', 'Enter'].includes(e.key)){
-                this.shadowRoot.getElementById(this._template).onKeyDown(e.key);
+                const modal = this.shadowRoot.getElementById(this._template);
+                if(modal && modal.onKeyDown)
+                    modal.onKeyDown(e.key);
                 e.preventDefault();
             }
         };

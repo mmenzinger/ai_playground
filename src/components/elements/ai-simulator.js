@@ -86,6 +86,7 @@ class AiSimulator extends connect(store)(LitElement) {
 
     async updated(){
         await this._scenarioLoaded;
+        await navigator.serviceWorker.ready; // make sure sw is ready
         this._scenario = this.shadowRoot.querySelector('[active]');
         this._sandbox.resolve(new Sandbox(store, this._scenario));
         if(this._scenario.constructor.autorun){   

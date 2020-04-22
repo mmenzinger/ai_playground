@@ -1,6 +1,7 @@
 import { html, unsafeCSS } from 'lit-element';
 import { store } from 'src/store.js';
 import { LazyElement } from 'components/elements/lazy-element.js';
+import { defer } from 'src/util.js';
 
 import { resolveModal, rejectModal } from 'actions/modal.js';
 import { ModalAbort } from 'elements/c4f-modal.js';
@@ -27,17 +28,25 @@ class ModalGeneric extends LazyElement {
         super();
         this.data = null;
         this._error = null;
+        this._rendered = defer();
     }
 
     render() {
-        console.log("render");
         if(this.data){
             return html`
-                <h1>${this.data.title}</h1>
-                ${this.data.content}
-                ${this._error}
-                <button id="no" @click=${this.onAbort}>${this.data.abort}</button>
-                <button id="yes" @click=${this.onSubmit}>${this.data.submit}</button>
+                <form autocomplete="off" action="javascript:void(0);">
+                    <header>
+                        <h1>${this.data.title}</h1>
+                    </header>
+                    <ul>
+                        ${this.data.content}
+                        ${this._error}
+                    </ul>
+                    <footer>
+                        <button id="no" @click=${this.onAbort}>${this.data.abort}</button>
+                        <button id="yes" @click=${this.onSubmit}>${this.data.submit}</button>
+                    </footer>
+                </form>
             `;
         }
         else{
@@ -63,7 +72,16 @@ class ModalGeneric extends LazyElement {
         try{
             const fields = {};
             this.shadowRoot.querySelectorAll('input,select').forEach(input => {
-                fields[input.id] = input.value;
+                switch(input.type){
+                    case 'checkbox':
+                        fields[input.id] = input.checked;
+                        break;
+                    case 'file':
+                        fields[input.id] = input.files;
+                        break;
+                    default:
+                        fields[input.id] = input.value;
+                }
             })
             if(this.data.check){
                 const error = await this.data.check(fields);
@@ -71,11 +89,12 @@ class ModalGeneric extends LazyElement {
                     throw error;
             }
 
+            this._error = null;
             store.dispatch(resolveModal(fields));
 
         }
         catch(error){
-            this._error = html`<p class="error">${error}</p>`;
+        this._error = html`<li class="error"><p>${error}</p></li>`;
         }
     }
 

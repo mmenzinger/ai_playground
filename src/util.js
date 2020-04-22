@@ -182,5 +182,5 @@ export function dispatchIframeEvents(iframe, target = window) {
 }
 
 export function hideImport(path){
-    return import(path);
+    return import(/* webpackIgnore: true */ path);
 }

@@ -1,18 +1,19 @@
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 4 4">
-   <image x="0" y="0.5" width="1.5" height="1.5" xlink:href="explorer.svg" />
-   <image x="2.1" y="0.1" width="1.8" height="1.8" xlink:href="wumpus.svg" />
-   <image x="2" y="2" width="2" height="2" xlink:href="gold.svg" />
-   <image x="0" y="2" width="2" height="2" xlink:href="pit.svg" />
-   <image x="0" y="2" width="0.5" height="0.5" xlink:href="breeze.svg" />
-   <image x="2" y="2" width="0.5" height="0.5" xlink:href="breeze.svg" />
-   <image x="0" y="0" width="0.5" height="0.5" xlink:href="breeze.svg" />
-   <image x="1.5" y="0" width="0.5" height="0.5" xlink:href="stench.svg" />
-   <image x="3.5" y="0" width="0.5" height="0.5" xlink:href="stench.svg" />
-   <image x="3.5" y="2" width="0.5" height="0.5" xlink:href="stench.svg" />
-   <line x1="0.05" y1="0.05" x2="3.95" y2="0.05" style="stroke:rgb(64,64,64);stroke-width:0.05" />
-   <line x1="0.05" y1="2" x2="3.95" y2="2" style="stroke:rgb(64,64,64);stroke-width:0.05" />
-   <line x1="0.05" y1="3.95" x2="3.95" y2="3.95" style="stroke:rgb(64,64,64);stroke-width:0.05" />
-   <line x1="0.05" y1="0.05" x2="0.05" y2="3.95" style="stroke:rgb(64,64,64);stroke-width:0.05" />
-   <line x1="2" y1="0.05" x2="2" y2="3.95" style="stroke:rgb(64,64,64);stroke-width:0.05" />
-   <line x1="3.95" y1="0.05" x2="3.95" y2="3.95" style="stroke:rgb(64,64,64);stroke-width:0.05" />
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 400 400">
+   <image x="0" y="45" width="150" height="150" xlink:href="explorer.svg" />
+   <image x="210" y="10" width="180" height="180" xlink:href="wumpus.svg" />
+   <image x="200" y="200" width="200" height="200" xlink:href="gold.svg" />
+   <image x="0" y="200" width="200" height="200" xlink:href="pit.svg" />
+   <image x="5" y="200" width="50" height="50" xlink:href="breeze.svg" />
+   <image x="200" y="200" width="50" height="50" xlink:href="breeze.svg" />
+   <image x="5" y="5" width="50" height="50" xlink:href="breeze.svg" />
+   <image x="150" y="5" width="50" height="50" xlink:href="stench.svg" />
+   <image x="350" y="5" width="50" height="50" xlink:href="stench.svg" />
+   <image x="350" y="200" width="50" height="50" xlink:href="stench.svg" />
+   <image x="350" y="350" width="50" height="50" xlink:href="glitter.svg" />
+   <line x1="5" y1="5" x2="395" y2="5" stroke-linecap="round" style="stroke:rgb(64,64,64);stroke-width:5" />
+   <line x1="5" y1="200" x2="395" y2="200" style="stroke:rgb(64,64,64);stroke-width:5" />
+   <line x1="5" y1="395" x2="395" y2="395" stroke-linecap="round" style="stroke:rgb(64,64,64);stroke-width:5" />
+   <line x1="5" y1="5" x2="5" y2="395" stroke-linecap="round" style="stroke:rgb(64,64,64);stroke-width:5" />
+   <line x1="200" y1="5" x2="200" y2="395" style="stroke:rgb(64,64,64);stroke-width:5" />
+   <line x1="395" y1="5" x2="395" y2="395" stroke-linecap="round" style="stroke:rgb(64,64,64);stroke-width:5" />
 </svg>

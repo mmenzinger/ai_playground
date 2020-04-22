@@ -24,6 +24,10 @@ class LocalDB {
         return this.db.files.get(id);
     }
 
+    async loadFileByName(projectId, fileName){
+        return this.db.files.where({project: projectId, name: fileName}).first();
+    }
+
     async saveFile(id, content, lastChange = Date.now()) {
         return this.db.files.update(id, {content, lastChange});
     }
@@ -32,13 +36,8 @@ class LocalDB {
         return this.db.files.where('id').equals(id).delete();
     }
 
-    async loadFileByName(projectId, fileName){
-        //let projectId = 0;
-        /*if(path === 'project'){
-            const app = await this.db.states.get('app');
-            projectId = app.currentProject;
-        }*/
-        return this.db.files.where({project: projectId, name: fileName}).first();
+    async renameFile(id, name, lastChange = Date.now()){
+        return this.db.files.update(id, {name, lastChange});
     }
 
     //------------------------------------------------------------------------------------------
@@ -69,6 +68,31 @@ class LocalDB {
 
     async getProjectFiles(project){
         return this.db.files.where('project').equals(project).toArray();
+    }
+
+    async importProject(name, scenario, projectFiles, globalFiles, collision){
+        return this.db.transaction('rw', this.db.projects, this.db.files, async () => {
+            const collisionFilesPromises = globalFiles.map(newFile => new Promise((resolve, reject) => {
+                this.loadFileByName(0, newFile.name).then(oldFile => {
+                    resolve({oldFile, newFile})
+                });
+            }));
+
+            const collisionFiles = await Promise.all(collisionFilesPromises);
+            collisionFiles.forEach(cf => {
+                if(cf.oldFile){
+                    if(collision === 'new')
+                    this.saveFile(cf.oldFile.id, cf.newFile.content);
+                }
+                else{
+                    this.createFile(cf.newFile.name, 0, cf.newFile.content);
+                }
+            })
+
+            const projectId = await this.createProject(name, scenario);
+            const projectFilePromises = projectFiles.map(file => this.createFile(file.name, projectId, file.content));
+            await Promise.all(projectFilePromises);
+        });
     }
 }
 

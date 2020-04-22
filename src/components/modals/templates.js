@@ -16,10 +16,15 @@ export function newProjectTemplate(templates) {
         abort: 'Cancel',
     
         content: html`
-            <form>
+            <li>
+                <label for="template">Scenario</label>
                 <select id="template">${options}</select>
-                <input id="name" type="text" placeholder="Name" autocomplete="off" value="${templates[0].name}">
-            </form>`,
+            </li>
+            <li>
+                <label for="name">Name</label>
+                <input id="name" type="text" placeholder="My Project" value="${templates[0].name}">
+            </li>
+        `,
         
         init: async (shadowRoot) => {
             const template = shadowRoot.getElementById('template');
@@ -59,10 +64,15 @@ export function newExampleTemplate(examples) {
         abort: 'Cancel',
 
         content: html`
-            <form>
+            <li>
+                <label for="example">Example</label>
                 <select id="example">${options}</select>
-                <input id="name" type="text" placeholder="name" autocomplete="off" value="${examples[0].name}">
-            </form>`,
+            </li>
+            <li>
+                <label for="name">Name</label>
+                <input id="name" type="text" placeholder="My Project" value="${examples[0].name}">
+            </li>
+        `,
         
         init: async (shadowRoot) => {
             const template = shadowRoot.getElementById('example');
@@ -97,8 +107,9 @@ export function deleteProjectTemplate(project) {
         abort: 'Cancel',
 
         content: html`
-            <p>Are you sure you want to <em>permanently<em> delete the project '${project.name}'?<br>
-            This operation can not be undone!</p>`,
+            <li><p>Are you sure you want to <em>permanently<em> delete the project '${project.name}'?<br>
+            This operation can not be undone!</p></li>
+        `,
     };
 }
 
@@ -112,15 +123,16 @@ export function createFileTemplate(project){
         abort: 'Cancel',
 
         content: html`
-            <form>
-                <input id="name" type="text" autocomplete="off" placeholder="filename">
+            <li>
+                <label for="name">Name</label>
+                <input id="name" type="text" placeholder="filename">
                 <select id="type">
                     <option value="js">.js</option>
                     <option value="json">.json</option>
                     <option value="pl">.pl</option>
                     <option value="md">.md</option>
                 </select>
-            </form>
+            </li>
         `,
 
         init: async (shadowRoot) => {
@@ -150,6 +162,40 @@ export function deleteFileTemplate(file){
         submit: 'Yes Delete',
         abort: 'No',
 
-        content: html`<p>Are you sure you want to <em>permanently</em> delete the <em>${project}</em>-file '${file.name}'?</p>`,
+        content: html`
+            <li><p>Are you sure you want to <em>permanently</em> delete the <em>${project}</em>-file '${file.name}'?</p></li>`,
     };
+}
+
+//------------------------------------------------------------------------------
+// Download Project
+//------------------------------------------------------------------------------
+export function downloadProjectTemplate(project) {
+    return{
+        title: 'Download Project',
+        submit: 'Download',
+        abort: 'Cancel',
+
+        content: html`
+            <li>
+                <label for="name">Name</label>
+                <input id="name" type="text" placeholder="name" autocomplete="off" value="${project.name}.zip">
+            </li>
+            <li>
+                <label>Options</label>
+                <ul class="options">
+                    <li>
+                        <label for="globals">Include global files</label>
+                        <input id="globals" type="checkbox">
+                    </li>
+                </ul>
+            </li>
+        `,
+
+        init: async (shadowRoot) => {
+            console.log("now");
+            const globals = shadowRoot.getElementById('globals');
+            globals.checked = false;
+        },
+    }
 }
