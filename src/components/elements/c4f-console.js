@@ -1,23 +1,14 @@
 import { html, unsafeCSS, LitElement } from 'lit-element';
-import { connect } from 'pwa-helpers/connect-mixin';
-import { store } from 'src/store.js';
+import { repeat } from 'lit-html/directives/repeat.js';
+import { until } from 'lit-html/directives/until.js';
+import projectStore from 'store/project-store.js';
+import { MobxLitElement } from '@adobe/lit-mobx';
 import db from 'src/localdb.js';
-
-import { openFile } from 'actions/files.js';
-import { subscribeToLog, LOG_ADD, LOG_CLEAR } from 'actions/log.js';
-
 
 const sharedStyles = unsafeCSS(require('components/shared-styles.css').toString());
 const style = unsafeCSS(require('./c4f-console.css').toString());
 
-  
-class C4fConsole extends LitElement {
-    static get properties() {
-        return {
-            _logs: { type: Array },
-        }
-    }
-
+class C4fConsole extends MobxLitElement {
     static get styles() {
         return [
             sharedStyles,
@@ -27,34 +18,29 @@ class C4fConsole extends LitElement {
 
     constructor(){
         super();
-        this._logs = [];
-        store.dispatch(subscribeToLog("bottom_console", this.onLog.bind(this)));
     }
 
     render() {
-        return html`<div id="console">${this._logs}</div>`;
+        const logs = [...projectStore.log];
+        return html`<div id="console">
+            ${repeat(
+                logs,
+                log => log,
+                log => this.getLogHtml(log)
+            )}
+        </div>`;
     }
 
     updated(){
         const wrapper = this.shadowRoot.querySelector('div#console');
         // scroll to bottom
         wrapper.scrollTop = wrapper.scrollHeight;
+        setTimeout(() => { // wait for until to finish, then scroll again
+            wrapper.scrollTop = wrapper.scrollHeight;
+        }, 100);
     }
 
-    async onLog(action){
-        switch(action.type){
-            case LOG_ADD:
-                const element = await this.getLogHtml(action.log);
-                this._logs = [...this._logs, element];
-                break;
-            
-            case LOG_CLEAR:
-                this._logs = [];
-                break;
-        }
-    }
-
-    async getLogHtml(log){
+    getLogHtml(log){
         const args = log.args.map(arg => {
             arg = arg.replace(/\{\s*"type":\s*"__FUNCTION__",\s*"name":\s*"(\w+)"\s*\}/g, '$1()');
             arg = arg.replace(/\{\s*"type":\s*"__ERROR__",\s*"message":\s*"(.*?)"[^]*?\}/g, 'Error: $1');
@@ -72,9 +58,7 @@ class C4fConsole extends LitElement {
             return arg;
         });
         try{ // add caller if valid
-            const state = store.getState();
-            //console.log(log.caller);
-            const project = log.caller.project === 'project' ? state.projects.currentProject : 0;
+            const fileId = log.caller.fileId;
             const fileName = log.caller.fileName;
             const lineNumber = log.caller.lineNumber;
             const columnNumber = log.caller.columnNumber;
@@ -82,19 +66,19 @@ class C4fConsole extends LitElement {
             const fileState = {
                 cursor: {
                     line: lineNumber,
-                    column: lineNumber,
+                    column: columnNumber,
                 }
             }
-            const file = await db.loadFileByName(project, fileName);
-            return html`<p class="${log.type}"><a class="file" @click=${e=>{this.onClick(file, fileState)}}>${fileName}:${functionName}:${lineNumber}</a>${args}</p>`;
+            return html`<p class="${log.type}"><a class="file" @click=${e=>{this.onClick(fileId, fileState)}}>${fileName}:${functionName}:${lineNumber}</a>${args}</p>`;
         }
         catch(e){
+            console.warn(e);
             return html`<p class="${log.type}">${args.join(' ')}</p>`;
         }
     }
 
-    onClick(file, fileState){
-        store.dispatch(openFile(file.id, fileState));
+    onClick(fileId, fileState){
+        projectStore.openFile(fileId, fileState);
     }
 }
 

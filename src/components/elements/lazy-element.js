@@ -1,6 +1,6 @@
-import { LitElement } from 'lit-element';
+import { MobxLitElement } from '@adobe/lit-mobx';
 
-export class LazyElement extends LitElement {
+export class LazyElement extends MobxLitElement {
     static get properties() {
         return {
             active: { type: Boolean }

@@ -1,5 +1,5 @@
 export function getScenarios() {
-    const rc = require.context('src/scenarios', true, /\.[a-z]+$/i);
+    const rc = require.context('src/scenario', true, /\.[a-z]+$/i);
     const paths = rc.keys().filter(path => new RegExp(`/(templates|examples)/[^/]+/[^/]+$`).test(path));
     const scenarios = {};
     paths.forEach(path => {
@@ -15,7 +15,7 @@ export function getScenarios() {
             examples: {},
             description: {
                 name: 'scenario.md',
-                content: require(`src/scenarios/${type}/scenario.md`).default,
+                content: require(`src/scenario/${type}/scenario.md`).default,
             }
         }
         scenarios[type][folder][name] = scenarios[type][folder][name] || {
@@ -25,7 +25,7 @@ export function getScenarios() {
         }
         scenarios[type][folder][name].files.push({
             name: filename,
-            content: require(`src/scenarios/${path.substring(2)}`).default,
+            content: require(`src/scenario/${path.substring(2)}`).default,
         });
     });
     const components = rc.keys().filter(path => new RegExp(`/scenario-[^/]+\.(js|ts)$`).test(path));

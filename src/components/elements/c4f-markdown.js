@@ -1,7 +1,6 @@
 import { html, unsafeCSS, css, LitElement } from 'lit-element';
-import { connect } from 'pwa-helpers/connect-mixin';
-import { store } from 'src/store.js';
-import { defer } from 'src/util.js';
+import { autorun } from 'mobx';
+import projectStore from 'store/project-store.js';
 
 import Prism from 'prismjs';
 import 'prismjs/plugins/line-numbers/prism-line-numbers';
@@ -23,7 +22,7 @@ const converter = new showdown.Converter({
     smoothLivePreview: true,
 });
 
-class C4fMarkdown extends connect(store)(LitElement) {
+class C4fMarkdown extends LitElement {
     static get styles() {
         return [
             sharedStyles,
@@ -35,14 +34,8 @@ class C4fMarkdown extends connect(store)(LitElement) {
 
     constructor() {
         super();
-        this._currentFile = {
-            id: 0,
-            content: '',
-            name: '',
-            lastChange: 0,
-        }
-        this._currentProject = 0;
-        this._markdownContainer = defer();
+        this._activeFile = null;
+        this._activeProject = null;
     }
 
     render() {
@@ -51,26 +44,24 @@ class C4fMarkdown extends connect(store)(LitElement) {
 
     firstUpdated(){
         const container = this.shadowRoot.querySelector('#markdown');
-        this._markdownContainer.resolve(container);
-    }
 
-    async stateChanged(state) {
-        // clear markdown
-        if(state.projects.currentProject !== this._currentProject){
-            this._currentProject = state.projects.currentProject;
-            const container = await this._markdownContainer;
-            container.innerHTML = '';
-            this._currentFile.id = 0;
-        }
-        // update markdown
-        if (state.files.currentFile && (state.files.currentFile.id !== this._currentFile.id || state.files.currentFile.lastChange !== this._currentFile.lastChange)
-            && state.files.currentFile.name.endsWith('.md')) {
-            this._currentFile = {...state.files.currentFile};
-            const container = await this._markdownContainer;
-            container.innerHTML = converter.makeHtml(this._currentFile.content);
-            this.updateHyperlinks(container);
-            this.updateCodeHighlight(container);
-        }
+        autorun(async reaction => {
+            // clear markdown
+            const project = projectStore.activeProject;
+            const file = projectStore.activeFile;
+            if(project !== this._activeProject){
+                this._activeProject = project;
+                container.innerHTML = '';
+                this._activeFile = null;
+            }
+            // update markdown
+            if (file && file.name.endsWith('.md')) {
+                this._activeFile = file;
+                container.innerHTML = converter.makeHtml(file.content);
+                this.updateHyperlinks(container);
+                this.updateCodeHighlight(container);
+            }
+        });
     }
 
     updateHyperlinks(element){

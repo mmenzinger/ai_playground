@@ -1,6 +1,6 @@
-import { LitElement, html, unsafeCSS } from 'lit-element';
-import { connect } from 'pwa-helpers/connect-mixin.js';
-import { store } from 'src/store.js';
+import { html, unsafeCSS } from 'lit-element';
+import { MobxLitElement } from '@adobe/lit-mobx';
+import appStore from 'store/app-store.js';
 
 const sharedStyles = unsafeCSS(require('components/shared-styles.css').toString());
 const style = unsafeCSS(require('./c4f-modal.css').toString());
@@ -12,14 +12,7 @@ export const Modals = {
 
 export class ModalAbort extends Error {};
 
-class C4fModal extends connect(store)(LitElement) {
-    static get properties() {
-        return {
-            _template: { type: String },
-            _data: { type: Object },
-        };
-    }
-
+class C4fModal extends MobxLitElement {
     static get styles() {
         return [
             sharedStyles,
@@ -34,41 +27,36 @@ class C4fModal extends connect(store)(LitElement) {
     }
 
     render() {
+        let template = appStore.modal ? appStore.modal.template : null;
         return html`
-            <div id="background" ?active="${this._template !== null}">
+            <div id="background" ?active="${appStore.modal !== null}">
                 <div id="content">
-                    <modal-generic id="${Modals.GENERIC}" class="modal" ?active="${this._template === Modals.GENERIC}"></modal-generic>
-                    <modal-upload-project id="${Modals.UPLOAD_PROJECT}" class="modal" ?active="${this._template === Modals.UPLOAD_PROJECT}"></modal-upload-project>
+                    <modal-generic id="${Modals.GENERIC}" class="modal" ?active="${template === Modals.GENERIC}"></modal-generic>
+                    <modal-upload-project id="${Modals.UPLOAD_PROJECT}" class="modal" ?active="${template === Modals.UPLOAD_PROJECT}"></modal-upload-project>
                 </div>
             </div>
         `;
     }
 
     updated() {
-        const modal = this.shadowRoot.getElementById(this._template);
-        if(modal && modal.onShow)
-            modal.onShow();
+        if(appStore.modal){
+            const template = appStore.modal.template;
+            const modal = this.shadowRoot.getElementById(template);
+            modal.data = appStore.modal.data;
+            if(modal && modal.onShow)
+                modal.onShow();
+        }
     }
 
     firstUpdated() {
         window.onkeydown = (e) => {
-            if(this._template && ['Escape', 'Enter'].includes(e.key)){
-                const modal = this.shadowRoot.getElementById(this._template);
+            if(appStore.modal && ['Escape', 'Enter'].includes(e.key)){
+                const modal = this.shadowRoot.getElementById(appStore.modal.template);
                 if(modal && modal.onKeyDown)
                     modal.onKeyDown(e.key);
                 e.preventDefault();
             }
         };
-    }
-
-    stateChanged(state) {
-        if(this._template !== state.modal.template){
-            this._template = state.modal.template;
-            this._data = state.modal.data;
-            if(this._template){
-                this.shadowRoot.getElementById(this._template).data = this._data;
-            }
-        }
     }
 }
 

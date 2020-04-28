@@ -1,10 +1,8 @@
 import { html, unsafeCSS } from 'lit-element';
-import { store } from 'src/store.js';
+import appStore from 'store/app-store.js';
 import { LazyElement } from 'components/elements/lazy-element.js';
 import db from 'src/localdb.js';
 import { defer } from 'src/util.js';
-
-import { resolveModal, rejectModal } from 'actions/modal.js';
 import { ModalAbort } from 'elements/c4f-modal.js';
 
 import JSZip from "jszip";
@@ -36,7 +34,7 @@ class ModalUploadProject extends LazyElement {
 
     render() {
         return html`
-            <form>
+            <form autocomplete="off" action="javascript:void(0);">
                 <header>
                     <h1>Upload Project</h1>
                 </header>
@@ -169,7 +167,7 @@ class ModalUploadProject extends LazyElement {
             this._error = null;
             this._zip = null;
             this._settings = null;
-            store.dispatch(resolveModal(result));
+            appStore.resolveModal(result);
         }
         catch(error){
         this._error = html`<li class="error"><p>${error}</p></li>`;
@@ -180,7 +178,7 @@ class ModalUploadProject extends LazyElement {
         this._error = null;
         this._zip = null;
         this._settings = null;
-        store.dispatch(rejectModal(new ModalAbort()));
+        appStore.rejectModal(new ModalAbort());
     }
 
     onKeyDown(key){

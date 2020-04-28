@@ -1,6 +1,6 @@
 import { html, unsafeCSS } from 'lit-element';
 import { LazyElement } from 'components/elements/lazy-element.js';
-import settings from '../../settings';
+import settingsStore from 'store/settings-store.js';
 
 
 const sharedStyles = unsafeCSS(require('components/shared-styles.css').toString());
@@ -36,7 +36,7 @@ class AiWelcome extends LazyElement {
     async onContinue() {
         const skip = this.shadowRoot.getElementById('skip');
         if(skip.checked){
-            settings.set('skip_welcome', true);
+            settingsStore.set('skip_welcome', true);
         }
         location.href = '?projects';
     }

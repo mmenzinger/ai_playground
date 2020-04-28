@@ -1,5 +1,5 @@
 import { QTable } from '/project/qtable.js';
-import { createScenario, Player } from '/scenarios/tictactoe/scenario.js';
+import { createScenario, Player } from '/scenario/tictactoe/scenario.js';
 
 export async function generateQTable(){
     const qtable = new QTable();

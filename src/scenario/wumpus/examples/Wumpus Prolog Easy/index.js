@@ -1,4 +1,4 @@
-import { Action } from '/scenarios/wumpus/scenario.js';
+import { Action } from '/scenario/wumpus/scenario.js';
 // import tau-prolog
 import pl from '/libs/prolog.js';
 

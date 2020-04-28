@@ -1,4 +1,4 @@
-import { Player } from '/scenarios/tictactoe/scenario.js';
+import { Player } from '/scenario/tictactoe/scenario.js';
 
 function shuffle(a) {
     for (let i = a.length - 1; i > 0; i--) {

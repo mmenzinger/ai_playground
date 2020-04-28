@@ -1,10 +1,15 @@
 import { LitElement, html, unsafeCSS } from 'lit-element';
-import { connect } from 'pwa-helpers/connect-mixin.js';
-import { store } from 'src/store.js';
 import { installRouter } from 'pwa-helpers/router.js';
 import { installOfflineWatcher } from 'pwa-helpers/network.js';
+import appStore from 'store/app-store.js';
+import { MobxLitElement } from '@adobe/lit-mobx';
 
-import { navigate, updateOffline } from 'actions/app.js';
+import { debugProjectStore } from 'store/project-store.js';
+import { debugAppStore } from 'store/app-store.js';
+import { debugSettingsStore } from 'store/settings-store.js';
+debugProjectStore();
+debugAppStore();
+debugSettingsStore();
 
 import('elements/ai-header.js');
 import('elements/c4f-modal.js');
@@ -13,13 +18,7 @@ const sharedStyles = unsafeCSS(require('components/shared-styles.css').toString(
 const style = unsafeCSS(require('./ai-app.css').toString());
 
 
-class AiApp extends connect(store)(LitElement) {
-    static get properties() {
-        return {
-            _page: { type: String },
-        };
-    }
-
+class AiApp extends MobxLitElement {
     static get styles() {
         return [
             sharedStyles,
@@ -34,20 +33,16 @@ class AiApp extends connect(store)(LitElement) {
                 <ai-header title="AI Playground"></ai-header>
             </header>
             <main>
-                <ai-welcome class="page" ?active="${this._page === 'welcome'}"></ai-welcome>
-                <ai-project class="page" ?active="${this._page === 'project'}"></ai-project>
-                <ai-project-index class="page" ?active="${this._page === 'projects'}"></ai-project-index>
+                <ai-welcome class="page" ?active="${appStore.page === 'welcome'}"></ai-welcome>
+                <ai-project class="page" ?active="${appStore.page === 'project'}"></ai-project>
+                <ai-project-index class="page" ?active="${appStore.page === 'projects'}"></ai-project-index>
             </main>
         `;
     }
 
     firstUpdated() {
-        installRouter(location => store.dispatch(navigate(decodeURIComponent(location.pathname), location.search)));
-        installOfflineWatcher(offline => store.dispatch(updateOffline(offline)));
-    }
-
-    stateChanged(state) {
-        this._page = state.app.page;
+        installRouter(location => appStore.navigate(decodeURIComponent(location.pathname), location.search));
+        installOfflineWatcher(offline => appStore.updateOfflineStatus(offline));
     }
 }
 

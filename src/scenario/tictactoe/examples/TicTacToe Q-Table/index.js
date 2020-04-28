@@ -1,6 +1,6 @@
 import { QTable } from '/project/qtable.js';
 import { generateQTable } from '/project/train.js';
-import { createScenario } from '/scenarios/tictactoe/scenario.js';
+import { createScenario } from '/scenario/tictactoe/scenario.js';
 
 let qtable = new QTable();
 

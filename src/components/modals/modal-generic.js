@@ -1,10 +1,9 @@
 import { html, unsafeCSS } from 'lit-element';
-import { store } from 'src/store.js';
+import appStore from 'store/app-store.js';
 import { LazyElement } from 'components/elements/lazy-element.js';
 import { defer } from 'src/util.js';
-
-import { resolveModal, rejectModal } from 'actions/modal.js';
 import { ModalAbort } from 'elements/c4f-modal.js';
+
 
 const sharedStyles = unsafeCSS(require('components/shared-styles.css').toString());
 const style = unsafeCSS(require('./modal-generic.css').toString());
@@ -32,6 +31,7 @@ class ModalGeneric extends LazyElement {
     }
 
     render() {
+        console.log(this.data);
         if(this.data){
             return html`
                 <form autocomplete="off" action="javascript:void(0);">
@@ -90,7 +90,7 @@ class ModalGeneric extends LazyElement {
             }
 
             this._error = null;
-            store.dispatch(resolveModal(fields));
+            appStore.resolveModal(fields);
 
         }
         catch(error){
@@ -100,7 +100,7 @@ class ModalGeneric extends LazyElement {
 
     onAbort(){
         this._error = null;
-        store.dispatch(rejectModal(new ModalAbort()));
+        appStore.rejectModal(new ModalAbort());
     }
 
     onKeyDown(key){

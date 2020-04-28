@@ -4,7 +4,7 @@ import {CacheFirst} from 'workbox-strategies/CacheFirst';
 import {Plugin as ExpirationPlugin} from 'workbox-expiration/Plugin';
 import db from 'src/localdb.js';
 
-let project = 0;
+let project = null;
 
 onmessage = m => {
     if(m.data.type === 'setProject'){
@@ -63,7 +63,7 @@ async function userFile(arg){
         let id = 0;
         let filename = path[2];
         if(path[1] === 'project'){
-            id = project;
+            id = project.id;
         }
         else if( ! isNaN(path[1])){ // if is number
             id = Number(path[1])

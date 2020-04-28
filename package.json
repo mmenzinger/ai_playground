@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "description": "",
   "dependencies": {
+    "@adobe/lit-mobx": "0.0.4",
     "@tensorflow/tfjs": "^1.5.2",
     "ace-builds": "^1.4.8",
     "deepcopy": "^2.0.0",
@@ -15,6 +16,7 @@
     "jszip": "^3.4.0",
     "lit-element": "^2.2.1",
     "lodash": "^4.17.15",
+    "mobx": "^5.15.4",
     "monaco-editor": "^0.20.0",
     "monaco-editor-webpack-plugin": "^1.9.0",
     "prismjs": "^1.19.0",

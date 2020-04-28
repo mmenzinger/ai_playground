@@ -10,7 +10,7 @@ const staticFiles = [
     { from: 'assets', to: 'assets' },
     //{ from: 'node_modules/monaco-editor', to: 'monaco-editor' },
     {
-        from: './src/scenarios/*/assets/*',
+        from: './src/scenario/*/assets/*',
         to: 'assets/[1]/[name].[ext]',
         test: /([^/]+)\/assets\/[^/]+$/,
     },
@@ -48,8 +48,8 @@ module.exports = {
     module: {
         rules: [
             {
-                test: /\/scenarios\/[^/]+\/(examples|templates)\//,
-                include: path.join(__dirname, 'src/scenarios/'),
+                test: /\/scenario\/[^/]+\/(examples|templates)\//,
+                include: path.join(__dirname, 'src/scenario/'),
                 use: [
                     {
                         loader: 'raw-loader',
@@ -60,13 +60,13 @@ module.exports = {
                 ],
             },
             {
-                test: /\/scenarios\/[^/]+\/assets\//,
-                include: path.join(__dirname, 'src/scenarios/'),
+                test: /\/scenario\/[^/]+\/assets\//,
+                include: path.join(__dirname, 'src/scenario/'),
                 loader: 'ignore-loader',
             },
             {
-                test: /\/scenarios\/[^/]+\/scenario\.md$/,
-                include: path.join(__dirname, 'src/scenarios/'),
+                test: /\/scenario\/[^/]+\/scenario\.md$/,
+                include: path.join(__dirname, 'src/scenario/'),
                 use: [
                     {
                         loader: 'raw-loader',
@@ -82,7 +82,7 @@ module.exports = {
             },
             {
                 test: /\.(jpe?g|png|gif|svg|ttf)$/i,
-                exclude: path.join(__dirname, 'src/scenarios/'),
+                exclude: path.join(__dirname, 'src/scenario/'),
                 loader: 'file-loader',
                 options: {
                     name: '/assets/[name].[ext]',

@@ -1,8 +1,7 @@
 import { html, LitElement, unsafeCSS } from 'lit-element';
 import { unsafeHTML } from 'lit-html/directives/unsafe-html';
-import { connect } from 'pwa-helpers/connect-mixin';
-import { store } from 'src/store.js';
-import { addLog, clearLog } from 'actions/log.js';
+import { MobxLitElement } from '@adobe/lit-mobx';
+import projectStore from 'store/project-store.js';
 
 import 'components/elements/c4f-console.js';
 import { getComponents } from 'src/webpack-utils.js';
@@ -13,13 +12,7 @@ const sharedStyles = unsafeCSS(require('components/shared-styles.css').toString(
 const style = unsafeCSS(require('./ai-simulator.css').toString());
 
 
-class AiSimulator extends connect(store)(LitElement) {
-    static get properties() {
-        return {
-            _scenarioType: { type: String }
-        };
-    }
-
+class AiSimulator extends MobxLitElement {
     static get styles() {
         return [
             sharedStyles,
@@ -35,13 +28,14 @@ class AiSimulator extends connect(store)(LitElement) {
     }
 
     render() {
+        const project = projectStore.activeProject;
         if(this._sandbox.resolved)
             this._sandbox.value.terminate();
         this._sandbox = defer();
         this._scenarioLoaded = defer();
-        const type = this._scenarioType;
-        if(type){
-            import(`scenarios/${type}/scenario-${type}`).then(_ => {
+        if(project){
+            const type = project.scenario;
+            import(`scenario/${type}/scenario-${type}`).then(_ => {
                 this._scenarioLoaded.resolve(true);
             });
             const components = getComponents().map(name => {
@@ -61,18 +55,18 @@ class AiSimulator extends connect(store)(LitElement) {
     }
 
     async simRun() {
-        store.dispatch(clearLog());
+        projectStore.flushActiveFile();
+        projectStore.clearLog();
         const sandbox = await this._sandbox;
-        sandbox.store = store;
-        sandbox.scenario = this._scenario;
+        //sandbox.scenario = this._scenario;
         sandbox.call(this._scenario.constructor.file, '__run', [{settings: this._scenario.getSettings()}]);
     }
 
     async simTrain() {
-        store.dispatch(clearLog());
+        projectStore.flushActiveFile();
+        projectStore.clearLog();
         const sandbox = await this._sandbox;
-        sandbox.store = store;
-        sandbox.scenario = this._scenario;
+        //sandbox.scenario = this._scenario;
         sandbox.call('/project/index.js', 'train');
     }
 
@@ -80,7 +74,7 @@ class AiSimulator extends connect(store)(LitElement) {
         const sandbox = await this._sandbox;
         sandbox.terminate();
         const msg = `simulation terminated!`;
-        store.dispatch(addLog({ type: 'warn', args: [msg] }));
+        projectStore.addLog({ type: 'warn', args: [msg] });
         console.warn(msg);
     }
 
@@ -88,15 +82,9 @@ class AiSimulator extends connect(store)(LitElement) {
         await this._scenarioLoaded;
         await navigator.serviceWorker.ready; // make sure sw is ready
         this._scenario = this.shadowRoot.querySelector('[active]');
-        this._sandbox.resolve(new Sandbox(store, this._scenario));
+        this._sandbox.resolve(new Sandbox(projectStore, this._scenario));
         if(this._scenario.constructor.autorun){   
             this.simRun()
-        }
-    }
-
-    stateChanged(state) {
-        if (state.projects.currentScenario !== this._scenarioType) {
-            this._scenarioType = state.projects.currentScenario;
         }
     }
 }

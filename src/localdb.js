@@ -75,7 +75,7 @@ class LocalDB {
     }
 
     async importProject(name, scenario, projectFiles, globalFiles, collision){
-        return this.db.transaction('rw', this.db.projects, this.db.files, async () => {
+        this.db.transaction('rw', this.db.projects, this.db.files, async () => {
             const collisionFilesPromises = globalFiles.map(newFile => new Promise((resolve, reject) => {
                 this.loadFileByName(0, newFile.name).then(oldFile => {
                     resolve({oldFile, newFile})
@@ -96,6 +96,8 @@ class LocalDB {
             const projectId = await this.createProject(name, scenario);
             const projectFilePromises = projectFiles.map(file => this.createFile(file.name, projectId, file.content));
             await Promise.all(projectFilePromises);
+
+            return projectId;
         });
     }
 }

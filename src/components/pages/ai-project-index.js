@@ -1,9 +1,7 @@
 import { html, unsafeCSS } from 'lit-element';
 import { LazyElement } from 'components/elements/lazy-element.js';
-import { store } from 'src/store.js';
-import { showModal } from 'actions/modal.js';
-
-import { createProject, deleteProject, importProject } from 'actions/projects.js';
+import appStore from 'store/app-store.js';
+import projectStore from 'store/project-store.js';
 
 import db from 'src/localdb.js';
 
@@ -77,9 +75,9 @@ class AiProjectIndex extends LazyElement {
     async onNewProject() {
         try {
             const templates = getTemplates();
-            const modal = await store.dispatch(showModal(Modals.GENERIC, newProjectTemplate(templates)));
+            const modal = await appStore.showModal(Modals.GENERIC, newProjectTemplate(templates));
             const template = templates[modal.template];
-            await store.dispatch(createProject(modal.name, template.scenario, template.files));
+            await projectStore.createProject(modal.name, template.scenario, template.files);
             this._projects = await db.getProjects();
         }
         catch (error) {
@@ -91,9 +89,9 @@ class AiProjectIndex extends LazyElement {
     async onNewExample() {
         try {
             const examples = getExamples();
-            const modal = await store.dispatch(showModal(Modals.GENERIC, newExampleTemplate(examples)));
+            const modal = await appStore.showModal(Modals.GENERIC, newExampleTemplate(examples));
             const example = examples[modal.example];
-            await store.dispatch(createProject(modal.name, example.scenario, example.files));
+            await projectStore.createProject(modal.name, example.scenario, example.files);
             this._projects = await db.getProjects();
         }
         catch (error) {
@@ -104,8 +102,8 @@ class AiProjectIndex extends LazyElement {
 
     async onDeleteProject(project) {
         try {
-            const modal = await store.dispatch(showModal(Modals.GENERIC, deleteProjectTemplate(project)));
-            await store.dispatch(deleteProject(project.id));
+            const modal = await appStore.showModal(Modals.GENERIC, deleteProjectTemplate(project));
+            await projectStore.deleteProject(project.id);
             this._projects = await db.getProjects();
         }
         catch (error) {
@@ -116,7 +114,7 @@ class AiProjectIndex extends LazyElement {
 
     async onDownloadProject(project) {
         try{
-            const modal = await store.dispatch(showModal(Modals.GENERIC, downloadProjectTemplate(project)));
+            const modal = await appStore.showModal(Modals.GENERIC, downloadProjectTemplate(project));
             const zip = new JSZip();
             const projectFolder = zip.folder('project');
             const projectFiles = await db.getProjectFiles(project.id);
@@ -142,14 +140,14 @@ class AiProjectIndex extends LazyElement {
 
     async onUploadProject() {
         try{
-            const modal = await store.dispatch(showModal(Modals.UPLOAD_PROJECT));
-            await store.dispatch(importProject(
+            const modal = await appStore.showModal(Modals.UPLOAD_PROJECT);
+            await projectStore.importProject(
                 modal.name,
                 modal.settings.scenario,
                 modal.projectFiles,
                 modal.globalFiles,
                 modal.collision
-            ));
+            );
             this._projects = await db.getProjects();
         }
         catch (error) {

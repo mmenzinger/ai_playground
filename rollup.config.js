@@ -42,7 +42,7 @@ function packGlobalFile(input, file, format = 'esm', additional_plugins = []){
 }
 
 function getScenarioModules() {
-    const files = glob.sync(path.join(__dirname, 'src/scenarios/*/scenario.js'));
+    const files = glob.sync(path.join(__dirname, 'src/scenario/*/scenario.js'));
     return files.map(file => packGlobalFile(file, file.replace(path.join(__dirname, 'src'), '')));
 }
 
