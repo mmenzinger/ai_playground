@@ -130,6 +130,8 @@ self.console = {
 }
 
 async function getCaller(arg1) {
+    let errorLocation = null;
+
     try{
         let frame;
         if(arg1 instanceof Error){
@@ -140,12 +142,13 @@ async function getCaller(arg1) {
             const stack = StackTrace.getSync();
             frame = stack[2];
         }
+        
         const file = frame.fileName.match(/\/([^/]+)\/([^/]+)$/);
         const project = file[1];
         const fileName = file[2];
         const functionName = frame.functionName.match(/([^.]+)$/)[1];
         if(! fileName.startsWith('scenario.worker.js')){
-            return {
+            errorLocation = {
                 project,
                 fileName,
                 functionName,
@@ -153,11 +156,12 @@ async function getCaller(arg1) {
                 columnNumber: frame.columnNumber,
             }
         }
-        return undefined;
     }
-    catch(e){
-        return undefined;
+    catch(error){
+        __console.error(error);
     }
+    
+    return errorLocation;
 }
 
 
@@ -165,7 +169,6 @@ async function getCaller(arg1) {
  *  message handling
  */
 onmessage = async m => {
-    
     try {
         switch (m.data.type) {
             case 'call': {

@@ -36,6 +36,10 @@ class LocalDB {
         return this.db.files.where('id').equals(id).delete();
     }
 
+    async setFileErrors(id, errors, lastChange = Date.now()){
+        return this.db.files.update(id, {errors, lastChange});
+    }
+
     async renameFile(id, name, lastChange = Date.now()){
         return this.db.files.update(id, {name, lastChange});
     }

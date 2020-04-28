@@ -4,7 +4,7 @@ import { store } from 'src/store.js';
 import db from 'src/localdb.js';
 
 import { openFile } from 'actions/files.js';
-import { subscribeLog, LOG_ADD, LOG_CLEAR } from 'actions/log.js';
+import { subscribeToLog, LOG_ADD, LOG_CLEAR } from 'actions/log.js';
 
 
 const sharedStyles = unsafeCSS(require('components/shared-styles.css').toString());
@@ -28,7 +28,7 @@ class C4fConsole extends LitElement {
     constructor(){
         super();
         this._logs = [];
-        store.dispatch(subscribeLog(this.onLog.bind(this)));
+        store.dispatch(subscribeToLog("bottom_console", this.onLog.bind(this)));
     }
 
     render() {

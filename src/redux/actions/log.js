@@ -9,8 +9,8 @@ export function addLog(log) {
     return async (dispatch, getState) => {
         const state = getState();
         const action = { type: LOG_ADD, log }
-        for (const callback of state.log.subscribers.values()) {
-            callback(action);
+        for (const [name, subscriber] of Object.entries(state.log.subscribers)) {
+            subscriber.callback(action);
         }
         dispatch(action);
     }
@@ -21,17 +21,17 @@ export function clearLog() {
     return (dispatch, getState) => {
         const state = getState();
         const action = { type: LOG_CLEAR }
-        for (const callback of state.log.subscribers.values()) {
-            callback(action);
+        for (const [name, subscriber] of Object.entries(state.log.subscribers)) {
+            subscriber.callback(action);
         }
         dispatch(action);
     }
 }
 
-export function subscribeLog(callback) {
-    return { type: LOG_SUBSCRIBE, callback };
+export function subscribeToLog(name, callback) {
+    return { type: LOG_SUBSCRIBE, name, callback };
 }
 
-export function unsubscribeLog(callback) {
-    return { type: LOG_UNSUBSCRIBE, callback };
+export function unsubscribeToLog(name) {
+    return { type: LOG_UNSUBSCRIBE, name };
 }

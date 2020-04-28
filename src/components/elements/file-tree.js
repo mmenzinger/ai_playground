@@ -4,7 +4,7 @@ import { store } from 'src/store.js';
 import { defer, dispatchIframeEvents } from 'src/util.js';
 
 //import { modalShow, modalConsume } from 'actions/app.js';
-import { openFile, createFile, deleteFile } from 'actions/files.js';
+import { openFile, createFile, deleteFile, subscribeToFileChanges } from 'actions/files.js';
 import { showModal } from 'actions/modal.js';
 
 import { Modals, ModalAbort } from 'elements/c4f-modal.js';
@@ -88,7 +88,7 @@ class FileTree extends connect(store)(LitElement) {
             filetree.onAddFileGlobal = this.onAddFileGlobal.bind(this);
             filetree.onAddFileProject = this.onAddFileProject.bind(this);
             filetree.onDelete = this.onDelete.bind(this);
-
+            store.dispatch(subscribeToFileChanges('file_tree', this.onFileChanged));
             dispatchIframeEvents(iframe);
         }
     }
@@ -129,6 +129,10 @@ class FileTree extends connect(store)(LitElement) {
             comp = fileA.name.localeCompare(fileB.name);
         }
         return comp;
+    }
+
+    onFileChanged(){
+        console.log("now");
     }
 }
 

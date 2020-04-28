@@ -40,6 +40,35 @@ require(['vs/editor/editor.main'], function() {
         }
     });
 
+    let errorMarkerCallback = null;
+    let errorMarkerSkip = false; // skip first update after content change
+    editor.onErrorMarkerChange = (callback) => {
+        callback.lastErrorMarkers = "";
+        errorMarkerCallback = callback;
+        errorMarkerSkip = true;
+    }
+
+    editor.onDidChangeModelDecorations(() => {
+        const model = editor.getModel();
+        if (model === null || model.getModeId() !== "javascript")
+            return;
+    
+        const owner = model.getModeId();
+        const markers = monaco.editor.getModelMarkers({ owner });
+
+        if(errorMarkerSkip){
+            errorMarkerSkip = false;
+        }
+        else if(errorMarkerCallback){
+            const newErrorMarkers = JSON.stringify(markers);
+            if(errorMarkerCallback.lastErrorMarkers !== newErrorMarkers){
+                errorMarkerCallback.lastErrorMarkers = newErrorMarkers;
+                const errorMarkers = markers.filter(marker => marker.severity === 8);
+                errorMarkerCallback(errorMarkers);
+            }
+        }
+    });
+
     editor.setLanguage = (lang) => {
         const model = editor.getModel();
         monaco.editor.setModelLanguage(model, lang);

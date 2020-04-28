@@ -7,6 +7,9 @@ export const FILE_SAVE = 'FILE_SAVE';
 export const FILE_DELETE = 'FILE_DELETE';
 export const FILE_MOVE = 'FILE_MOVE';
 export const FILE_RENAME = 'FILE_RENAME';
+export const FILE_ERRORS = 'FILE_ERRORS';
+export const FILES_SUBSCRIBE = 'FILES_SUBSCRIBE';
+export const FILES_UNSUBSCRIBE = 'FILES_UNSUBSCRIBE';
 
 export const openFile = (id, state = undefined) => async dispatch => {
     const file = await db.loadFile(id);
@@ -40,8 +43,23 @@ export const saveFile = (id, content) => async dispatch => {
     return num;
 }
 
+export const setFileErrors = (id, errors) => async dispatch => {
+    const timestamp = Date.now();
+    const num = await db.setFileErrors(id, errors, timestamp);
+    dispatch({ type: FILE_SAVE, errors, timestamp });
+    return num;
+}
+
 export const renameFile = () => async dispatch => {
     const timestamp = Date.now();
     throw Error('not implemented');
     return { type: FILE_RENAME, timestamp };
+}
+
+export function subscribeToFileChanges(name, callback){
+    return { type: FILES_SUBSCRIBE, name, callback };
+}
+
+export function unsubscribeToFileChanges(name){
+    return { type: FILES_UNSUBSCRIBE, name };
 }

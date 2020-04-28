@@ -6,7 +6,7 @@ import {
 } from 'actions/log.js';
 
 const INITIAL_STATE = {
-    subscribers: new Set(),
+    subscribers: {},
 };
 
 const log = (state = INITIAL_STATE, action) => {
@@ -32,17 +32,17 @@ function clearLog(state, action) {
 }
 
 function subscribeLog(state, action){
-    const subscribers = new Set(state.subscribers);
-    subscribers.add(action.callback);
+    const subscribers = {...state.subscribers};
+    subscribers[action.name] = { callback: action.callback };
     return {
         ...state,
-        subscribers
+        subscribers,
     }
 }
 
 function unsubscribeLog(state, action){
-    const subscribers = new Set(state.subscribers);
-    subscribers.delete(action.callback);
+    const subscribers = {...state.subscribers};
+    subscribers[action.name] = undefined;
     return {
         ...state,
         subscribers

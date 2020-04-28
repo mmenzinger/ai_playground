@@ -2,7 +2,7 @@ import { html, unsafeCSS, css, LitElement } from 'lit-element';
 import { connect } from 'pwa-helpers/connect-mixin';
 import { store } from 'src/store.js';
 import { ResizeObserver } from 'resize-observer';
-import { saveFile } from 'actions/files.js';
+import { saveFile, setFileErrors } from 'actions/files.js';
 import { defer, dispatchIframeEvents } from 'src/util.js';
 import settings from 'src/settings.js';
 
@@ -113,6 +113,15 @@ class C4fEditor extends connect(store)(LitElement) {
             }
             this._currentMode = mode;
             this._preventOnChange = true;
+            const fileId = this._currentFile.id;
+            editor.onErrorMarkerChange((markers) => {
+                const errors = markers.map(marker => ({
+                    line: marker.startLineNumber,
+                    column: marker.startColumn,
+                    message: marker.message,
+                }));
+                store.dispatch(setFileErrors(fileId, errors));
+            });
             editor.setLanguage(mode);
             editor.setValue(this._currentFile.content);
             //editor.updateOptions({ readOnly: false });
@@ -124,6 +133,7 @@ class C4fEditor extends connect(store)(LitElement) {
                 editor.focus();
             }
             this._preventOnChange = false;
+            
         }
     }
 }
