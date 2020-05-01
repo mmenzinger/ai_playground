@@ -3,8 +3,8 @@ import { LazyElement } from 'components/elements/lazy-element.js';
 
 import { getInitialState, getMap, Percept } from './scenario';
 
-const sharedStyles = unsafeCSS(require('components/shared-styles.css').toString());
-const style = unsafeCSS(require('./scenario-wumpus.css').toString());
+import sharedStyles from 'components/shared-styles.css';
+import style from './scenario-wumpus.css';
 
 
 class ScenarioWumpus extends LazyElement {
@@ -25,7 +25,7 @@ class ScenarioWumpus extends LazyElement {
     }
 
     static get file(){
-        return '/scenarios/wumpus/scenario.js';
+        return '/scenario/wumpus/scenario.js';
     }
 
     static get autorun() { return false; }

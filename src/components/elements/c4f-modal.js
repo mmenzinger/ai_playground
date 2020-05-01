@@ -2,8 +2,8 @@ import { html, unsafeCSS } from 'lit-element';
 import { MobxLitElement } from '@adobe/lit-mobx';
 import appStore from 'store/app-store.js';
 
-const sharedStyles = unsafeCSS(require('components/shared-styles.css').toString());
-const style = unsafeCSS(require('./c4f-modal.css').toString());
+import sharedStyles from 'components/shared-styles.css';
+import style from './c4f-modal.css';
 
 export const Modals = {
     GENERIC: 'generic',

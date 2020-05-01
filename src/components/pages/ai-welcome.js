@@ -2,9 +2,8 @@ import { html, unsafeCSS } from 'lit-element';
 import { LazyElement } from 'components/elements/lazy-element.js';
 import settingsStore from 'store/settings-store.js';
 
-
-const sharedStyles = unsafeCSS(require('components/shared-styles.css').toString());
-//const style = unsafeCSS(require('./ai-project-index.css').toString());
+import sharedStyles from 'components/shared-styles.css';
+//import style from './ai-welcome.css';
 
 class AiWelcome extends LazyElement {
     static get properties() {

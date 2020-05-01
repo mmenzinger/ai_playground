@@ -112,7 +112,7 @@ function getEnding(filename){
     return parts[parts.length-1];
 }
 
-async function updateFiles(global, project, currentFile){
+async function updateFiles(global, project, activeFile, filesError){
     const data = [
         {
             id: 'global',
@@ -133,7 +133,7 @@ async function updateFiles(global, project, currentFile){
             }
         },
         ...project.map(file => {
-            const ending = getEnding(file.name);
+            let ending = getEnding(file.name);
             return {
                 id: file.id,
                 parent: 'project',
@@ -143,7 +143,7 @@ async function updateFiles(global, project, currentFile){
             }
         }),
         ...global.map(file => {
-            const ending = getEnding(file.name);
+            let ending = getEnding(file.name);
             return {
                 id: file.id,
                 parent: 'global',
@@ -157,14 +157,34 @@ async function updateFiles(global, project, currentFile){
     tree.settings.core.data = data;
     tree.refresh();
     jstree = defer();
-    selectFile(currentFile);
+    setErrors(filesError);
+    selectFile(activeFile);
 }
 
-async function selectFile(currentFile){
-    if(currentFile){
+async function selectFile(file){
+    if(file){
         const tree = await jstree;
         preventSelectNodeEvent = true;
-        tree.activate_node(currentFile.id);
+        tree.activate_node(file.id);
         preventSelectNodeEvent = false;
+    }
+}
+
+const currentErrorNodes = {};
+async function setErrors(filesError){
+    const tree = await jstree;
+    for(const [fileId, message] of Object.entries(filesError)){
+        const node = tree.get_node(fileId);
+        if(node){
+            tree.set_icon(node, `../assets/filetree/error.svg`);
+            currentErrorNodes[fileId] = node;
+        }
+    }
+    for(const node of Object.values(currentErrorNodes)){
+        if(!filesError[node.id]){
+            const ending = getEnding(node.text);
+            tree.set_icon(node, `../assets/filetree/${ending}.svg`);
+            delete currentErrorNodes[node.id];
+        }
     }
 }

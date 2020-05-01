@@ -48,6 +48,35 @@ module.exports = {
     module: {
         rules: [
             {
+                test: /\.(ts|js)$/,
+                exclude: /(node_modules|bower_components)/,
+                use: {
+                    loader: 'babel-loader',
+                    options: {
+                        plugins: [
+                            ['@babel/plugin-proposal-decorators', { 
+                                legacy: true,
+                            }],
+                            ['@babel/plugin-proposal-class-properties', { 
+                                loose: true,
+                            }],
+                            ['transform-remove-console', {
+                                exclude: ['error', 'warn', 'log', 'assert'],
+                            }],
+                            ['@babel/plugin-proposal-optional-chaining']
+                        ],
+                        presets: [[
+                            '@babel/preset-env',
+                            {
+                                targets: {
+                                    chrome: 80,
+                                },
+                            },
+                        ]],
+                    }
+                }
+            },
+            {
                 test: /\/scenario\/[^/]+\/(examples|templates)\//,
                 include: path.join(__dirname, 'src/scenario/'),
                 use: [
@@ -73,12 +102,16 @@ module.exports = {
                     },
                 ],
             },
-            {
+            /*{
                 test: /\.css$/,
                 loader: 'css-loader',
                 options: {
                     url: false,
                 },
+            },*/
+            {
+                test: /\.css$/,
+                loader: 'lit-css-loader'
             },
             {
                 test: /\.(jpe?g|png|gif|svg|ttf)$/i,

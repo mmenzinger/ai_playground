@@ -1,15 +1,11 @@
-import { observable, action, decorate, autorun } from 'mobx';
+import { observable, action, autorun, toJS } from 'mobx';
 
 const STORAGE_KEY = 'settings';
 
 class SettingsStore{
-    constructor(){
-        this.data = JSON.parse(localStorage.getItem(STORAGE_KEY));
-        if(!this.data){
-            this.data = {}
-        }
-    }
+    @observable data = JSON.parse(localStorage.getItem(STORAGE_KEY) || {});
 
+    @action
     set(key, value){
         this.data[key] = value;
         localStorage.setItem(STORAGE_KEY, JSON.stringify(this.data))
@@ -23,23 +19,16 @@ class SettingsStore{
     }
 }
 
-decorate(SettingsStore, {
-    data: observable,
-
-    set: action,
-    get: action,
-});
-
 export const settingsStore = new SettingsStore();
 
-// store settings to localStorage
+// save settings to localStorage
 autorun(reaction => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(settingsStore.data))
 });
 
 export function debugSettingsStore(){
     autorun(reaction => {
-        console.log('---- settingsStore update ----', JSON.parse(JSON.stringify(settingsStore)));
+        console.log('---- settingsStore update ----', toJS(settingsStore));
     });
 }
 

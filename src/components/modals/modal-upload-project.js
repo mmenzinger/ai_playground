@@ -5,10 +5,10 @@ import db from 'src/localdb.js';
 import { defer } from 'src/util.js';
 import { ModalAbort } from 'elements/c4f-modal.js';
 
-import JSZip from "jszip";
+import JSZip from 'jszip';
 
-const sharedStyles = unsafeCSS(require('components/shared-styles.css').toString());
-const style = unsafeCSS(require('./modal-generic.css').toString());
+import sharedStyles from 'components/shared-styles.css';
+import style from './modal-generic.css';
 
 class ModalUploadProject extends LazyElement {
     static get properties() {
@@ -71,8 +71,8 @@ class ModalUploadProject extends LazyElement {
                     ${this._error}
                 </ul>
                 <footer>
-                    <button id="no" @click=${this.onAbort}>Cancel</button>
-                    <button id="yes" @click=${this.onSubmit}>Upload</button>
+                    <button id="no" class="error" @click=${this.onAbort}>Cancel</button>
+                    <button id="yes" class="ok" @click=${this.onSubmit}>Upload</button>
                 </footer>
             </form>
             

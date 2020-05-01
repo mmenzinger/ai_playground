@@ -5,8 +5,8 @@ import { defer } from 'src/util.js';
 import { ModalAbort } from 'elements/c4f-modal.js';
 
 
-const sharedStyles = unsafeCSS(require('components/shared-styles.css').toString());
-const style = unsafeCSS(require('./modal-generic.css').toString());
+import sharedStyles from 'components/shared-styles.css';
+import style from './modal-generic.css';
 
 class ModalGeneric extends LazyElement {
     static get properties() {
@@ -31,7 +31,6 @@ class ModalGeneric extends LazyElement {
     }
 
     render() {
-        console.log(this.data);
         if(this.data){
             return html`
                 <form autocomplete="off" action="javascript:void(0);">
@@ -43,8 +42,8 @@ class ModalGeneric extends LazyElement {
                         ${this._error}
                     </ul>
                     <footer>
-                        <button id="no" @click=${this.onAbort}>${this.data.abort}</button>
-                        <button id="yes" @click=${this.onSubmit}>${this.data.submit}</button>
+                        <button id="no" class="error" @click=${this.onAbort}>${this.data.abort}</button>
+                        <button id="yes" class="ok" @click=${this.onSubmit}>${this.data.submit}</button>
                     </footer>
                 </form>
             `;

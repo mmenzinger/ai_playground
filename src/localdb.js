@@ -25,19 +25,35 @@ class LocalDB {
     }
 
     async loadFileByName(projectId, fileName){
+        console.assert(Number.isInteger(projectId), `projectId: ${projectId}`)
+        console.assert(typeof fileName === 'string', `fileName: ${fileName}`)
         return this.db.files.where({project: projectId, name: fileName}).first();
     }
 
-    async saveFile(id, content, lastChange = Date.now()) {
+    async saveFile(file, lastChange = Date.now()) {
+        return this.db.files.update(file.id, {
+            content: file.content,
+            state: file.state,
+            errors: file.errors,
+            lastChange
+        });
+    }
+
+    async saveFileContent(id, content, lastChange = Date.now()) {
         return this.db.files.update(id, {content, lastChange});
     }
 
-    async removeFile(id){
-        return this.db.files.where('id').equals(id).delete();
+    async saveFileState(id, state, lastChange = Date.now()) {
+        return this.db.files.update(id, {state, lastChange});
     }
 
-    async setFileErrors(id, errors, lastChange = Date.now()){
+    async saveFileErrors(id, errors, lastChange = Date.now()){
         return this.db.files.update(id, {errors, lastChange});
+    }
+
+    async removeFile(id){
+        console.log(id);
+        return this.db.files.where('id').equals(id).delete();
     }
 
     async renameFile(id, name, lastChange = Date.now()){
@@ -70,8 +86,12 @@ class LocalDB {
         return this.db.projects.where({id}).first();
     }
 
-    async getProjectFiles(project){
-        return this.db.files.where('project').equals(project).toArray();
+    async getProjectFiles(id){
+        return this.db.files.where('project').equals(id).toArray();
+    }
+
+    async setProjectErrors(id, errors){
+        return this.db.projects.update(id, {errors});
     }
 
     async importProject(name, scenario, projectFiles, globalFiles, collision){

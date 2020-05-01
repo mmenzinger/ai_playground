@@ -1,17 +1,15 @@
-import { observable, action, decorate, autorun } from 'mobx';
+import { observable, action, flow, autorun, toJS } from 'mobx';
 import settingsStore from 'store/settings-store.js';
 import projectStore from 'store/project-store.js';
 import { defer } from 'src/util.js';
 
 class AppStore{
-    constructor(){
-        this.page = '';
-        this.params = [];
-        this.offline = false;
-        this.modal = null;
-    }
+    @observable page = '';
+    @observable params = [];
+    @observable offline = false;
+    @observable modal = null;
 
-    async navigate(path, search){
+    navigate = flow(function*(path, search){
         const urlParams = new URLSearchParams(search);
         const params = {};
         for(const pair of urlParams)
@@ -25,15 +23,15 @@ class AppStore{
                 import('components/pages/ai-project.js');
                 const id = Number(params['project']);
                 if(id)
-                    await projectStore.openProject(id);
+                    yield projectStore.openProject(id);
                 break;
             case 'projects':
                 import('components/pages/ai-project-index.js');
-                await projectStore.closeProject();
+                yield projectStore.closeProject();
                 break;
             case 'welcome':
                 import('components/pages/ai-welcome.js');
-                await projectStore.closeProject();
+                yield projectStore.closeProject();
                 break;
             case 'index':
             default:
@@ -45,21 +43,22 @@ class AppStore{
                     import('components/pages/ai-welcome.js');
                     page = 'welcome';
                 }
-                await projectStore.closeProject();
+                yield projectStore.closeProject();
         }
 
         this.page = page;
         this.params = params;
-    };
+    })
 
+    @action
     async updateOfflineStatus(offline){
         this.offline = offline;
     }
 
 
-    async showModal(template, data) {
+    showModal = flow(function*(template, data) {
         // lazy load modal
-        await import(`modals/modal-${template}.js`);
+        yield import(`modals/modal-${template}.js`);
 
         if(this.modal){
             this.modal.result.reject(Error("Previous modal not closed!"));
@@ -69,37 +68,26 @@ class AppStore{
         this.modal = { template, data, result }
 
         return result;
-    }
+    })
 
+    @action
     async resolveModal(data){
         this.modal.result.resolve(data);
         this.modal = null;
     }
 
+    @action
     async rejectModal(data){
         this.modal.result.reject(data);
         this.modal = null;
     }
 }
 
-decorate(AppStore, {
-    page: observable,
-    params: observable,
-    offline: observable,
-    modal: observable,
-
-    navigate: action,
-    updateOfflineStatus: action,
-    showModal: action,
-    resolveModal: action,
-    rejectModal: action,
-});
-
 export const appStore = new AppStore();
 
 export function debugAppStore(){
     autorun(reaction => {
-        console.log('---- appStore update ----', JSON.parse(JSON.stringify(appStore)));
+        console.log('---- appStore update ----', toJS(appStore));
     });
 }
 

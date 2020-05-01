@@ -1,4 +1,4 @@
-import { html, unsafeCSS } from 'lit-element';
+import { html } from 'lit-element';
 import { LazyElement } from 'components/elements/lazy-element.js';
 import appStore from 'store/app-store.js';
 import projectStore from 'store/project-store.js';
@@ -13,8 +13,8 @@ import { newProjectTemplate, newExampleTemplate, deleteProjectTemplate, download
 import JSZip from "jszip";
 import { saveAs } from 'file-saver';
 
-const sharedStyles = unsafeCSS(require('components/shared-styles.css').toString());
-const style = unsafeCSS(require('./ai-project-index.css').toString());
+import sharedStyles from 'components/shared-styles.css';
+import style from './ai-project-index.css';
 
 class AiProjectIndex extends LazyElement {
     static get properties() {

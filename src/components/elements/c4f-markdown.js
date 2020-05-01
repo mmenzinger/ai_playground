@@ -1,4 +1,4 @@
-import { html, unsafeCSS, css, LitElement } from 'lit-element';
+import { html, LitElement } from 'lit-element';
 import { autorun } from 'mobx';
 import projectStore from 'store/project-store.js';
 
@@ -7,10 +7,10 @@ import 'prismjs/plugins/line-numbers/prism-line-numbers';
 import 'prismjs/components/prism-prolog';
 import 'prismjs/components/prism-markdown';
 
-const sharedStyles = unsafeCSS(require('components/shared-styles.css').toString());
-const style = unsafeCSS(require('./c4f-markdown.css').toString());
-const prism = unsafeCSS(require('prismjs/themes/prism.css').toString());
-const prismLineNumbers = unsafeCSS(require('prismjs/plugins/line-numbers/prism-line-numbers.css').toString());
+import sharedStyles from 'components/shared-styles.css';
+import style from './c4f-markdown.css';
+import prism from 'prismjs/themes/prism.css';
+import prismLineNumbers from 'prismjs/plugins/line-numbers/prism-line-numbers.css';
 
 const showdown = require('showdown');
 const converter = new showdown.Converter({

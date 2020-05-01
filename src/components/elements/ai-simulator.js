@@ -1,4 +1,4 @@
-import { html, LitElement, unsafeCSS } from 'lit-element';
+import { html } from 'lit-element';
 import { unsafeHTML } from 'lit-html/directives/unsafe-html';
 import { MobxLitElement } from '@adobe/lit-mobx';
 import projectStore from 'store/project-store.js';
@@ -8,8 +8,8 @@ import { getComponents } from 'src/webpack-utils.js';
 import { Sandbox } from 'src/sandbox.js';
 import { defer } from 'src/util.js';
 
-const sharedStyles = unsafeCSS(require('components/shared-styles.css').toString());
-const style = unsafeCSS(require('./ai-simulator.css').toString());
+import sharedStyles from 'components/shared-styles.css';
+import style from './ai-simulator.css';
 
 
 class AiSimulator extends MobxLitElement {
@@ -43,9 +43,9 @@ class AiSimulator extends MobxLitElement {
                 return unsafeHTML(`<${name}${active}></${name}>`);
             });
             return html`
-                <button @click=${this.simRun}>run</button>
-                <button @click=${this.simTrain}>train</button>
-                <button @click=${this.simTerminate}>terminate</button>
+                <button class="ok" @click=${this.simRun}>run</button>
+                <button class="warning" @click=${this.simTrain}>train</button>
+                <button class="error" @click=${this.simTerminate}>terminate</button>
                 ${components}
             `;
         }
@@ -55,26 +55,39 @@ class AiSimulator extends MobxLitElement {
     }
 
     async simRun() {
-        projectStore.flushActiveFile();
+        projectStore.flushFile();
         projectStore.clearLog();
-        const sandbox = await this._sandbox;
-        //sandbox.scenario = this._scenario;
-        sandbox.call(this._scenario.constructor.file, '__run', [{settings: this._scenario.getSettings()}]);
+        if(projectStore.activeErrors){
+            projectStore.activeErrors.forEach(error => {
+                projectStore.addLog(error.type, error.args, error.caller);
+            });
+        }
+        else{
+            const sandbox = await this._sandbox;
+            sandbox.call(this._scenario.constructor.file, '__run', [{settings: this._scenario.getSettings()}]);
+        }
     }
 
     async simTrain() {
-        projectStore.flushActiveFile();
+        projectStore.flushFile();
         projectStore.clearLog();
-        const sandbox = await this._sandbox;
-        //sandbox.scenario = this._scenario;
-        sandbox.call('/project/index.js', 'train');
+        if(projectStore.activeErrors){
+            projectStore.activeErrors.forEach(error => {
+                projectStore.addLog(error.type, error.args, error.caller);
+            });
+        }
+        else{
+            const sandbox = await this._sandbox;
+            //sandbox.scenario = this._scenario;
+            sandbox.call('/project/index.js', 'train');
+        }
     }
 
     async simTerminate() {
         const sandbox = await this._sandbox;
         sandbox.terminate();
         const msg = `simulation terminated!`;
-        projectStore.addLog({ type: 'warn', args: [msg] });
+        projectStore.addLog('warn', [msg]);
         console.warn(msg);
     }
 

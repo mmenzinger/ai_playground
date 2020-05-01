@@ -1,5 +1,5 @@
 import { html, unsafeCSS, css, LitElement } from 'lit-element';
-import { autorun } from 'mobx';
+import { autorun, trace, toJS } from 'mobx';
 import projectStore from 'store/project-store.js';
 import appStore from 'store/app-store.js';
 import { defer, dispatchIframeEvents } from 'src/util.js';
@@ -10,8 +10,8 @@ import { createFileTemplate, deleteFileTemplate } from 'modals/templates.js';
 import db from 'src/localdb.js';
 
 
-const sharedStyles = unsafeCSS(require('components/shared-styles.css').toString());
-const style = unsafeCSS(require('./file-tree.css').toString());
+import sharedStyles from 'components/shared-styles.css';
+import style from './file-tree.css';
 //const jstreeStyles = unsafeCSS(require('jstree/dist/themes/default/style.css').toString());
 //const icons32 = require('jstree/dist/themes/default/32px.png');
 //const icons40 = require('jstree/dist/themes/default/40px.png');
@@ -27,7 +27,6 @@ class FileTree extends LitElement {
 
     constructor() {
         super();
-        this._activeFile = null;
         this._fileTree = defer();
     }
 
@@ -38,7 +37,8 @@ class FileTree extends LitElement {
     async onDelete(file) {
         try {
             const modal = await appStore.showModal(Modals.GENERIC, deleteFileTemplate(file));
-            const selectFile = await db.loadFileByName(this._currentProject, 'index.js');
+            const selectFile = await db.loadFileByName(projectStore.activeProject.id, 'index.js');
+            console.log(selectFile)
             await projectStore.openFile(selectFile.id);
             await projectStore.deleteFile(file.id);
         }
@@ -57,7 +57,7 @@ class FileTree extends LitElement {
     }
 
     onAddFileProject() {
-        this.addFile(this._currentProject);
+        this.addFile(projectStore.activeProject.id);
     }
 
     async addFile(project) {
@@ -85,11 +85,24 @@ class FileTree extends LitElement {
 
             autorun(async reaction => {
                 const project = projectStore.activeProject;
-                const file = projectStore.activeFile;
                 if(project){
-                    this._activeFile = file;
                     await this.updateTree();
                 }
+            });
+
+            autorun(async reaction => {
+                const file = projectStore.activeFile;
+                if(file){
+                    await fileTree.selectFile(file);
+                }
+            });
+
+            autorun(async reaction => {
+                const errors = toJS(projectStore.activeProject.errors) || {};
+                for(let value of Object.values(errors)){
+                    value = value.message;
+                }
+                await fileTree.setErrors(errors);
             });
         }
     }
@@ -103,7 +116,8 @@ class FileTree extends LitElement {
         ]);
         projectFiles = projectFiles.sort(this.sort);
         globalFiles = globalFiles.sort(this.sort);
-        await fileTree.updateFiles(globalFiles, projectFiles, projectStore.activeFile);
+        const errors = projectStore.activeErrors || [];
+        await fileTree.updateFiles(globalFiles, projectFiles, projectStore.activeFile, this.getFilesError(errors));
     }
 
     sort(fileA, fileB) {
@@ -115,6 +129,14 @@ class FileTree extends LitElement {
             comp = fileA.name.localeCompare(fileB.name);
         }
         return comp;
+    }
+
+    getFilesError(errors){
+        const filesError = {};
+        errors.forEach(error => {
+            filesError[error.caller.fileId] = error.args[0];
+        });
+        return filesError;
     }
 }
 

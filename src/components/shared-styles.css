@@ -45,3 +45,38 @@ em{
 *[hidden]{
   display: none;
 }
+
+button{
+  border-radius: 3px;
+  color: black;
+  font-weight: bold;
+  padding: 0.25rem 0.5rem;
+  text-align: center;
+  background-color: #ddd;
+  background: linear-gradient(#ddd, #bbb);
+  border: 1px solid #bbb;
+}
+
+button.warning{
+  color: white;
+  background-color: #cc3;
+  background: linear-gradient(#cc3, #aa2);
+  border: 1px solid #aa2;
+  text-shadow: 0 -1px 0 #771;
+}
+
+button.error{
+  color: white;
+  background-color: #c53;
+  background: linear-gradient(#c53, #a32);
+  border: 1px solid #a32;
+  text-shadow: 0 -1px 0 #721;
+}
+
+button.ok{
+  color: white;
+  background-color: #7b3;
+  background: linear-gradient(#7b3, #592);
+  border: 1px solid #592;
+  text-shadow: 0 -1px 0 #461;
+}

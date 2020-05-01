@@ -1,15 +1,14 @@
 import { html, unsafeCSS, LitElement } from 'lit-element';
 import { LazyElement } from 'components/elements/lazy-element.js';
 
-function deepCopy(obj) {
-    return JSON.parse(JSON.stringify(obj));
-}
-
-const sharedStyles = unsafeCSS(require('components/shared-styles.css').toString());
-const style = unsafeCSS(require('./scenario-tictactoe.css').toString());
+import sharedStyles from 'components/shared-styles.css';
+import style from './scenario-tictactoe.css';
 
 import { Player } from './scenario';
 
+function deepCopy(obj) {
+    return JSON.parse(JSON.stringify(obj));
+}
 
 class ScenarioTicTacToe extends LazyElement {
     static get properties() {
@@ -27,7 +26,7 @@ class ScenarioTicTacToe extends LazyElement {
     }
 
     static get file(){
-        return '/scenarios/tictactoe/scenario.js';
+        return '/scenario/tictactoe/scenario.js';
     }
 
     static get autorun() { return true; }

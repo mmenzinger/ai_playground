@@ -4,8 +4,8 @@ import { connect } from 'pwa-helpers/connect-mixin.js';
 import { appStore } from 'store/app-store.js';
 import { MobxLitElement } from '@adobe/lit-mobx';
 
-const sharedStyles = unsafeCSS(require('components/shared-styles.css').toString());
-const style = unsafeCSS(require('./ai-header.css').toString());
+import sharedStyles from 'components/shared-styles.css';
+import style from './ai-header.css';
 
 class AiHeader extends MobxLitElement {
     static get properties() {
@@ -17,7 +17,7 @@ class AiHeader extends MobxLitElement {
     static get styles() {
         return [
             sharedStyles,
-            style
+            style,
         ];
     }
 

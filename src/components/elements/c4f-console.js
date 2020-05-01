@@ -1,12 +1,11 @@
-import { html, unsafeCSS, LitElement } from 'lit-element';
+import { html } from 'lit-element';
 import { repeat } from 'lit-html/directives/repeat.js';
-import { until } from 'lit-html/directives/until.js';
 import projectStore from 'store/project-store.js';
 import { MobxLitElement } from '@adobe/lit-mobx';
-import db from 'src/localdb.js';
+import db from 'src/localdb';
 
-const sharedStyles = unsafeCSS(require('components/shared-styles.css').toString());
-const style = unsafeCSS(require('./c4f-console.css').toString());
+import sharedStyles from 'components/shared-styles.css';
+import style from './c4f-console.css';
 
 class C4fConsole extends MobxLitElement {
     static get styles() {
@@ -57,7 +56,7 @@ class C4fConsole extends MobxLitElement {
             arg = arg.replace(/^"([^]*)"$/g, '$1'); // strings
             return arg;
         });
-        try{ // add caller if valid
+        if(log.caller){
             const fileId = log.caller.fileId;
             const fileName = log.caller.fileName;
             const lineNumber = log.caller.lineNumber;
@@ -71,8 +70,7 @@ class C4fConsole extends MobxLitElement {
             }
             return html`<p class="${log.type}"><a class="file" @click=${e=>{this.onClick(fileId, fileState)}}>${fileName}:${functionName}:${lineNumber}</a>${args}</p>`;
         }
-        catch(e){
-            console.warn(e);
+        else{
             return html`<p class="${log.type}">${args.join(' ')}</p>`;
         }
     }

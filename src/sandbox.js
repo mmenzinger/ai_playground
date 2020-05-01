@@ -57,7 +57,10 @@ export class Sandbox{
         const registration = await navigator.serviceWorker.ready;
         await messageWithResult({
             type: 'setProject',
-            project: {...projectStore.activeProject},
+            project: {
+                id: projectStore.activeProject.id,
+                scenario: projectStore.activeProject.scenario,
+            },
         }, null, registration.active);
     }
     

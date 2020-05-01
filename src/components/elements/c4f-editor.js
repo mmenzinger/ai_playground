@@ -6,8 +6,8 @@ import { ResizeObserver } from 'resize-observer';
 import { defer, dispatchIframeEvents } from 'src/util.js';
 
 
-const sharedStyles = unsafeCSS(require('components/shared-styles.css').toString());
-const style = unsafeCSS(require('./c4f-editor.css').toString());
+import sharedStyles from 'components/shared-styles.css';
+import style from './c4f-editor.css';
 
 class C4fEditor extends LitElement {
     static get styles() {
@@ -22,7 +22,7 @@ class C4fEditor extends LitElement {
         this._activeFile = null;
         this._currentMode = 'plain_text';
         this._preventOnChange = false;
-        this._editor = defer();
+        this._monaco = defer();
     }
 
     render() {
@@ -42,69 +42,46 @@ class C4fEditor extends LitElement {
         const theme = this.shadowRoot.getElementById('theme');
 
         iframe.onload = () => {
-            const editor = iframe.contentWindow.editor;
-
-            editor.onDidChangeModelContent(_ => {
-                if(projectStore.activeFile){
-                    const content = editor.getValue();
-                    projectStore.saveFile(projectStore.activeFile.id, content);
-                }
-            });
+            const monaco = iframe.contentWindow;
+            this._monaco.resolve(monaco);
 
             new ResizeObserver(() => {
-                editor.layout();
+                monaco.resize();
             }).observe(iframe);
 
-            editor.setTheme(theme.options[theme.selectedIndex].value);
+            monaco.onContentChange = (fileId, content) => {
+                projectStore.saveFileContent(fileId, content);
+            }
 
-            this._editor.resolve(editor);
+            monaco.onStateChange = (fileId, state) => {
+                projectStore.saveFileState(fileId, state);
+            }
+
+            monaco.onErrorChange = (fileErrorsList) => {
+                /*console.log(fileErrorsList)
+                for(const fileErrors of fileErrorsList){
+                    projectStore.saveFileErrors(fileErrors.fileId, fileErrors.errors);
+                }*/
+                projectStore.updateProjectErrors(projectStore.activeProject.id, fileErrorsList);
+            }
+            
+            monaco.setTheme(theme.options[theme.selectedIndex].value);
 
             dispatchIframeEvents(iframe);
         }
 
         theme.onchange = async (e) => {
-            const editor = await this._editor;
+            const monaco = await this._monaco;
             const selectedTheme = theme.options[theme.selectedIndex].value;
             settingsStore.set('editor-theme', selectedTheme);
-            editor.setTheme(selectedTheme);
+            monaco.setTheme(selectedTheme);
         }
 
         autorun(async reaction => {
-            projectStore.flushActiveFile();
             const file = projectStore.activeFile;
             if (file) {
-                const editor = await this._editor;
-                let mode = 'plain_text';
-                const ending = file.name.match(/\.([a-z]+)$/);
-                if (ending) {
-                    switch (ending[1]) {
-                        case 'js': mode = 'javascript'; break;
-                        case 'json': mode = 'json'; break;
-                        case 'pl': mode = 'prolog'; break;
-                        case 'md': mode = 'markdown'; break;
-                    }
-                }
-                this._currentMode = mode;
-                this._preventOnChange = true;
-                editor.onErrorMarkerChange((markers) => {
-                    const errors = markers.map(marker => ({
-                        line: marker.startLineNumber,
-                        column: marker.startColumn,
-                        message: marker.message,
-                    }));
-                    projectStore.setFileErrors(file.id, errors);
-                });
-                editor.setLanguage(mode);
-                editor.setValue(file.content);
-                //editor.updateOptions({ readOnly: false });
-                if(file.state){
-                    const lineNumber = file.state.cursor.line;
-                    const column = file.state.cursor.column;
-                    editor.setPosition({column, lineNumber});
-                    editor.revealLineInCenter(lineNumber);
-                    editor.focus();
-                }
-                this._preventOnChange = false;
+                const monaco = await this._monaco;
+                monaco.openFile(file);
             }
         });
     }

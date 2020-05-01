@@ -3,6 +3,9 @@ import commonjs from '@rollup/plugin-commonjs';
 import setAlias from '@rollup/plugin-alias';
 import replace from '@rollup/plugin-replace';
 import { terser } from 'rollup-plugin-terser';
+//import serve from 'rollup-plugin-serve';
+//import copy from 'rollup-plugin-copy';
+//import { string } from "rollup-plugin-string";
 
 const alias = require('./webpack.alias.js');
 const glob = require('glob');
@@ -15,8 +18,10 @@ let OUTPUT_DIR = path.join(__dirname, 'build/dev');
 const plugins = [
     resolve({
         mainFields: ['browser', 'jsnext', 'module', 'main'],
+        browser: true,
     }),
-    commonjs(),
+    
+    commonjs({ namedExports: { 'file-saver': [ 'saveAs' ] } }),
     setAlias({
         entries: Object.entries(alias).map(e => ({ find: e[0], replacement: e[1]})),
     }),
@@ -54,6 +59,7 @@ export default async args => {
     }
 
     return [
+        //packFile('src/components/ai-app.js', 'app.js'),
         packFile('src/libs/tau-prolog.js', 'libs/prolog.js'),
         packFile('src/libs/tf.js', 'libs/tensorflow.js'),
         packFile('src/worker/scenario.worker.js', 'scenario.worker.js'),
