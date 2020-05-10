@@ -1,13 +1,16 @@
+// @flow
 import { observable, action, flow, autorun, toJS } from 'mobx';
-import settingsStore from 'store/settings-store.js';
-import projectStore from 'store/project-store.js';
+import settingsStore from '@store/settings-store.js';
+import projectStore from '@store/project-store.js';
 import { defer } from 'src/util.js';
+
+import type { Project } from '@localdb';
 
 class AppStore{
     @observable page = '';
     @observable params = [];
     @observable offline = false;
-    @observable modal = null;
+    @observable modal: ?Modal = null;
 
     navigate = flow(function*(path, search){
         const urlParams = new URLSearchParams(search);
@@ -20,27 +23,28 @@ class AppStore{
         
         switch (page) {
             case 'project':
-                import('components/pages/ai-project.js');
+                import('@page/ai-project.js');
                 const id = Number(params['project']);
-                if(id)
+                if(id){
                     yield projectStore.openProject(id);
+                }
                 break;
             case 'projects':
-                import('components/pages/ai-project-index.js');
+                import('@page/ai-project-index.js');
                 yield projectStore.closeProject();
                 break;
             case 'welcome':
-                import('components/pages/ai-welcome.js');
+                import('@page/ai-welcome.js');
                 yield projectStore.closeProject();
                 break;
             case 'index':
             default:
                 if(settingsStore.get('skip_welcome')){
-                    import('components/pages/ai-project-index.js');
+                    import('@page/ai-project-index.js');
                     page = 'projects';
                 }
                 else{
-                    import('components/pages/ai-welcome.js');
+                    import('@page/ai-welcome.js');
                     page = 'welcome';
                 }
                 yield projectStore.closeProject();
@@ -51,7 +55,7 @@ class AppStore{
     })
 
     @action
-    async updateOfflineStatus(offline){
+    async updateOfflineStatus(offline: boolean){
         this.offline = offline;
     }
 
@@ -71,16 +75,26 @@ class AppStore{
     })
 
     @action
-    async resolveModal(data){
-        this.modal.result.resolve(data);
-        this.modal = null;
+    async resolveModal(data: any){
+        if(this.modal){
+            this.modal.result.resolve(data);
+            this.modal = null;
+        }
     }
 
     @action
-    async rejectModal(data){
-        this.modal.result.reject(data);
-        this.modal = null;
+    async rejectModal(data: any){
+        if(this.modal){
+            this.modal.result.reject(data);
+            this.modal = null;
+        }
     }
+}
+
+export type Modal = {
+    template: Object,
+    data: Object,
+    result: any,
 }
 
 export const appStore = new AppStore();

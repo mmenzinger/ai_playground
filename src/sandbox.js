@@ -13,7 +13,7 @@ export class Sandbox{
         if (this._worker) {
             this._worker.terminate();
         }
-        this._worker = new Worker(`scenario.worker.js?project=${projectStore.activeProject.id}`, { type: "module" });
+        this._worker = new Worker(`scenario-worker.js?project=${projectStore.activeProject.id}`, { type: "module" });
     
         this._worker.onmessage = async (m) => {
             let result = undefined;

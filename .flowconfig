@@ -1,0 +1,24 @@
+[ignore]
+
+[include]
+
+[libs]
+
+[lints]
+
+[options]
+esproposal.decorators=ignore
+esproposal.optional_chaining=ignore
+module.ignore_non_literal_requires=true
+
+module.name_mapper='^src\/\(.*\)$' -> '<PROJECT_ROOT>/src/\1'
+module.name_mapper='^src$' -> '<PROJECT_ROOT>/src'
+module.name_mapper='^@store\/\(.*\)$' -> '<PROJECT_ROOT>/src/store/\1'
+module.name_mapper='^@store$' -> '<PROJECT_ROOT>/src/store'
+module.name_mapper='^@page\/\(.*\)$' -> '<PROJECT_ROOT>/src/components/page/\1'
+module.name_mapper='^@page$' -> '<PROJECT_ROOT>/src/components/page'
+
+module.name_mapper='^@localdb$' -> '<PROJECT_ROOT>/src/localdb.js'
+module.name_mapper='^@util$' -> '<PROJECT_ROOT>/src/util.js'
+
+[strict]

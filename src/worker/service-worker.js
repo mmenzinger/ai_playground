@@ -1,10 +1,13 @@
-import {registerRoute} from 'workbox-routing/registerRoute';
-//import {StaleWhileRevalidate} from 'workbox-strategies/StaleWhileRevalidate';
-import {CacheFirst} from 'workbox-strategies/CacheFirst';
-import {Plugin as ExpirationPlugin} from 'workbox-expiration/Plugin';
-import db from 'src/localdb.js';
+// @flow
+import {registerRoute} from 'workbox-routing/registerRoute.mjs';
+import {CacheFirst} from 'workbox-strategies/CacheFirst.mjs';
+import {Plugin as ExpirationPlugin} from 'workbox-expiration/Plugin.mjs';
+import db from '@localdb';
+import type { Project } from '@localdb';
 
-let project = null;
+declare var PRODUCTION: boolean;
+
+let project: ?Project = null;
 
 onmessage = m => {
     if(m.data.type === 'setProject'){
@@ -25,35 +28,37 @@ registerRoute(
     userFile
 );
 
-/*registerRoute(
-    /\.js$/,
-    new StaleWhileRevalidate(),
-);*/
-registerRoute(
-    /\.(js|html)$/,
-    new CacheFirst({
-        cacheName: 'script-cache',
-        plugins: [
-            new ExpirationPlugin({
-                maxAgeSeconds: 60 * 60,
-            }),
-        ],
-    }),
-);
-registerRoute(
-    /\.(svg|png)$/,
-    new CacheFirst({
-        cacheName: 'image-cache',
-        plugins: [
-            new ExpirationPlugin({
-                maxAgeSeconds: 24 * 60 * 60,
-            }),
-        ],
-    }),
-);
+if(PRODUCTION){
+    console.warn(' --- PRODUCTION ---')
+    registerRoute(
+        /\.(js|html)$/,
+        new CacheFirst({
+            cacheName: 'script-cache',
+            plugins: [
+                new ExpirationPlugin({
+                    maxAgeSeconds: 60 * 60,
+                }),
+            ],
+        }),
+    );
+    registerRoute(
+        /\.(svg|png)$/,
+        new CacheFirst({
+            cacheName: 'image-cache',
+            plugins: [
+                new ExpirationPlugin({
+                    maxAgeSeconds: 24 * 60 * 60,
+                }),
+            ],
+        }),
+    );
+}
 
 async function userFile(arg){
     try{
+        if(!project)
+            throw Error('no project loaded')
+
         const init = {
             status: 200,
             statusText: 'OK',
@@ -61,13 +66,13 @@ async function userFile(arg){
         };
         const path = arg.url.pathname.split('/');
         let id = 0;
-        let filename = path[2];
         if(path[1] === 'project'){
             id = project.id;
         }
         else if( ! isNaN(path[1])){ // if is number
             id = Number(path[1])
         }
+        let filename = path[2];
         const file = await db.loadFileByName(id, filename);
         return new Response(file.content, init);
     }

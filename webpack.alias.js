@@ -15,4 +15,10 @@ module.exports = {
     'worker': path.join(__dirname, 'src/worker'),
     'store': path.join(__dirname, 'src/store'),
     'mobx': path.join(__dirname + '/node_modules/mobx/lib/mobx.es6.js'),
+    '@store': path.join(__dirname, 'src/store'),
+    '@localdb': path.join(__dirname, 'src/localdb.js'),
+    '@util': path.join(__dirname, 'src/util.js'),
+    '@components': path.join(__dirname, 'src/components'),
+    '@page': path.join(__dirname, 'src/components/page'),
+
 };

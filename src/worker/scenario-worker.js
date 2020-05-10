@@ -173,7 +173,7 @@ onmessage = async m => {
         switch (m.data.type) {
             case 'call': {
                 await localStorageLoaded;
-                const index = await import(m.data.file);
+                const index = await import(/* webpackIgnore: true */ m.data.file);
                 await index[m.data.functionName](...m.data.args);
                 m.ports[0].postMessage({ result: true });
                 break;

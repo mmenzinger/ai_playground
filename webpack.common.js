@@ -35,6 +35,8 @@ const alias = require('./webpack.alias.js');
 module.exports = {
     entry: {
         'app': './src/components/ai-app.js',
+        'service-worker': './src/worker/service-worker.js',
+        'scenario-worker': './src/worker/scenario-worker.js',
     },
 
     output: {
@@ -48,32 +50,10 @@ module.exports = {
     module: {
         rules: [
             {
-                test: /\.(ts|js)$/,
-                exclude: /(node_modules|bower_components)/,
+                test: /\.js$/,
+                exclude: /node_modules/,
                 use: {
                     loader: 'babel-loader',
-                    options: {
-                        plugins: [
-                            ['@babel/plugin-proposal-decorators', { 
-                                legacy: true,
-                            }],
-                            ['@babel/plugin-proposal-class-properties', { 
-                                loose: true,
-                            }],
-                            ['transform-remove-console', {
-                                exclude: ['error', 'warn', 'log', 'assert'],
-                            }],
-                            ['@babel/plugin-proposal-optional-chaining']
-                        ],
-                        presets: [[
-                            '@babel/preset-env',
-                            {
-                                targets: {
-                                    chrome: 80,
-                                },
-                            },
-                        ]],
-                    }
                 }
             },
             {
@@ -102,13 +82,6 @@ module.exports = {
                     },
                 ],
             },
-            /*{
-                test: /\.css$/,
-                loader: 'css-loader',
-                options: {
-                    url: false,
-                },
-            },*/
             {
                 test: /\.css$/,
                 loader: 'lit-css-loader'

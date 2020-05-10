@@ -1,10 +1,11 @@
-//const stringify = require('json-stringify-pretty-compact');
+// @flow
 import stringify from 'json-stringify-pretty-compact';
 import deepCopy from 'deepcopy';
 
 export { deepCopy };
 
-export async function messageWithResult(msg, timeout = null, target = self){
+
+export async function messageWithResult(msg: Object, timeout: ?number = null, target: any = self): Promise<any>{
     return new Promise((resolve, reject) => {
         let to = undefined;
         if(timeout){
@@ -15,22 +16,25 @@ export async function messageWithResult(msg, timeout = null, target = self){
         const channel = new MessageChannel();
         channel.port1.onmessage = m => {
             clearTimeout(to);
-            resolve(m.data.result);
+            if(m.data && m.data.result)
+                resolve(m.data.result);
+            else
+                resolve(undefined);
         }
         target.postMessage(msg, [channel.port2]);
     });
 }
 
-export function deepMap(obj, func) {
+export function deepMap(obj: Object, func: (any) => any): any {
     if (obj instanceof Object)
         for (const pair of Object.entries(obj))
             obj[pair[0]] = deepMap(pair[1], func);
     return func(obj);
 }
 
-export function defer(){
+export function defer(): Promise<any>{
     let res, rej;
-    const promise = new Promise((resolve, reject) => {
+    const promise: any = new Promise((resolve, reject) => {
         res = resolve;
         rej = reject;
     });
@@ -50,7 +54,7 @@ export function defer(){
     return promise;
 }
 
-export function serialize(obj) {
+export function serialize(obj: Object): string {
     function replacer(key, value) {
         if (value instanceof Error)
             return {
@@ -105,7 +109,7 @@ export function serialize(obj) {
     return stringify(obj, { replacer });
 }
 
-export function deserialize(json) {
+export function deserialize(json: string): Object {
     function reviver(key, value) {
         if (value instanceof Object) {
             if (value.type === '__ERROR__') {
@@ -150,20 +154,20 @@ export function deserialize(json) {
     });
 }
 
-export function dispatchIframeEvents(iframe, target = window) {
+export function dispatchIframeEvents(iframe: HTMLIFrameElement, target: any = window) {
     const dispatchMouseEvent = (event) => {
         const rect = iframe.getBoundingClientRect();
         const data = {
             bubbles: event.bubbles,
             cancelable: event.cancelable,
-            clientX: event.clientX + rect.x,
-            clientY: event.clientY + rect.y,
-            pageX: event.pageX + rect.x,
-            pageY: event.pageY + rect.y,
-            x: event.x + rect.x,
-            y: event.y + rect.y,
-            offsetX: event.offsetX + rect.x,
-            offsetY: event.offsetY + rect.y,
+            clientX: event.clientX + rect.left,
+            clientY: event.clientY + rect.top,
+            pageX: event.pageX + rect.left,
+            pageY: event.pageY + rect.top,
+            x: event.x + rect.left,
+            y: event.y + rect.top,
+            offsetX: event.offsetX + rect.left,
+            offsetY: event.offsetY + rect.top,
         };
         target.dispatchEvent(new MouseEvent(event.type, data));
     }
@@ -181,6 +185,6 @@ export function dispatchIframeEvents(iframe, target = window) {
     container.onkeyup = dispatchKeyEvent;
 }
 
-export function hideImport(path){
-    return import(/* webpackIgnore: true */ path);
+export function hideImport(path: string){
+    return import(/* webpackIgnore: true */path);
 }

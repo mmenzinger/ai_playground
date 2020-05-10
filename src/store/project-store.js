@@ -1,12 +1,21 @@
+// @flow
 import { observable, action, flow, autorun, runInAction, toJS, trace, computed } from 'mobx';
-import db from 'src/localdb.js';
+import db from '@localdb';
 import { throttle, debounce } from 'lodash-es';
-import settingsStore from 'store/settings-store.js';
+import settingsStore from '@store/settings-store.js';
+
+import type { File, Project } from '@localdb';
 
 class ProjectStore {
-    @observable activeProject = null;
-    @observable activeFile = null;
+    @observable activeProject: ?Project = null;
+    @observable activeFile: ?File = null;
     @observable log = [];
+
+    _logThrottle: function;
+    _logQueue = [];
+    _saveFileDebounce: function;
+    _saveFileStateDebounce: function;
+
 
     constructor() {
         this._logThrottle = throttle(() => {
@@ -18,10 +27,9 @@ class ProjectStore {
                     this.log.splice(0, this.log.length - queueLength);
             });
         }, 100);
-        this._logQueue = [];
 
         this._saveFileDebounce = debounce((fileId, content, state, errors) => {
-            db.saveFile(fileId, content, state, errors);
+            db.saveFileContent(fileId, content);
         }, 1000);
         this._saveFileStateDebounce = debounce((fileId, state) => {
             //db.saveFile(fileId, state);
@@ -31,110 +39,84 @@ class ProjectStore {
     /**********************************************************************************+
      * Project 
      */
-    @action
-    async openProject(id) {
-        let file = await db.loadFileByName(id, 'readme.md');
-        if (!file)
-            file = await db.loadFileByName(id, 'scenario.md');
-        if (!file)
-            file = await db.loadFileByName(id, 'index.js');
-        if (!file)
-            file = { id: 0 };
-        this.activeFile = await this.openFile(file.id);
-        this.activeProject = await db.getProject(id);
-        this.activeProject.errors = {};
-        const files = await db.getProjectFiles(id);
-        files.push(...await db.getProjectFiles(0));
-        for(const file of files){
-            if(file.errors && file.errors.length > 0)
-                this.activeProject.errors[file.id] = {
+    // return type should be Promise<Project>, but can't infer in app-store
+    // TODO: find problem and set return type to Promise<Project>
+    @action 
+    openProject: /*fixme*/any/*fixme*/ = flow(function* (id: number) {
+        let file: ?File = null;
+        for(const fileName of ['readme.md', 'scenario.md', 'index.js']){
+            try{
+                file = yield db.loadFileByName(id, fileName);
+                break;
+            }
+            catch(e){}
+        }
+        const project: Project = yield db.getProject(id);
+        project.errors = {};
+        const files = yield db.getProjectFiles(id);
+        files.push(...yield db.getProjectFiles(0));
+        for (const file of files) {
+            if (file.errors && file.errors.length > 0 && project)
+                project.errors[file.id] = {
                     fileId: file.id,
                     fileName: file.name,
                     project: file.project,
                     errors: file.errors,
                 };
         }
-    }
+        this.activeFile = file;
+        this.activeProject = project;
+        return this.activeProject;
+    })
 
     @action
-    async closeProject() {
+    async closeProject(): Promise<void> {
         this.activeProject = null;
         this.activeFile = null;
     }
 
-    async createProject(name, scenario, files) {
-        const projectId = await db.createProject(name, scenario);
-        for (const file of files) {
-            await this.createFile(file.name, projectId, file.content);
-        };
-        return projectId;
+    async createProject(name: string, scenario: string, files: Array<File>): Promise<number> {
+        return await db.createProject(name, scenario, files);
     }
 
-    updateProjectErrors = flow(function*(id, fileErrorsList){
+    updateProjectErrors: Promise<void> = flow(function* (id, fileErrorsList) {
         let errors = {};
-        if(this.activeProject?.id === id){
+        if (this.activeProject?.id === id) {
             errors = toJS(this.activeProject.errors) || {};
         }
-        else{
+        else {
             const project = yield db.getProject(id);
             errors = project.errors || {};
         }
-        for(const fileErrors of fileErrorsList){
-            if(fileErrors.errors.length > 0){
+        for (const fileErrors of fileErrorsList) {
+            if (fileErrors.errors.length > 0) {
                 errors[fileErrors.fileId] = fileErrors.errors;
             }
-            else{
+            else {
                 delete errors[fileErrors.fileId];
             }
         }
-        if(this.activeProject?.id === id){
+        if (this.activeProject?.id === id) {
             this.activeProject.errors = errors;
         }
         yield db.setProjectErrors(id, errors);
     })
 
-    async deleteProject(id) {
+    async deleteProject(id: number): Promise<void> {
         if (this.activeProject && this.activeProject.id === id)
             await this.closeProject();
         await db.removeProject(id);
     }
 
-    async importProject(name, scenario, projectFiles, globalFiles, collision) {
-        const projectId = await db.importProject(name, scenario, projectFiles, globalFiles, collision);
-        return projectId;
+    async importProject(name: string, scenario: string, projectFiles: Array<File>, globalFiles: Array<File>, collision: string): Promise<number> {
+        return await db.importProject(name, scenario, projectFiles, globalFiles, collision);
     }
-
-    /*@computed
-    get activeErrors(){
-        let errors = null;
-        if(this.activeProject && this.activeProject.errors && Object.keys(this.activeProject.errors).length > 0){
-            errors = [];
-            console.log(toJS(this.activeProject.errors))
-            for(const fileErrors of Object.values(this.activeProject.errors)){
-                for(const error of fileErrors.errors){
-                    errors.push({
-                        type: 'error',
-                        args: [error.message],
-                        caller: {
-                            fileId: fileErrors.fileId,
-                            project: fileErrors.project === 0 ? 0 : 'project',
-                            fileName: fileErrors.fileName,
-                            functionName: null,
-                            lineNumber: error.line,
-                            columnNumber: error.column,
-                        },
-                    });
-                }
-            }
-        }
-        return errors;
-    }*/
 
     /**********************************************************************************+
      * File 
      */
-    openFile = flow(function*(id, state = undefined) {
-        if(this.activeFile){
+    openFile: Promise<File> = flow(function* (id, state = undefined) {
+        if (this.activeFile) {
             yield this.flushFile();
         }
         this.activeFile = yield db.loadFile(id);
@@ -142,70 +124,42 @@ class ProjectStore {
     })
 
     @action
-    async closeFile() {
+    async closeFile(): Promise<void> {
         this.activeFile = null;
     }
 
-    async createFile(name, project = 0, content = '') {
-        const id = await db.createFile(name, project, content);
+    async createFile(name: string, projectId: number = 0, content: string = ''): Promise<number> {
+        const id: number = await db.createFile(projectId, name, content);
         return id;
     }
 
-    deleteFile = flow(function*(id) {
+    deleteFile: Promise<void> = flow(function* (id) {
         if (this.activeFile && this.activeFile.id === id)
             yield this.closeFile();
         yield db.removeFile(id);
     })
 
     @action
-    async saveFileContent(id, content) {
-        if (this.activeFile && this.activeFile.id === id){
+    async saveFileContent(id: number, content: string): Promise<void> {
+        if (this.activeFile && this.activeFile.id === id) {
             this.activeFile.content = content;
         }
         await db.saveFileContent(id, content);
     }
 
     @action
-    async saveFileState(id, state) {
-        if (this.activeFile && this.activeFile.id === id){
+    async saveFileState(id: number, state: any): Promise<void> {
+        if (this.activeFile && this.activeFile.id === id) {
             this.activeFile.state = state;
         }
         await db.saveFileState(id, state);
     }
 
-    @action
-    async saveFileErrors(id, errors) {
-        if (this.activeFile && this.activeFile.id === id){
-            this.activeFile.errors = errors;
-        }
-        db.saveFileErrors(id, errors);
-    }
-
-    /*setFileErrors = flow(function*(fileErrorsList) {
-        console.log(fileErrorsList);
-        if(this.activeProject){
-            for(const fileErrors of fileErrorsList){
-                const fileId = fileErrors.fileId;
-                const errors = fileErrors.errors;
-                if (this.activeFile && this.activeFile.id === fileId)
-                    this.activeFile.errors = errors;
-                
-                yield db.setFileErrors(fileId, errors);
-                if(errors.length > 0){
-                    this.activeProject.errors[fileId] = fileErrors;
-                }
-                else{
-                    delete this.activeProject.errors[fileId];
-                }
-            }
-        }
-    })*/
-
-    async flushFile() {
+    async flushFile(): Promise<void> {
         this._saveFileDebounce.flush();
     }
 
-    renameFile = flow(function*(id, name) {
+    renameFile: Promise<void> = flow(function* (id, name) {
         if (this.activeFile && this.activeFile.id === id)
             this.activeFile.name = name;
         yield db.renameFile(id, name);
@@ -215,9 +169,9 @@ class ProjectStore {
     /**********************************************************************************+
      * Log 
      */
-    addLog = flow(function*(type, args, caller = null) {
-        if(caller && !caller.fileId){
-            const projectId = caller.project === 'project' ? projectStore.activeProject.id : 0;
+    addLog: Promise<void> = flow(function* (type, args, caller = null) {
+        if (caller && !caller.fileId && this.activeProject) {
+            const projectId = caller.project === 'project' ? this.activeProject.id : 0;
             const file = yield db.loadFileByName(projectId, caller.fileName);
             caller.fileId = file.id;
         }
@@ -226,10 +180,11 @@ class ProjectStore {
     })
 
     @action
-    async clearLog() {
+    async clearLog(): Promise<void> {
         this.log = [];
     }
 }
+
 
 export const projectStore = new ProjectStore();
 

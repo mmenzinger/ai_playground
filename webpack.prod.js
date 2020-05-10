@@ -3,6 +3,7 @@ const merge = require('webpack-merge');
 const common = require('./webpack.common.js');
 const TerserPlugin = require('terser-webpack-plugin');
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
+const webpack = require("webpack");
 
 module.exports = merge(common, {
     mode: 'production',
@@ -17,6 +18,9 @@ module.exports = merge(common, {
     },
 
     plugins: [
+        new webpack.DefinePlugin({
+            PRODUCTION: true,
+        }),
     ],
 
     performance: {

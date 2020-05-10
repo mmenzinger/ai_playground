@@ -1,8 +1,9 @@
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import setAlias from '@rollup/plugin-alias';
-import replace from '@rollup/plugin-replace';
+//import replace from '@rollup/plugin-replace';
 import { terser } from 'rollup-plugin-terser';
+import flow from 'rollup-plugin-flow';
 //import serve from 'rollup-plugin-serve';
 //import copy from 'rollup-plugin-copy';
 //import { string } from "rollup-plugin-string";
@@ -20,11 +21,12 @@ const plugins = [
         mainFields: ['browser', 'jsnext', 'module', 'main'],
         browser: true,
     }),
-    
+    flow({ all: true }),
     commonjs({ namedExports: { 'file-saver': [ 'saveAs' ] } }),
     setAlias({
         entries: Object.entries(alias).map(e => ({ find: e[0], replacement: e[1]})),
     }),
+    
 ];
 
 function packFile(input, file, format = 'esm', additional_plugins = []) {
@@ -62,10 +64,10 @@ export default async args => {
         //packFile('src/components/ai-app.js', 'app.js'),
         packFile('src/libs/tau-prolog.js', 'libs/prolog.js'),
         packFile('src/libs/tf.js', 'libs/tensorflow.js'),
-        packFile('src/worker/scenario.worker.js', 'scenario.worker.js'),
-        args.configProd
-            ? packFile('src/worker/service.worker.js', 'service-worker.js', 'esm', [replace({'process.env.NODE_ENV': "'production'"})])
-            : packFile('src/worker/service.worker.dev.js', 'service-worker.js', 'esm', [replace({'process.env.NODE_ENV': "'development'"})]),
+        //packFile('src/worker/scenario.worker.js', 'scenario.worker.js'),
+        //args.configProd
+        //    ? packFile('src/worker/service.worker.js', 'service-worker.js', 'esm', [replace({'process.env.NODE_ENV': "'production'"})])
+        //    : packFile('src/worker/service.worker.dev.js', 'service-worker.js', 'esm', [replace({'process.env.NODE_ENV': "'development'"})]),
         ...getScenarioModules(),
     ];
 }

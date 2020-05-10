@@ -150,8 +150,7 @@ class ModalUploadProject extends LazyElement {
 
             if(name.value.length === 0)
                 throw Error('Empty project name! Every project must have a name.');
-            const project = await db.getProjectByName(name.value);
-            if(project !== undefined)
+            if(await db.projectExists(name.value))
                 throw Error('Duplicate name! A project with that name already exists!');
 
             const projectFiles = await Promise.all(projectFilesPromises);
@@ -170,7 +169,7 @@ class ModalUploadProject extends LazyElement {
             appStore.resolveModal(result);
         }
         catch(error){
-        this._error = html`<li class="error"><p>${error}</p></li>`;
+            this._error = html`<li class="error"><p>${error}</p></li>`;
         }
     }
 

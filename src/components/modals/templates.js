@@ -35,8 +35,7 @@ export function newProjectTemplate(templates) {
         check: async (fields) => {
             if(fields.name.length === 0)
                 return Error('Empty project name! Every project must have a name.');
-            const project = await db.getProjectByName(fields.name);
-            if(project !== undefined)
+            if(await db.projectExists(fields.name))
                 return Error('Duplicate name! A project with that name already exists!');
         },
     
@@ -83,8 +82,7 @@ export function newExampleTemplate(examples) {
         check: async (fields) => {
             if(fields.name.length === 0)
                 return Error('Empty project name! Every project must have a name.');
-            const project = await db.getProjectByName(fields.name);
-            if(project !== undefined)
+            if(await db.projectExists(fields.name))
                 return Error('Duplicate name! A project with that name already exists!');
         },
 
@@ -145,8 +143,7 @@ export function createFileTemplate(project){
                 return Error('Empty filename! Every file must have a name.');
             if (!fields.name.match(/[a-zA-Z0-9_-]/))
                 return Error('Invalid character! Only numbers, letters, _ and - are allowed.');
-            const file = await db.loadFileByName(project, `${fields.name}.${fields.type}`);
-            if (file !== undefined)
+            if (await db.fileExists(project, `${fields.name}.${fields.type}`))
                 return Error('Duplicate name! A file with that name and ending already exists!');
         },
     };
