@@ -1,9 +1,9 @@
 import { html, unsafeCSS, LitElement } from 'lit-element';
-import { LazyElement } from 'components/elements/lazy-element.js';
+import { LazyElement } from '@element/lazy-element.js';
 
 import { getInitialState, getMap, Percept } from './scenario';
 
-import sharedStyles from 'components/shared-styles.css';
+import sharedStyles from '@shared-styles';
 import style from './scenario-wumpus.css';
 
 

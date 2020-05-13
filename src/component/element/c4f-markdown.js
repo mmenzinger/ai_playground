@@ -7,7 +7,7 @@ import 'prismjs/plugins/line-numbers/prism-line-numbers';
 import 'prismjs/components/prism-prolog';
 import 'prismjs/components/prism-markdown';
 
-import sharedStyles from 'components/shared-styles.css';
+import sharedStyles from '@shared-styles';
 import style from './c4f-markdown.css';
 import prism from 'prismjs/themes/prism.css';
 import prismLineNumbers from 'prismjs/plugins/line-numbers/prism-line-numbers.css';

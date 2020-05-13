@@ -1,28 +1,36 @@
 const path = require('path');
+const webpack = require('webpack');
 const merge = require('webpack-merge');
-const common = require('./webpack.common.js');
-const webpack = require("webpack");
+const app = require('./webpack.app.js');
+const modules = require('./webpack.modules.js');
 
-module.exports = merge(common, {
-    mode: 'development',
-    devtool: 'inline-cheap-module-source-map',
 
-    output: {
-        path: path.resolve(__dirname, 'build/dev'),
-    },
+module.exports = [
+    merge(app, {
+        mode: 'development',
+        devtool: 'inline-cheap-module-source-map',
 
-    plugins: [
-        new webpack.DefinePlugin({
-            PRODUCTION: false,
-        }),
-    ],
+        output: {
+            path: path.resolve(__dirname, 'build/dev'),
+        },
 
-    module: {
-        rules: [
+        plugins: [
+            new webpack.DefinePlugin({
+                PRODUCTION: false,
+            }),
         ],
-    },
 
-    devServer: {
-        contentBase: path.join(__dirname, 'build/dev'),
-    },
-});
+        devServer: {
+            contentBase: path.join(__dirname, 'build/dev'),
+        },
+    }),
+
+    merge(modules, {
+        mode: 'development',
+        devtool: 'inline-cheap-module-source-map',
+
+        output: {
+            path: path.resolve(__dirname, 'build/dev'),
+        },
+    }),
+];

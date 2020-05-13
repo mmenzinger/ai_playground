@@ -4,34 +4,34 @@ import db from '@localdb';
 import { throttle, debounce } from 'lodash-es';
 import settingsStore from '@store/settings-store.js';
 
-import type { File, Project } from '@localdb';
+import type { File, Project, ProjectErrors, FileError } from '@types';
 
 class ProjectStore {
     @observable activeProject: ?Project = null;
     @observable activeFile: ?File = null;
     @observable log = [];
 
-    _logThrottle: function;
-    _logQueue = [];
-    _saveFileDebounce: function;
-    _saveFileStateDebounce: function;
+    #logThrottle: function;
+    #logQueue = [];
+    #saveFileDebounce: function;
+    #saveFileStateDebounce: function;
 
 
     constructor() {
-        this._logThrottle = throttle(() => {
+        this.#logThrottle = throttle(() => {
             runInAction(() => {
                 const queueLength = settingsStore.get('log_queue_length', 500);
-                this.log.push(...this._logQueue);
-                this._logQueue = [];
+                this.log.push(...this.#logQueue);
+                this.#logQueue = [];
                 if (this.log.length > queueLength)
                     this.log.splice(0, this.log.length - queueLength);
             });
         }, 100);
 
-        this._saveFileDebounce = debounce((fileId, content, state, errors) => {
+        this.#saveFileDebounce = debounce((fileId, content, state, errors) => {
             db.saveFileContent(fileId, content);
         }, 1000);
-        this._saveFileStateDebounce = debounce((fileId, state) => {
+        this.#saveFileStateDebounce = debounce((fileId, state) => {
             //db.saveFile(fileId, state);
         }, 100);
     }
@@ -43,6 +43,7 @@ class ProjectStore {
     // TODO: find problem and set return type to Promise<Project>
     @action 
     openProject: /*fixme*/any/*fixme*/ = flow(function* (id: number) {
+        const self: ProjectStore = this; // type fix for invisible bind
         let file: ?File = null;
         for(const fileName of ['readme.md', 'scenario.md', 'index.js']){
             try{
@@ -64,9 +65,9 @@ class ProjectStore {
                     errors: file.errors,
                 };
         }
-        this.activeFile = file;
-        this.activeProject = project;
-        return this.activeProject;
+        self.activeFile = file;
+        self.activeProject = project;
+        return self.activeProject;
     })
 
     @action
@@ -79,25 +80,26 @@ class ProjectStore {
         return await db.createProject(name, scenario, files);
     }
 
-    updateProjectErrors: Promise<void> = flow(function* (id, fileErrorsList) {
-        let errors = {};
-        if (this.activeProject?.id === id) {
-            errors = toJS(this.activeProject.errors) || {};
+    updateProjectErrors: Promise<void> = flow(function* (id: number, projectErrors: ProjectErrors) {
+        const self: ProjectStore = this; // type fix for invisible bind
+        let errors: ProjectErrors = {};
+        if (self.activeProject && self.activeProject.id === id) {
+            errors = toJS(self.activeProject.errors) || {};
         }
         else {
-            const project = yield db.getProject(id);
+            const project: Project = yield db.getProject(id);
             errors = project.errors || {};
         }
-        for (const fileErrors of fileErrorsList) {
-            if (fileErrors.errors.length > 0) {
+        for (const [fileId, fileErrors] of Object.entries(projectErrors)) {
+            if (fileErrors.length > 0) {
                 errors[fileErrors.fileId] = fileErrors.errors;
             }
             else {
                 delete errors[fileErrors.fileId];
             }
         }
-        if (this.activeProject?.id === id) {
-            this.activeProject.errors = errors;
+        if (self.activeProject?.id === id) {
+            self.activeProject.errors = errors;
         }
         yield db.setProjectErrors(id, errors);
     })
@@ -156,7 +158,7 @@ class ProjectStore {
     }
 
     async flushFile(): Promise<void> {
-        this._saveFileDebounce.flush();
+        this.#saveFileDebounce.flush();
     }
 
     renameFile: Promise<void> = flow(function* (id, name) {

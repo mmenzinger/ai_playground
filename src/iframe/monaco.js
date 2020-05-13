@@ -1,11 +1,22 @@
-const models = new Map();
-let editor = null;
-let activeModel = null;
-let contentChangeCallback = () => {};
-let errorMarkerCallback = () => {};
+// @flow
+import type { File, FileError, ProjectErrors } from '@types';
 
+type Model = {
+    _associatedResource: any,
+    file: File,
+}
+
+const models: Map<number, Model> = new Map();
+let editor: ?Object = null;
+let activeModel: ?Model = null;
+
+declare var window: MonacoWindow;
+declare var monaco: any;
+//$FlowFixMe - suppress require errors
 require.config({ paths: { 'vs': 'monaco-editor/min/vs' }});
+//$FlowFixMe - suppress require errors
 require(['vs/editor/editor.main'], function() {
+    
     monaco.languages.register({ id: 'prolog' });
     
     // Register a tokens provider for the language
@@ -46,81 +57,94 @@ require(['vs/editor/editor.main'], function() {
     });
 
     editor.onDidChangeModelContent(_ => {
-        window.onContentChange(activeModel.file.id, editor.getValue());
+        if(activeModel && editor)
+            window.onContentChange(activeModel.file.id, editor.getValue());
     });
 
     editor.onDidChangeCursorSelection(_ => {
-        window.onStateChange(activeModel.file.id, editor.saveViewState());
+        if(activeModel && editor)
+            window.onStateChange(activeModel.file.id, editor.saveViewState());
     });
     editor.onDidScrollChange(_ => {
-        window.onStateChange(activeModel.file.id, editor.saveViewState());
+        if(activeModel && editor)
+            window.onStateChange(activeModel.file.id, editor.saveViewState());
     })
 
     let lastMarkers = null;
-    let projectErrors = {};
+    let projectErrors: ProjectErrors = {};
     editor.onDidChangeModelDecorations(() => {
         const markers = monaco.editor.getModelMarkers();
         const errorMarkers = markers.filter(marker => marker.severity === 8);
 
-        console.log(lastMarkers, errorMarkers, !lastMarkers)
+        //console.log(lastMarkers, errorMarkers, !lastMarkers)
         // !lastMarkers needs testing
         if(!lastMarkers || !sameMarkers(lastMarkers, errorMarkers)){
             lastMarkers = errorMarkers;
-            const fileErrorsList = [];
+            //const fileErrorsList = [];
+            let errorsChanged = false;
             for(const [fileId, model] of models){
                 const fileErrors = errorMarkers.filter(marker => marker.resource.path === model._associatedResource.path);
-                const errors = fileErrors.map(marker => ({
-                    line: marker.startLineNumber,
-                    column: marker.startColumn,
-                    message: marker.message,
+                const errors: FileError[] = fileErrors.map((marker): FileError => ({
+                    caller: {
+                        fileId: fileId,
+                        fileName: model.file.name,
+                        projectId: model.file.projectId,
+                        line: marker.startLineNumber,
+                        column: marker.startColumn,
+                    },
+                    args: [marker.message],
                 }));
                 if(!sameErrors(projectErrors[fileId], errors)){
-                    projectErrors = errors;
-                    fileErrorsList.push({fileId, fileName: model.file.name, project: model.file.project, errors});
+                    projectErrors[fileId] = errors;
+                    errorsChanged = true;
+                    //fileErrorsList.push({fileId, fileName: model.file.name, project: model.file.project, errors});
                 }
             }
-            if(fileErrorsList.length)
-                window.onErrorChange(fileErrorsList);
+            if(errorsChanged)
+                window.onErrorChange(projectErrors);
         }
     });
 
-    window.setErrors = (errors) => {
+    window.setErrors = (errors: ProjectErrors) => {
         projectErrors = errors;
     }
 
-    window.openFile = (file) => {
-        const model = getModel(file);
-        if(activeModel){
-            activeModel.file.state = editor.saveViewState();
+    window.openFile = (file: File) => {
+        if(editor){
+            const model = getModel(file);
+            if(activeModel){
+                activeModel.file.state = editor.saveViewState();
+            }
+            activeModel = model;
+            editor.setModel(model);
+            if(file.state){
+                editor.restoreViewState(file.state);
+            }
+    
+            editor.focus();
         }
-        activeModel = model;
-        editor.setModel(model);
-        if(file.state){
-            editor.restoreViewState(file.state);
-        }
-
-        editor.focus();
     }
 
     window.resize = () => {
-        editor.layout();
+        if(editor)
+            editor.layout();
     }
 
-    window.setTheme = (theme) => {
+    window.setTheme = (theme: string) => {
         monaco.editor.setTheme(theme);
     }
 
     window.focus = () => {
-        if(activeEditor)
-            activeEditor.focus();
+        if(editor)
+            editor.focus();
     }
 
-    window.onContentChange = (fileId, content) => {};
-    window.onErrorChange = (fileId, errors) => {};
-    window.onStateChange = (fileId, state) => {};
+    window.onContentChange = (fileId: number, content: string) => {};
+    window.onStateChange = (fileId:number, state: Object) => {};
+    window.onErrorChange = (errors: ProjectErrors) => {};
 });
 
-function getModel(file){
+function getModel(file: File){
     let model = models.get(file.id);
 
     if(!model){
@@ -142,7 +166,7 @@ function getModel(file){
     return model;
 }
 
-function sameMarker(a, b){
+function sameMarker(a: Object, b: Object){
     return (
         a.code === b.code &&
         a.startColumn === b.startColumn &&
@@ -152,7 +176,7 @@ function sameMarker(a, b){
     );
 }
 
-function sameMarkers(a, b){
+function sameMarkers(a: Object[], b: Object[]){
     if(!a || !b || a.length !== b.length)
         return false;
     for(let i = 0; i < a.length; i++){
@@ -162,11 +186,11 @@ function sameMarkers(a, b){
     return true;
 }
 
-function sameError(a, b){
+function sameError(a: FileError, b: FileError){
     return (
-        a.line === b.line &&
-        a.column === b.column &&
-        a.message === b.message
+        a.caller.fileId === b.caller.fileId &&
+        a.caller.line === b.caller.line &&
+        a.caller.column === b.caller.column
     );
 }
 
@@ -179,3 +203,14 @@ function sameErrors(a, b){
     }
     return true;
 }
+
+export type MonacoWindow = {
+    onContentChange: (fileId: number, content: string) => void,
+    onStateChange: (fileId: number, state: Object) => void,
+    onErrorChange: (errors: ProjectErrors) => void,
+    setErrors: (errors: ProjectErrors) => void,
+    openFile: (file: File) => void,
+    resize: () => void,
+    setTheme: (theme: string) => void,
+    focus: () => void,
+};

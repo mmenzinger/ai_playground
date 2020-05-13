@@ -4,7 +4,7 @@ import { installOfflineWatcher } from 'pwa-helpers/network.js';
 import appStore from 'store/app-store.js';
 import { MobxLitElement } from '@adobe/lit-mobx';
 
-import sharedStyles from 'components/shared-styles.css';
+import sharedStyles from '@shared-styles';
 import style from './ai-app.css';
 
 import { debugProjectStore } from 'store/project-store.js';
@@ -14,8 +14,8 @@ debugProjectStore();
 //debugAppStore();
 //debugSettingsStore();
 
-import('elements/ai-header.js');
-import('elements/c4f-modal.js');
+import('@element/ai-header.js');
+import('@element/c4f-modal.js');
 
 
 

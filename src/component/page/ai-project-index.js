@@ -1,5 +1,5 @@
 import { html } from 'lit-element';
-import { LazyElement } from 'components/elements/lazy-element.js';
+import { LazyElement } from '@element/lazy-element.js';
 import appStore from 'store/app-store.js';
 import projectStore from 'store/project-store.js';
 
@@ -7,13 +7,13 @@ import db from 'src/localdb.js';
 
 import { getTemplates, getExamples } from 'src/webpack-utils.js';
 
-import { Modals, ModalAbort } from 'elements/c4f-modal.js';
+import { Modals, ModalAbort } from '@element/c4f-modal.js';
 import { newProjectTemplate, newExampleTemplate, deleteProjectTemplate, downloadProjectTemplate } from 'modals/templates.js';
 
 import JSZip from "jszip";
 import { saveAs } from 'file-saver';
 
-import sharedStyles from 'components/shared-styles.css';
+import sharedStyles from '@shared-styles';
 import style from './ai-project-index.css';
 
 class AiProjectIndex extends LazyElement {

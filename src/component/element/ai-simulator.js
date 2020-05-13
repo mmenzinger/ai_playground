@@ -3,12 +3,12 @@ import { unsafeHTML } from 'lit-html/directives/unsafe-html';
 import { MobxLitElement } from '@adobe/lit-mobx';
 import projectStore from 'store/project-store.js';
 
-import 'components/elements/c4f-console.js';
+import '@element/c4f-console.js';
 import { getComponents } from 'src/webpack-utils.js';
 import { Sandbox } from 'src/sandbox.js';
 import { defer } from 'src/util.js';
 
-import sharedStyles from 'components/shared-styles.css';
+import sharedStyles from '@shared-styles';
 import style from './ai-simulator.css';
 
 

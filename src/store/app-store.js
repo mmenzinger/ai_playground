@@ -4,7 +4,7 @@ import settingsStore from '@store/settings-store.js';
 import projectStore from '@store/project-store.js';
 import { defer } from 'src/util.js';
 
-import type { Project } from '@localdb';
+import type { Project, Modal } from '@types';
 
 class AppStore{
     @observable page = '';
@@ -91,11 +91,7 @@ class AppStore{
     }
 }
 
-export type Modal = {
-    template: Object,
-    data: Object,
-    result: any,
-}
+
 
 export const appStore = new AppStore();
 

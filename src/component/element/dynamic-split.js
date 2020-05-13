@@ -1,7 +1,7 @@
 import { html, unsafeCSS, css, LitElement } from 'lit-element';
 
 
-import sharedStyles from 'components/shared-styles.css';
+import sharedStyles from '@shared-styles';
 import style from './dynamic-split.css';
 
 const LOCALSTORE_KEY = 'dynamic-split-state';

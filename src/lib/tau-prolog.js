@@ -1,10 +1,10 @@
-import pl from './pl-core-fix.js';
+import prolog from './pl-core-fix.js';
 import lists from 'tau-prolog/modules/lists.js';
 import js from 'tau-prolog/modules/js.js';
 import random from 'tau-prolog/modules/random.js';
 import statistics from 'tau-prolog/modules/statistics.js';
 
-export default pl;
+export const pl = prolog;
 
 lists(pl);
 js(pl);

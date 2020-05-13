@@ -1,7 +1,7 @@
 import { html, unsafeCSS, LitElement } from 'lit-element';
-import { LazyElement } from 'components/elements/lazy-element.js';
+import { LazyElement } from '@element/lazy-element.js';
 
-import sharedStyles from 'components/shared-styles.css';
+import sharedStyles from '@shared-styles';
 import style from './scenario-tictactoe.css';
 
 import { Player } from './scenario';

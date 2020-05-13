@@ -3,7 +3,7 @@ import {registerRoute} from 'workbox-routing/registerRoute.mjs';
 import {CacheFirst} from 'workbox-strategies/CacheFirst.mjs';
 import {Plugin as ExpirationPlugin} from 'workbox-expiration/Plugin.mjs';
 import db from '@localdb';
-import type { Project } from '@localdb';
+import type { Project } from '@types';
 
 declare var PRODUCTION: boolean;
 

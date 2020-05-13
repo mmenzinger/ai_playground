@@ -5,7 +5,8 @@
 				"chrome": 80
 			}
 		}],
-		["@babel/preset-flow", {}]
+		["@babel/preset-flow", {}],
+		["@babel/preset-typescript", {}]
 	],
 	"plugins": [
 			["@babel/plugin-proposal-decorators", { 

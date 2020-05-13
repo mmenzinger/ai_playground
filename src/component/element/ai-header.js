@@ -4,7 +4,7 @@ import { connect } from 'pwa-helpers/connect-mixin.js';
 import { appStore } from 'store/app-store.js';
 import { MobxLitElement } from '@adobe/lit-mobx';
 
-import sharedStyles from 'components/shared-styles.css';
+import sharedStyles from '@shared-styles';
 import style from './ai-header.css';
 
 class AiHeader extends MobxLitElement {

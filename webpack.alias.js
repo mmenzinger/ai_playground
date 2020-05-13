@@ -4,9 +4,8 @@ module.exports = {
     'node_modules': path.join(__dirname, 'node_modules'),
     'src': path.join(__dirname, 'src'),
     'actions': path.join(__dirname, 'src/redux/actions'),
-    'components': path.join(__dirname, 'src/components'),
-    'elements': path.join(__dirname, 'src/components/elements'),
-    'modals': path.join(__dirname, 'src/components/modals'),
+    'elements': path.join(__dirname, 'src/component/elements'),
+    'modals': path.join(__dirname, 'src/component/modals'),
     'reducers': path.join(__dirname, 'src/redux/reducers'),
     'scenario': path.join(__dirname, 'src/scenario'),
     'assets': path.join(__dirname, 'assets'),
@@ -18,7 +17,8 @@ module.exports = {
     '@store': path.join(__dirname, 'src/store'),
     '@localdb': path.join(__dirname, 'src/localdb.js'),
     '@util': path.join(__dirname, 'src/util.js'),
-    '@components': path.join(__dirname, 'src/components'),
-    '@page': path.join(__dirname, 'src/components/page'),
-
+    '@shared-styles': path.join(__dirname, 'src/component/shared-styles.css'),
+    '@component': path.join(__dirname, 'src/component'),
+    '@element': path.join(__dirname, 'src/component/element'),
+    '@page': path.join(__dirname, 'src/component/page'),
 };

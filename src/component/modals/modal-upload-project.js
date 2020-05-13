@@ -1,13 +1,13 @@
 import { html, unsafeCSS } from 'lit-element';
 import appStore from 'store/app-store.js';
-import { LazyElement } from 'components/elements/lazy-element.js';
+import { LazyElement } from '@element/lazy-element.js';
 import db from 'src/localdb.js';
 import { defer } from 'src/util.js';
-import { ModalAbort } from 'elements/c4f-modal.js';
+import { ModalAbort } from '@element/c4f-modal.js';
 
 import JSZip from 'jszip';
 
-import sharedStyles from 'components/shared-styles.css';
+import sharedStyles from '@shared-styles';
 import style from './modal-generic.css';
 
 class ModalUploadProject extends LazyElement {

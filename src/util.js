@@ -32,6 +32,46 @@ export function deepMap(obj: Object, func: (any) => any): any {
     return func(obj);
 }
 
+export class Defer<T> extends Promise<T> {
+    #resolve: (T) => void;
+    #reject: (any) => void;
+    resolved: boolean = false;
+    value: ?T = undefined;
+
+    constructor(){
+        let res: (T) => void = () => {};
+        let rej: (any) => void = () => {};
+        super((resolve, reject) => {
+            res = resolve;
+            rej = reject;
+        });
+        this.#resolve = res;
+        this.#reject = rej;
+    }
+
+    // mask as promise see https://stackoverflow.com/questions/48158730/extend-javascript-promise-and-resolve-or-reject-it-inside-constructor
+    //$FlowFixMe - computed properties not supported
+    static get [Symbol.species]() {
+        return Promise;
+    }
+
+    //$FlowFixMe - computed properties not supported
+    get [Symbol.toStringTag]() {
+        return 'Defer';
+    }
+
+    resolve(value: T){
+        this.resolved = true;
+        this.value = value;
+        this.#resolve(value);
+    }
+
+    reject(error: any){
+        this.resolved = true;
+        this.#reject(error);
+    }
+}
+
 export function defer(): Promise<any>{
     let res, rej;
     const promise: any = new Promise((resolve, reject) => {

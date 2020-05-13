@@ -1,6 +1,8 @@
 // @flow
 import Dexie from 'dexie';
 
+import type { File, Project } from '@types';
+
 
 class LocalDB {
     db: any;
@@ -144,38 +146,6 @@ class LocalDB {
 }
 
 export class LocalDBError extends Error{}
-
-export type Caller = {
-    projectId: number,
-    fileId: number,
-    fileName: string,
-    line: number,
-    column: number,
-}
-
-export type Log = {
-    caller?: Caller,
-    args: any[],
-}
-
-export type FileError = Log & {
-    caller: Caller,
-}
-
-export type File = {
-    id: number,
-    projectId: number,
-    name: string,
-    content?: string,
-    state?: any,
-};
-
-export type Project = {
-    id: number,
-    name: string,
-    scenario: string,
-    errors: { [key: string]: FileError },
-};
 
 export const db = new LocalDB('ai.c4f.wtf');
 

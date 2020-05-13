@@ -4,13 +4,13 @@ import projectStore from 'store/project-store.js';
 import appStore from 'store/app-store.js';
 import { defer, dispatchIframeEvents } from 'src/util.js';
 
-import { Modals, ModalAbort } from 'elements/c4f-modal.js';
+import { Modals, ModalAbort } from '@element/c4f-modal.js';
 import { createFileTemplate, deleteFileTemplate } from 'modals/templates.js';
 
 import db from 'src/localdb.js';
 
 
-import sharedStyles from 'components/shared-styles.css';
+import sharedStyles from '@shared-styles';
 import style from './file-tree.css';
 //const jstreeStyles = unsafeCSS(require('jstree/dist/themes/default/style.css').toString());
 //const icons32 = require('jstree/dist/themes/default/32px.png');
@@ -31,7 +31,7 @@ class FileTree extends LitElement {
     }
 
     render() {
-        return html`<iframe id="filetree" src="iframes/jstree.html"></iframe>`;
+        return html`<iframe id="filetree" src="iframe/jstree.html"></iframe>`;
     }
 
     async onDelete(file) {

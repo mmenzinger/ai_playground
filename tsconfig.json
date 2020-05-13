@@ -1,0 +1,15 @@
+{
+    "baseUrl": ".",
+    "paths": {
+        "src/*": ["./src/*"],
+        "@store/*": ["./src/store/*"],
+        "@page/*": ["./src/component/page/*"],
+        "@iframe/*": ["./src/iframe/*"],
+        "@component/*": ["./src/component/*"],
+        "@element/*": ["./src/component/element/*"],
+        "@localdb": ["./src/localdb.js"],
+        "@util": ["./src/util.js"],
+        "@types": ["./src/types.js"],
+        "@shared-styles": ["./src/component/shared-styles.css"],
+    }
+}

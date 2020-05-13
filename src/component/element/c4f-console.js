@@ -4,7 +4,7 @@ import projectStore from 'store/project-store.js';
 import { MobxLitElement } from '@adobe/lit-mobx';
 import db from 'src/localdb';
 
-import sharedStyles from 'components/shared-styles.css';
+import sharedStyles from '@shared-styles';
 import style from './c4f-console.css';
 
 class C4fConsole extends MobxLitElement {

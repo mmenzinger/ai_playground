@@ -2,7 +2,7 @@ import { html, unsafeCSS } from 'lit-element';
 import { MobxLitElement } from '@adobe/lit-mobx';
 import appStore from 'store/app-store.js';
 
-import sharedStyles from 'components/shared-styles.css';
+import sharedStyles from '@shared-styles';
 import style from './c4f-modal.css';
 
 export const Modals = {

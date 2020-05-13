@@ -1,8 +1,8 @@
 import { html, unsafeCSS } from 'lit-element';
-import { LazyElement } from 'components/elements/lazy-element.js';
+import { LazyElement } from '@element/lazy-element.js';
 import settingsStore from 'store/settings-store.js';
 
-import sharedStyles from 'components/shared-styles.css';
+import sharedStyles from '@shared-styles';
 //import style from './ai-welcome.css';
 
 class AiWelcome extends LazyElement {

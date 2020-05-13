@@ -1,17 +1,17 @@
 import { html, unsafeCSS } from 'lit-element';
-import { LazyElement } from 'components/elements/lazy-element.js';
+import { LazyElement } from '@element/lazy-element.js';
 import { autorun } from 'mobx';
 import projectStore from 'store/project-store.js';
 
 import { defer } from 'src/util.js';
 
-import 'components/elements/dynamic-split.js';
-import 'components/elements/tab-group.js';
-import 'components/elements/file-tree.js';
-import 'components/elements/c4f-editor.js';
-import 'components/elements/ai-simulator.js';
-import 'components/elements/c4f-console.js';
-import 'components/elements/c4f-markdown.js';
+import '@element/dynamic-split.js';
+import '@element/tab-group.js';
+import '@element/file-tree.js';
+import '@element/c4f-editor.js';
+import '@element/ai-simulator.js';
+import '@element/c4f-console.js';
+import '@element/c4f-markdown.js';
 
 class AiProject extends LazyElement {
     constructor(){

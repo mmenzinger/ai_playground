@@ -1,9 +1,10 @@
 const path = require('path');
+const webpack = require('webpack');
 const merge = require('webpack-merge');
-const common = require('./webpack.common.js');
+const common = require('./webpack.app.js');
 const TerserPlugin = require('terser-webpack-plugin');
-const { CleanWebpackPlugin } = require("clean-webpack-plugin");
-const webpack = require("webpack");
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+
 
 module.exports = merge(common, {
     mode: 'production',
