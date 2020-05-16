@@ -1,5 +1,6 @@
-import { messageWithResult, deepCopy, hideImport } from 'src/util.js';
-import merge from 'lodash/merge.js';
+import { deepCopy, hideImport } from '@util';
+import { call } from '@worker/types';
+import merge from 'lodash/merge';
 
 export const Player = Object.freeze({
     None: 0,
@@ -10,7 +11,7 @@ export const Player = Object.freeze({
     Player2: 2,
 });
 
-export function createScenario(initState) {
+export function createScenario(initState: any) {
     const state = {
         settings: {
             startingPlayer: 1,
@@ -25,8 +26,8 @@ export function createScenario(initState) {
         clone() { return createScenario(deepCopy(state)); },
         getState() { return deepCopy(state); },
 
-        getScore(player) {
-            const winner = this.getWinner(state);
+        getScore(player: number) {
+            const winner = this.getWinner();
             if (winner === player)
                 return 1;
             if (winner === Player.Both || winner == Player.None)
@@ -64,14 +65,14 @@ export function createScenario(initState) {
             }
             return actions;
         },
-        validateAction(action) {
+        validateAction(action: any) {
             if (action.type !== 'PLACE') throw Error(`unknown action type '${action.type}'`);
             if (action.row < 0 || action.row > 2) throw Error(`row index must be between 0 and 2 (was ${action.row})`);
             if (action.col < 0 || action.col > 2) throw Error(`col index must be between 0 and 2 (was ${action.col})`);
             if (state.board[action.row][action.col] !== Player.None) throw Error(`position (${action.row}, ${action.col}) not empty`);
             if (action.player !== state.player) throw Error(`invalid player ${action.player}`);
         },
-        validAction(action) {
+        validAction(action: any) {
             try {
                 this.validateAction(action);
                 return true;
@@ -80,7 +81,7 @@ export function createScenario(initState) {
                 return false;
             }
         },
-        performAction(action) {
+        performAction(action: any) {
             this.validateAction(action);
             state.board[action.row][action.col] = action.player;
             const winner = this.getWinner();
@@ -90,10 +91,10 @@ export function createScenario(initState) {
             return winner;
         },
 
-        async run(player1, player2 = {
-            init: (state) => messageWithResult({ type: 'call', functionName: 'onInit', args: [state] }),
-            update: (state, actions) => messageWithResult({ type: 'call', functionName: 'onUpdate', args: [state, actions] }),
-            finish: (state, score) => messageWithResult({ type: 'call', functionName: 'onFinish', args: [state, score] }),
+        async run(player1: any, player2 = {
+            init: (state: any) => call('onInit', [state]),
+            update: (state: any, actions: any) => call('onUpdate', [state, actions]),
+            finish: (state: any, score: any) => call('onFinish', [state, score]),
         }) {
             const players = [player1, player2];
             if (player1.init instanceof Function)
@@ -127,7 +128,7 @@ export function createScenario(initState) {
     });
 }
 
-export async function __run(state) {
+export async function __run(state: any) {
     const scenario = createScenario(state);
     const player1 = await hideImport('/project/index.js');
     return await scenario.run(player1);

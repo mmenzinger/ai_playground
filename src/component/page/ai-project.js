@@ -1,17 +1,18 @@
 import { html, unsafeCSS } from 'lit-element';
-import { LazyElement } from '@element/lazy-element.js';
+import { LazyElement } from '@element/lazy-element';
 import { autorun } from 'mobx';
-import projectStore from 'store/project-store.js';
+import projectStore from '@store/project-store';
 
-import { defer } from 'src/util.js';
+import { defer } from '@util';
 
-import '@element/dynamic-split.js';
-import '@element/tab-group.js';
-import '@element/file-tree.js';
-import '@element/c4f-editor.js';
-import '@element/ai-simulator.js';
-import '@element/c4f-console.js';
-import '@element/c4f-markdown.js';
+import '@element/dynamic-split';
+import '@element/tab-group';
+import '@element/file-tree';
+import '@element/c4f-editor-iframe';
+//import '@element/c4f-editor';
+import '@element/ai-simulator';
+import '@element/c4f-console';
+import '@element/c4f-markdown';
 
 class AiProject extends LazyElement {
     constructor(){
@@ -27,7 +28,8 @@ class AiProject extends LazyElement {
                     <dynamic-split slot="start" direction="horizontal" minSize="100px" defaultRatio="0.3" saveId="project_files_editor">
                         <file-tree slot="start"></file-tree>
                         <tab-group slot="end" id="editorTabGroup">
-                            <c4f-editor name="Editor"></c4f-editor>
+                            <!-- <c4f-editor name="Editor"></c4f-editor>-->
+                            <c4f-editor-iframe name="Editor"></c4f-editor-iframe>
                             <c4f-markdown name="Markdown"></c4f-markdown>
                         </tab-group>
                     </dynamic-split>

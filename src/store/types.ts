@@ -1,16 +1,24 @@
-// @flow
+import { editor } from 'monaco-editor';
 
 export type Caller = {
-    fileId: number,
-    projectId: number,
-    fileName: string,
-    line: number,
-    column: number,
+    fileId?: number,
+    projectId?: number,
+    fileName?: string,
+    functionName?: string
+    line?: number,
+    column?: number,
+}
+
+export enum LogType {
+    LOG,
+    WARN,
+    ERROR,
 }
 
 export type Log = {
-    caller?: Caller,
+    type: LogType,
     args: any[],
+    caller?: Caller,
 }
 
 export type FileError = {
@@ -19,22 +27,23 @@ export type FileError = {
 }
 
 export type ProjectErrors = {
-    [id: number]: FileError[],
+    [key:number]: FileError[],
 }
 
 export type File = {
     id: number,
     projectId: number,
     name: string,
+    state?: editor.ICodeEditorViewState,
     content?: string,
-    state?: any,
+    lastChange?: number,
 };
 
 export type Project = {
     id: number,
     name: string,
     scenario: string,
-    errors: ProjectErrors,
+    errors?: ProjectErrors,
 };
 
 export type Modal = {

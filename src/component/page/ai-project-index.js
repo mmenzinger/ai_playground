@@ -1,14 +1,14 @@
 import { html } from 'lit-element';
-import { LazyElement } from '@element/lazy-element.js';
-import appStore from 'store/app-store.js';
-import projectStore from 'store/project-store.js';
+import { LazyElement } from '@element/lazy-element';
+import appStore from '@store/app-store';
+import projectStore from '@store/project-store';
 
-import db from 'src/localdb.js';
+import db from '@localdb';
 
-import { getTemplates, getExamples } from 'src/webpack-utils.js';
+import { getTemplates, getExamples } from '@src/webpack-utils';
 
-import { Modals, ModalAbort } from '@element/c4f-modal.js';
-import { newProjectTemplate, newExampleTemplate, deleteProjectTemplate, downloadProjectTemplate } from 'modals/templates.js';
+import { Modals, ModalAbort } from '@element/c4f-modal';
+import { newProjectTemplate, newExampleTemplate, deleteProjectTemplate, downloadProjectTemplate } from '@modal/templates';
 
 import JSZip from "jszip";
 import { saveAs } from 'file-saver';

@@ -1,18 +1,15 @@
-// @flow
 import { html, unsafeCSS, css, LitElement } from 'lit-element';
 import { autorun } from 'mobx';
-import { ResizeObserver } from 'resize-observer';
-
 import projectStore from '@store/project-store';
 import settingsStore from '@store/settings-store';
-import { Defer, dispatchIframeEvents } from '@util';
+import { ResizeObserver } from 'resize-observer';
+import { defer, dispatchIframeEvents } from '@util';
 
-import type { MonacoWindow } from '@iframe/monaco';
 
 import sharedStyles from '@shared-styles';
 import style from './c4f-editor.css';
-//: Promise<MonacoWindow>
-class C4fEditor extends LitElement {
+
+class C4fEditorIframe extends LitElement {
     static get styles() {
         return [
             sharedStyles,
@@ -20,19 +17,18 @@ class C4fEditor extends LitElement {
         ];
     }
 
-    _monaco: Defer<MonacoWindow> = new Defer();
-
     constructor() {
         super();
         this._activeFile = null;
         this._currentMode = 'plain_text';
         this._preventOnChange = false;
+        this._monaco = defer();
     }
 
     render() {
         const theme = settingsStore.get('editor-theme', 'vs');
         return html`
-            <iframe id="editor" src="iframe/monaco.html"></iframe>
+            <iframe id="editor" src="monaco.html"></iframe>
             <select id="theme">
                 <option value="vs" ?selected="${theme === 'vs'}">Light</option>
                 <option value="vs-dark" ?selected="${theme === 'vs-dark'}">Dark</option>
@@ -46,7 +42,7 @@ class C4fEditor extends LitElement {
         const theme = this.shadowRoot.getElementById('theme');
 
         iframe.onload = () => {
-            const monaco: MonacoWindow = iframe.contentWindow;
+            const monaco = iframe.contentWindow;
             this._monaco.resolve(monaco);
 
             new ResizeObserver(() => {
@@ -61,12 +57,12 @@ class C4fEditor extends LitElement {
                 projectStore.saveFileState(fileId, state);
             }
 
-            monaco.onErrorChange = (projectErrors) => {
+            monaco.onErrorChange = (fileErrorsList) => {
                 /*console.log(fileErrorsList)
                 for(const fileErrors of fileErrorsList){
                     projectStore.saveFileErrors(fileErrors.fileId, fileErrors.errors);
                 }*/
-                projectStore.updateProjectErrors(projectStore.activeProject.id, projectErrors);
+                projectStore.updateProjectErrors(projectStore.activeProject.id, fileErrorsList);
             }
             
             monaco.setTheme(theme.options[theme.selectedIndex].value);
@@ -75,7 +71,7 @@ class C4fEditor extends LitElement {
         }
 
         theme.onchange = async (e) => {
-            const monaco: MonacoWindow = await this._monaco;
+            const monaco = await this._monaco;
             const selectedTheme = theme.options[theme.selectedIndex].value;
             settingsStore.set('editor-theme', selectedTheme);
             monaco.setTheme(selectedTheme);
@@ -84,11 +80,11 @@ class C4fEditor extends LitElement {
         autorun(async reaction => {
             const file = projectStore.activeFile;
             if (file) {
-                const monaco: MonacoWindow = await this._monaco;
+                const monaco = await this._monaco;
                 monaco.openFile(file);
             }
         });
     }
 }
 
-window.customElements.define('c4f-editor', C4fEditor);
+window.customElements.define('c4f-editor-iframe', C4fEditorIframe);

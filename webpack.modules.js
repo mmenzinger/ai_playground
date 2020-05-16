@@ -1,17 +1,16 @@
 const path = require('path');
 const webpack = require('webpack');
 const CopyPlugin = require('copy-webpack-plugin');
-const flowRemoveTypes = require('flow-remove-types');
 const EsmWebpackPlugin = require('@purtuga/esm-webpack-plugin');
 const glob = require('glob');
 
 const alias = require('./webpack.alias.js');
 
 function addScenarioModules(entry = {}) {
-    const files = glob.sync(path.join(__dirname, 'src/scenario/*/scenario.js'));
+    const files = glob.sync(path.join(__dirname, 'src/scenario/*/scenario.{js,ts}'));
     for(const file of files){
         const path = file.replace(__dirname, '.');
-        const name = path.replace(/(\.\/src\/|\.js)/g, '')
+        const name = path.replace(/(\.\/src\/|\.(t|j)s)/g, '');
         entry[name] = path;
     }
     return entry;
@@ -19,8 +18,8 @@ function addScenarioModules(entry = {}) {
 
 module.exports = {
     entry: addScenarioModules({
-        'lib/prolog': './src/lib/tau-prolog.js',
-        'lib/tf': './src/lib/tf.js',
+        'lib/prolog': './src/lib/tau-prolog',
+        'lib/tf': './src/lib/tf',
     }),
 
     output: {
@@ -31,13 +30,13 @@ module.exports = {
 
     resolve: {
         alias,
-        extensions: ['.js'],
+        extensions: ['.ts', '.js', '.mjs'],
     },
 
     module: {
         rules: [
             {
-                test: /\.js$/,
+                test: /\.(ts|js|mjs)$/,
                 exclude: /node_modules/,
                 use: {
                     loader: 'babel-loader',

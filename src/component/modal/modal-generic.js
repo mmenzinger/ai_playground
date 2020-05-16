@@ -1,8 +1,8 @@
 import { html, unsafeCSS } from 'lit-element';
-import appStore from 'store/app-store.js';
-import { LazyElement } from '@element/lazy-element.js';
-import { defer } from 'src/util.js';
-import { ModalAbort } from '@element/c4f-modal.js';
+import appStore from '@store/app-store';
+import { LazyElement } from '@element/lazy-element';
+import { defer } from '@util';
+import { ModalAbort } from '@element/c4f-modal';
 
 
 import sharedStyles from '@shared-styles';

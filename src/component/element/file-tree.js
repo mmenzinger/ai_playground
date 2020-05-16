@@ -1,13 +1,13 @@
 import { html, unsafeCSS, css, LitElement } from 'lit-element';
 import { autorun, trace, toJS } from 'mobx';
-import projectStore from 'store/project-store.js';
-import appStore from 'store/app-store.js';
-import { defer, dispatchIframeEvents } from 'src/util.js';
+import projectStore from '@store/project-store';
+import appStore from '@store/app-store';
+import { defer, dispatchIframeEvents } from '@util';
 
-import { Modals, ModalAbort } from '@element/c4f-modal.js';
-import { createFileTemplate, deleteFileTemplate } from 'modals/templates.js';
+import { Modals, ModalAbort } from '@element/c4f-modal';
+import { createFileTemplate, deleteFileTemplate } from '@modal/templates';
 
-import db from 'src/localdb.js';
+import db from '@localdb';
 
 
 import sharedStyles from '@shared-styles';
@@ -31,7 +31,7 @@ class FileTree extends LitElement {
     }
 
     render() {
-        return html`<iframe id="filetree" src="iframe/jstree.html"></iframe>`;
+        return html`<iframe id="filetree" src="jstree.html"></iframe>`;
     }
 
     async onDelete(file) {

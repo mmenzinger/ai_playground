@@ -1,6 +1,6 @@
 import { html, LitElement } from 'lit-element';
 import { autorun } from 'mobx';
-import projectStore from 'store/project-store.js';
+import projectStore from '@store/project-store';
 
 import Prism from 'prismjs';
 import 'prismjs/plugins/line-numbers/prism-line-numbers';

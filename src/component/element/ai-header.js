@@ -1,7 +1,7 @@
 import { LitElement, html, unsafeCSS } from 'lit-element';
 import { connect } from 'pwa-helpers/connect-mixin.js';
 
-import { appStore } from 'store/app-store.js';
+import { appStore } from '@store/app-store';
 import { MobxLitElement } from '@adobe/lit-mobx';
 
 import sharedStyles from '@shared-styles';

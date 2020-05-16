@@ -1,13 +1,13 @@
-// @flow
 import stringify from 'json-stringify-pretty-compact';
+// @ts-ignore
 import deepCopy from 'deepcopy';
 
 export { deepCopy };
 
 
-export async function messageWithResult(msg: Object, timeout: ?number = null, target: any = self): Promise<any>{
+export async function messageWithResult(msg: object, timeout: number | null = null, target: any = self): Promise<any>{
     return new Promise((resolve, reject) => {
-        let to = undefined;
+        let to: any;
         if(timeout){
             to = setTimeout(() => {
                 reject(Error(`message timeout: ${msg}`));
@@ -25,40 +25,41 @@ export async function messageWithResult(msg: Object, timeout: ?number = null, ta
     });
 }
 
-export function deepMap(obj: Object, func: (any) => any): any {
+export function deepMap(obj: any, func: (item: any) => any): any {
     if (obj instanceof Object)
-        for (const pair of Object.entries(obj))
-            obj[pair[0]] = deepMap(pair[1], func);
+        for (const [key, value] of Object.entries(obj))
+            obj[key] = deepMap(value, func);
     return func(obj);
 }
 
 export class Defer<T> extends Promise<T> {
-    #resolve: (T) => void;
-    #reject: (any) => void;
+    #resolve: (value: T) => void;
+    #reject: (error: any) => void;
     resolved: boolean = false;
-    value: ?T = undefined;
+    value?: T;
 
     constructor(){
-        let res: (T) => void = () => {};
-        let rej: (any) => void = () => {};
         super((resolve, reject) => {
-            res = resolve;
-            rej = reject;
+            this.#resolve = resolve;
+            this.#reject = reject;
         });
-        this.#resolve = res;
-        this.#reject = rej;
+        //let res: (T) => void = () => {};
+        //let rej: (any) => void = () => {};
+        
+        //this.#resolve = res;
+        //this.#reject = rej;
     }
 
     // mask as promise see https://stackoverflow.com/questions/48158730/extend-javascript-promise-and-resolve-or-reject-it-inside-constructor
     //$FlowFixMe - computed properties not supported
-    static get [Symbol.species]() {
+    /*static get [Symbol.species]() {
         return Promise;
     }
 
     //$FlowFixMe - computed properties not supported
     get [Symbol.toStringTag]() {
         return 'Defer';
-    }
+    }*/
 
     resolve(value: T){
         this.resolved = true;
@@ -72,18 +73,19 @@ export class Defer<T> extends Promise<T> {
     }
 }
 
+// TODO: remove
 export function defer(): Promise<any>{
-    let res, rej;
+    let res: any, rej: any;
     const promise: any = new Promise((resolve, reject) => {
         res = resolve;
         rej = reject;
     });
-    promise.resolve = function(val) {
+    promise.resolve = function(val: any) {
         promise.resolved = true;
         promise.value = val;
         res(val);
     };
-    promise.reject = function(error) {
+    promise.reject = function(error: any) {
         promise.resolved = true;
         promise.value = error;
         rej(error);
@@ -94,8 +96,8 @@ export function defer(): Promise<any>{
     return promise;
 }
 
-export function serialize(obj: Object): string {
-    function replacer(key, value) {
+export function serialize(obj: any): string {
+    function replacer(_: string, value: any) {
         if (value instanceof Error)
             return {
                 type: '__ERROR__',
@@ -149,8 +151,8 @@ export function serialize(obj: Object): string {
     return stringify(obj, { replacer });
 }
 
-export function deserialize(json: string): Object {
-    function reviver(key, value) {
+export function deserialize(json: string): any {
+    function reviver(key: string, value: any) {
         if (value instanceof Object) {
             if (value.type === '__ERROR__') {
                 const error = Error(value.message);
@@ -195,36 +197,44 @@ export function deserialize(json: string): Object {
 }
 
 export function dispatchIframeEvents(iframe: HTMLIFrameElement, target: any = window) {
-    const dispatchMouseEvent = (event) => {
+    const dispatchMouseEvent = (event: MouseEvent) => {
         const rect = iframe.getBoundingClientRect();
         const data = {
             bubbles: event.bubbles,
             cancelable: event.cancelable,
-            clientX: event.clientX + rect.left,
-            clientY: event.clientY + rect.top,
-            pageX: event.pageX + rect.left,
-            pageY: event.pageY + rect.top,
-            x: event.x + rect.left,
-            y: event.y + rect.top,
-            offsetX: event.offsetX + rect.left,
-            offsetY: event.offsetY + rect.top,
+            clientX: event.clientX + rect.x,
+            clientY: event.clientY + rect.y,
+            pageX: event.pageX + rect.x,
+            pageY: event.pageY + rect.y,
+            x: event.x + rect.x,
+            y: event.y + rect.y,
+            offsetX: event.offsetX + rect.x,
+            offsetY: event.offsetY + rect.y,
         };
         target.dispatchEvent(new MouseEvent(event.type, data));
     }
 
-    const dispatchKeyEvent = (event) => {
+    const dispatchKeyEvent = (event: KeyboardEvent) => {
         target.dispatchEvent(new KeyboardEvent(event.type, event));
     }
 
     const container = iframe.contentWindow;
-    container.onmousedown = dispatchMouseEvent;
-    container.onmousemove = dispatchMouseEvent;
-    container.onmouseup = dispatchMouseEvent;
-    container.onkeydown = dispatchKeyEvent;
-    container.onkeypress = dispatchKeyEvent;
-    container.onkeyup = dispatchKeyEvent;
+    if(container){
+        container.onmousedown = dispatchMouseEvent;
+        container.onmousemove = dispatchMouseEvent;
+        container.onmouseup = dispatchMouseEvent;
+        container.onkeydown = dispatchKeyEvent;
+        container.onkeypress = dispatchKeyEvent;
+        container.onkeyup = dispatchKeyEvent;
+    }
+    else{
+        throw new UtilError('iframe has no contentWindow');
+    }
+    
 }
 
 export function hideImport(path: string){
     return import(/* webpackIgnore: true */path);
 }
+
+export class UtilError extends Error{};

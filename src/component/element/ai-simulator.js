@@ -1,12 +1,12 @@
 import { html } from 'lit-element';
 import { unsafeHTML } from 'lit-html/directives/unsafe-html';
 import { MobxLitElement } from '@adobe/lit-mobx';
-import projectStore from 'store/project-store.js';
+import projectStore from '@store/project-store';
 
-import '@element/c4f-console.js';
-import { getComponents } from 'src/webpack-utils.js';
-import { Sandbox } from 'src/sandbox.js';
-import { defer } from 'src/util.js';
+import '@element/c4f-console';
+import { getComponents } from '@src/webpack-utils';
+import { Sandbox } from '@sandbox';
+import { defer } from '@util';
 
 import sharedStyles from '@shared-styles';
 import style from './ai-simulator.css';
@@ -35,7 +35,7 @@ class AiSimulator extends MobxLitElement {
         this._scenarioLoaded = defer();
         if(project){
             const type = project.scenario;
-            import(`scenario/${type}/scenario-${type}`).then(_ => {
+            import(`@scenario/${type}/scenario-${type}`).then(_ => {
                 this._scenarioLoaded.resolve(true);
             });
             const components = getComponents().map(name => {
@@ -95,7 +95,7 @@ class AiSimulator extends MobxLitElement {
         await this._scenarioLoaded;
         await navigator.serviceWorker.ready; // make sure sw is ready
         this._scenario = this.shadowRoot.querySelector('[active]');
-        this._sandbox.resolve(new Sandbox(projectStore, this._scenario));
+        this._sandbox.resolve(new Sandbox(this._scenario));
         if(this._scenario.constructor.autorun){   
             this.simRun()
         }

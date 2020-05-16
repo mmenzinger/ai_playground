@@ -1,8 +1,8 @@
 import { html } from 'lit-element';
-import { repeat } from 'lit-html/directives/repeat.js';
-import projectStore from 'store/project-store.js';
+import { repeat } from 'lit-html/directives/repeat';
+import projectStore from '@store/project-store';
 import { MobxLitElement } from '@adobe/lit-mobx';
-import db from 'src/localdb';
+import db from '@localdb';
 
 import sharedStyles from '@shared-styles';
 import style from './c4f-console.css';

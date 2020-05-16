@@ -1,13 +1,12 @@
-// @flow
 import {registerRoute} from 'workbox-routing/registerRoute.mjs';
 import {CacheFirst} from 'workbox-strategies/CacheFirst.mjs';
 import {Plugin as ExpirationPlugin} from 'workbox-expiration/Plugin.mjs';
 import db from '@localdb';
-import type { Project } from '@types';
+import { Project } from '@store/types';
 
 declare var PRODUCTION: boolean;
 
-let project: ?Project = null;
+let project: Project | null = null;
 
 onmessage = m => {
     if(m.data.type === 'setProject'){
@@ -16,10 +15,10 @@ onmessage = m => {
     }
 };
 
-self.addEventListener('install', (event) => {
+(self as ServiceWorkerGlobalScope).addEventListener('install', (event) => {
     event.waitUntil(self.skipWaiting());
 });
-self.addEventListener('activate', (event) => {
+(self as ServiceWorkerGlobalScope).addEventListener('activate', (event) => {
     event.waitUntil(self.clients.claim());
 });
 

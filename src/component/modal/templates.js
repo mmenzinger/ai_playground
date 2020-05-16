@@ -1,5 +1,5 @@
 import { html } from 'lit-element';
-import db from 'src/localdb.js';
+import db from '@localdb';
 
 //------------------------------------------------------------------------------
 // New Project

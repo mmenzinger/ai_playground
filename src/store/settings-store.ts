@@ -1,18 +1,17 @@
-// @flow
 import { observable, action, autorun, toJS } from 'mobx';
 
 const STORAGE_KEY = 'settings';
 
 class SettingsStore{
-    @observable data = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    @observable data = JSON.parse(window.localStorage.getItem(STORAGE_KEY) || '{}');
 
     @action
     set(key: string, value: any){
         this.data[key] = value;
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(this.data))
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(this.data))
     }
 
-    get(key: string, fallback: any = undefined){
+    get(key: string, fallback?: any){
         if(this.data[key])
             return this.data[key];
         else
@@ -23,12 +22,12 @@ class SettingsStore{
 export const settingsStore = new SettingsStore();
 
 // save settings to localStorage
-autorun(reaction => {
+autorun(_ => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(settingsStore.data))
 });
 
 export function debugSettingsStore(){
-    autorun(reaction => {
+    autorun(_ => {
         console.log('---- settingsStore update ----', toJS(settingsStore));
     });
 }

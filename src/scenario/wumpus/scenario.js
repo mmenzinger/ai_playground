@@ -1,5 +1,5 @@
 import SeedRandom from 'seedrandom';
-import { deepCopy, hideImport } from 'src/util.js';
+import { deepCopy, hideImport } from '@util';
 
 class Random {
     constructor(seed) {

@@ -1,15 +1,15 @@
 import { LitElement, html, unsafeCSS } from 'lit-element';
 import { installRouter } from 'pwa-helpers/router.js';
 import { installOfflineWatcher } from 'pwa-helpers/network.js';
-import appStore from 'store/app-store.js';
+import appStore from '@store/app-store';
 import { MobxLitElement } from '@adobe/lit-mobx';
 
 import sharedStyles from '@shared-styles';
 import style from './ai-app.css';
 
-import { debugProjectStore } from 'store/project-store.js';
-import { debugAppStore } from 'store/app-store.js';
-import { debugSettingsStore } from 'store/settings-store.js';
+import { debugProjectStore } from '@store/project-store';
+import { debugAppStore } from '@store/app-store';
+import { debugSettingsStore } from '@store/settings-store';
 debugProjectStore();
 //debugAppStore();
 //debugSettingsStore();

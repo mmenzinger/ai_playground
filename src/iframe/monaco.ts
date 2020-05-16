@@ -1,21 +1,44 @@
-// @flow
 import type { File, FileError, ProjectErrors } from '@types';
+import * as monaco from 'monaco-editor';
 
 type Model = {
-    _associatedResource: any,
-    file: File,
+    model: monaco.editor.ITextModel, file: File
 }
 
+// fix for monaco language keywords, see https://github.com/microsoft/monaco-editor/issues/1423 
+interface MonarchLanguageConfiguration extends monaco.languages.IMonarchLanguage {
+    keywords: string[];
+}
+
+// @ts-ignore
+self.MonacoEnvironment = {
+    getWorkerUrl: function(moduleId: any, label: any) {
+      if (label === "json") {
+        return "./monaco/json-worker.js";
+      }
+      if (label === "css") {
+        return "./monaco/css-worker.js";
+      }
+      if (label === "html") {
+        return "./monaco/html-worker.js";
+      }
+      if (label === "typescript" || label === "javascript") {
+        return "./monaco/ts-worker.js";
+      }
+      return "./monaco/editor-worker.js";
+    }
+};
+
 const models: Map<number, Model> = new Map();
-let editor: ?Object = null;
-let activeModel: ?Model = null;
+let editor: monaco.editor.IStandaloneCodeEditor | null = null;
+let activeModel: Model | null = null;
 
 declare var window: MonacoWindow;
-declare var monaco: any;
-//$FlowFixMe - suppress require errors
-require.config({ paths: { 'vs': 'monaco-editor/min/vs' }});
-//$FlowFixMe - suppress require errors
-require(['vs/editor/editor.main'], function() {
+//declare var monaco: any;
+// @ts-ignore
+//require.config({ paths: { 'vs': 'monaco-editor/min/vs' }});
+// @ts-ignore
+//require(['vs/editor/editor.main'], function() {
     
     monaco.languages.register({ id: 'prolog' });
     
@@ -40,13 +63,13 @@ require(['vs/editor/editor.main'], function() {
                 [/"[^"]*"/, 'string'],
             ]
         }
-    });
+    } as MonarchLanguageConfiguration);
 
-    const container = document.getElementById('container');
+    const container = document.getElementById('container') as HTMLElement;
     editor = monaco.editor.create(container, {
-        fontSize: '14px',
+        fontSize: 14,
         scrollBeyondLastLine: false,
-        scrollBeyondLastColumn: false,
+        scrollBeyondLastColumn: 1,
         roundedSelection: false,
         mouseWheelZoom: true,
         minimap: {
@@ -54,7 +77,7 @@ require(['vs/editor/editor.main'], function() {
         },
         lineNumbersMinChars: 3,
         model: null,
-    });
+    }) as monaco.editor.IStandaloneCodeEditor;
 
     editor.onDidChangeModelContent(_ => {
         if(activeModel && editor)
@@ -70,10 +93,10 @@ require(['vs/editor/editor.main'], function() {
             window.onStateChange(activeModel.file.id, editor.saveViewState());
     })
 
-    let lastMarkers = null;
+    let lastMarkers: monaco.editor.IMarker[] | null = null;
     let projectErrors: ProjectErrors = {};
     editor.onDidChangeModelDecorations(() => {
-        const markers = monaco.editor.getModelMarkers();
+        const markers: monaco.editor.IMarker[] = monaco.editor.getModelMarkers({});
         const errorMarkers = markers.filter(marker => marker.severity === 8);
 
         //console.log(lastMarkers, errorMarkers, !lastMarkers)
@@ -83,7 +106,7 @@ require(['vs/editor/editor.main'], function() {
             //const fileErrorsList = [];
             let errorsChanged = false;
             for(const [fileId, model] of models){
-                const fileErrors = errorMarkers.filter(marker => marker.resource.path === model._associatedResource.path);
+                const fileErrors = errorMarkers.filter(marker => marker.resource.path === (model.model as any)._associatedResource.path);
                 const errors: FileError[] = fileErrors.map((marker): FileError => ({
                     caller: {
                         fileId: fileId,
@@ -94,7 +117,7 @@ require(['vs/editor/editor.main'], function() {
                     },
                     args: [marker.message],
                 }));
-                if(!sameErrors(projectErrors[fileId], errors)){
+                if(!sameErrors(projectErrors[fileId] || [], errors)){
                     projectErrors[fileId] = errors;
                     errorsChanged = true;
                     //fileErrorsList.push({fileId, fileName: model.file.name, project: model.file.project, errors});
@@ -113,10 +136,10 @@ require(['vs/editor/editor.main'], function() {
         if(editor){
             const model = getModel(file);
             if(activeModel){
-                activeModel.file.state = editor.saveViewState();
+                activeModel.file.state = editor.saveViewState() || undefined;
             }
             activeModel = model;
-            editor.setModel(model);
+            editor.setModel(model.model);
             if(file.state){
                 editor.restoreViewState(file.state);
             }
@@ -142,7 +165,7 @@ require(['vs/editor/editor.main'], function() {
     window.onContentChange = (fileId: number, content: string) => {};
     window.onStateChange = (fileId:number, state: Object) => {};
     window.onErrorChange = (errors: ProjectErrors) => {};
-});
+//});
 
 function getModel(file: File){
     let model = models.get(file.id);
@@ -158,15 +181,17 @@ function getModel(file: File){
                 case 'md': language = 'markdown'; break;
             }
         }
-        model = monaco.editor.createModel(file.content, language);
-        model.file = file;
+        model = {
+            model: monaco.editor.createModel(file.content || '', language),
+            file: file,
+        };
         models.set(file.id, model);
     }
 
     return model;
 }
 
-function sameMarker(a: Object, b: Object){
+function sameMarker(a: monaco.editor.IMarker, b: monaco.editor.IMarker){
     return (
         a.code === b.code &&
         a.startColumn === b.startColumn &&
@@ -176,7 +201,7 @@ function sameMarker(a: Object, b: Object){
     );
 }
 
-function sameMarkers(a: Object[], b: Object[]){
+function sameMarkers(a: monaco.editor.IMarker[], b: monaco.editor.IMarker[]){
     if(!a || !b || a.length !== b.length)
         return false;
     for(let i = 0; i < a.length; i++){
@@ -194,7 +219,7 @@ function sameError(a: FileError, b: FileError){
     );
 }
 
-function sameErrors(a, b){
+function sameErrors(a: FileError[], b: FileError[]){
     if(!a || !b || a.length !== b.length)
         return false;
     for(let i = 0; i < a.length; i++){
@@ -206,7 +231,7 @@ function sameErrors(a, b){
 
 export type MonacoWindow = {
     onContentChange: (fileId: number, content: string) => void,
-    onStateChange: (fileId: number, state: Object) => void,
+    onStateChange: (fileId: number, state: any) => void,
     onErrorChange: (errors: ProjectErrors) => void,
     setErrors: (errors: ProjectErrors) => void,
     openFile: (file: File) => void,
