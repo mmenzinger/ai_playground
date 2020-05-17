@@ -2,7 +2,7 @@ import { html, unsafeCSS } from 'lit-element';
 import appStore from '@store/app-store';
 import { LazyElement } from '@element/lazy-element';
 import db from '@localdb';
-import { defer } from '@util';
+import { Defer } from '@util';
 import { ModalAbort } from '@element/c4f-modal';
 
 import JSZip from 'jszip';
@@ -29,7 +29,7 @@ class ModalUploadProject extends LazyElement {
         this._error = null;
         this._zip = null;
         this._settings = null;
-        this._rendered = defer();
+        this._rendered = new Defer();
     }
 
     render() {
@@ -81,7 +81,7 @@ class ModalUploadProject extends LazyElement {
     }
 
     async onShow(){
-        await this._rendered;
+        await this._rendered.promise;
         const file = this.shadowRoot.getElementById('file');
         const name = this.shadowRoot.getElementById('name');
         const globals = this.shadowRoot.getElementById('globals');

@@ -1,10 +1,11 @@
 import { editor } from 'monaco-editor';
+export type { IPosition } from 'monaco-editor';
 
 export type Caller = {
     fileId?: number,
     projectId?: number,
     fileName?: string,
-    functionName?: string
+    functionNames: string[]
     line?: number,
     column?: number,
 }

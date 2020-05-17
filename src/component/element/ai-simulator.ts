@@ -6,13 +6,21 @@ import projectStore from '@store/project-store';
 import '@element/c4f-console';
 import { getComponents } from '@src/webpack-utils';
 import { Sandbox } from '@sandbox';
-import { defer } from '@util';
+import { Defer, thisShouldNotHappen } from '@util';
+import { IScenario } from '@scenario/types';
+import { LogType } from '@store/types';
 
+// @ts-ignore
 import sharedStyles from '@shared-styles';
+// @ts-ignore
 import style from './ai-simulator.css';
 
 
 class AiSimulator extends MobxLitElement {
+    #sandbox = new Defer<Sandbox>();
+    #scenarioLoaded = new Defer<boolean>();
+    #scenario = new Defer<IScenario>();
+
     static get styles() {
         return [
             sharedStyles,
@@ -20,23 +28,16 @@ class AiSimulator extends MobxLitElement {
         ];
     }
 
-    constructor() {
-        super();
-        this._sandbox = defer();
-        this._scenarioLoaded = defer();
-        this._scenario = null;
-    }
-
     render() {
         const project = projectStore.activeProject;
-        if(this._sandbox.resolved)
-            this._sandbox.value.terminate();
-        this._sandbox = defer();
-        this._scenarioLoaded = defer();
+        if(this.#sandbox.resolved)
+            this.#sandbox.value?.terminate();
+        this.#sandbox = new Defer<Sandbox>();
+        this.#scenario = new Defer<IScenario>();
         if(project){
             const type = project.scenario;
             import(`@scenario/${type}/scenario-${type}`).then(_ => {
-                this._scenarioLoaded.resolve(true);
+                this.#scenarioLoaded.resolve(true);
             });
             const components = getComponents().map(name => {
                 const active = name.substr(9) === type ? ' active' : '';
@@ -57,19 +58,18 @@ class AiSimulator extends MobxLitElement {
     async simRun() {
         projectStore.flushFile();
         projectStore.clearLog();
-        if(projectStore.activeErrors){
-            projectStore.activeErrors.forEach(error => {
-                projectStore.addLog(error.type, error.args, error.caller);
-            });
+        for(const errors of Object.values(projectStore.activeProject?.errors || {})){
+            for(const error of errors){
+                projectStore.addLog(LogType.ERROR, error.args, error.caller);
+            }
         }
-        else{
-            const sandbox = await this._sandbox;
-            sandbox.call(this._scenario.constructor.file, '__run', [{settings: this._scenario.getSettings()}]);
-        }
+        const sandbox = await this.#sandbox.promise;
+        const scenario = await this.#scenario.promise
+        sandbox.call(scenario.getFile(), '__run', [{settings: scenario.getSettings()}]);
     }
 
     async simTrain() {
-        projectStore.flushFile();
+        /*projectStore.flushFile();
         projectStore.clearLog();
         if(projectStore.activeErrors){
             projectStore.activeErrors.forEach(error => {
@@ -77,27 +77,40 @@ class AiSimulator extends MobxLitElement {
             });
         }
         else{
-            const sandbox = await this._sandbox;
+            const sandbox = await this.#sandbox;
             //sandbox.scenario = this._scenario;
             sandbox.call('/project/index.js', 'train');
+        }*/
+        projectStore.flushFile();
+        projectStore.clearLog();
+        for(const errors of Object.values(projectStore.activeProject?.errors || {})){
+            for(const error of errors){
+                projectStore.addLog(LogType.ERROR, error.args, error.caller);
+            }
         }
+        const sandbox = await this.#sandbox.promise;
+        const scenario = await this.#scenario.promise
+        sandbox.call('/project/index.js', 'train');
     }
 
     async simTerminate() {
-        const sandbox = await this._sandbox;
+        const sandbox = await this.#sandbox.promise;
         sandbox.terminate();
         const msg = `simulation terminated!`;
-        projectStore.addLog('warn', [msg]);
+        projectStore.addLog(LogType.WARN, [msg]);
         console.warn(msg);
     }
 
     async updated(){
-        await this._scenarioLoaded;
+        await this.#scenarioLoaded;
         await navigator.serviceWorker.ready; // make sure sw is ready
-        this._scenario = this.shadowRoot.querySelector('[active]');
-        this._sandbox.resolve(new Sandbox(this._scenario));
-        if(this._scenario.constructor.autorun){   
-            this.simRun()
+        const scenario = this.shadowRoot?.querySelector('[active]') as IScenario;
+        if(scenario){
+            this.#scenario.resolve(scenario);
+            this.#sandbox.resolve(new Sandbox(scenario));
+            if(scenario.getAutorun()){   
+                this.simRun()
+            }
         }
     }
 }

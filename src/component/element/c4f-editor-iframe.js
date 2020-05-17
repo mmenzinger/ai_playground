@@ -3,7 +3,7 @@ import { autorun } from 'mobx';
 import projectStore from '@store/project-store';
 import settingsStore from '@store/settings-store';
 import { ResizeObserver } from 'resize-observer';
-import { defer, dispatchIframeEvents } from '@util';
+import { Defer, dispatchIframeEvents } from '@util';
 
 
 import sharedStyles from '@shared-styles';
@@ -22,7 +22,7 @@ class C4fEditorIframe extends LitElement {
         this._activeFile = null;
         this._currentMode = 'plain_text';
         this._preventOnChange = false;
-        this._monaco = defer();
+        this._monaco = new Defer();
     }
 
     render() {
@@ -71,7 +71,7 @@ class C4fEditorIframe extends LitElement {
         }
 
         theme.onchange = async (e) => {
-            const monaco = await this._monaco;
+            const monaco = await this._monaco.promise;
             const selectedTheme = theme.options[theme.selectedIndex].value;
             settingsStore.set('editor-theme', selectedTheme);
             monaco.setTheme(selectedTheme);
@@ -80,7 +80,7 @@ class C4fEditorIframe extends LitElement {
         autorun(async reaction => {
             const file = projectStore.activeFile;
             if (file) {
-                const monaco = await this._monaco;
+                const monaco = await this._monaco.promise;
                 monaco.openFile(file);
             }
         });

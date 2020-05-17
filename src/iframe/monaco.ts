@@ -1,4 +1,4 @@
-import type { File, FileError, ProjectErrors } from '@types';
+import type { File, FileError, ProjectErrors } from '@store/types';
 import * as monaco from 'monaco-editor';
 
 type Model = {
@@ -12,7 +12,7 @@ interface MonarchLanguageConfiguration extends monaco.languages.IMonarchLanguage
 
 // @ts-ignore
 self.MonacoEnvironment = {
-    getWorkerUrl: function(moduleId: any, label: any) {
+    getWorkerUrl: function(_: any, label: any) {
       if (label === "json") {
         return "./monaco/json-worker.js";
       }
@@ -114,6 +114,7 @@ declare var window: MonacoWindow;
                         projectId: model.file.projectId,
                         line: marker.startLineNumber,
                         column: marker.startColumn,
+                        functionNames: [],
                     },
                     args: [marker.message],
                 }));
@@ -162,9 +163,9 @@ declare var window: MonacoWindow;
             editor.focus();
     }
 
-    window.onContentChange = (fileId: number, content: string) => {};
-    window.onStateChange = (fileId:number, state: Object) => {};
-    window.onErrorChange = (errors: ProjectErrors) => {};
+    window.onContentChange = (_: number, _1: string) => {};
+    window.onStateChange = (_:number, _1: Object) => {};
+    window.onErrorChange = (_: ProjectErrors) => {};
 //});
 
 function getModel(file: File){
@@ -229,7 +230,7 @@ function sameErrors(a: FileError[], b: FileError[]){
     return true;
 }
 
-export type MonacoWindow = {
+export type MonacoWindow = Window & {
     onContentChange: (fileId: number, content: string) => void,
     onStateChange: (fileId: number, state: any) => void,
     onErrorChange: (errors: ProjectErrors) => void,

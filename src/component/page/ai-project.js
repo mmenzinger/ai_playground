@@ -3,7 +3,7 @@ import { LazyElement } from '@element/lazy-element';
 import { autorun } from 'mobx';
 import projectStore from '@store/project-store';
 
-import { defer } from '@util';
+import { Defer } from '@util';
 
 import '@element/dynamic-split';
 import '@element/tab-group';
@@ -18,7 +18,7 @@ class AiProject extends LazyElement {
     constructor(){
         super();
         this._activeFile = { id: null };
-        this._editorTabGroup = defer();
+        this._editorTabGroup = new Defer();
     }
 
     render() {
@@ -50,7 +50,7 @@ class AiProject extends LazyElement {
         autorun(async reaction => {
             const activeFile = projectStore.activeFile
             if(activeFile && activeFile !== this._activeFile.id){
-                const tabGroup = await this._editorTabGroup;
+                const tabGroup = await this._editorTabGroup.promise;
                 if(activeFile.name.endsWith('.md')){
                     tabGroup.select('Markdown');
                 }
@@ -66,7 +66,7 @@ class AiProject extends LazyElement {
         if(state.files.currentFile && state.files.currentFile.id !== this._currentFile.id)
         {
             this._currentFile = state.files.currentFile;
-            const tabGroup = await this._editorTabGroup;
+            const tabGroup = await this._editorTabGroup.promise;
             if(this._currentFile.name.endsWith('.md')){
                 tabGroup.select('Markdown');
             }

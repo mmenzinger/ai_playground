@@ -11,6 +11,10 @@ export const Player = Object.freeze({
     Player2: 2,
 });
 
+export class State{
+
+}
+
 export function createScenario(initState: any) {
     const state = {
         settings: {

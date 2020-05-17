@@ -1,7 +1,7 @@
 import { observable, action, autorun, toJS, runInAction } from 'mobx';
 import settingsStore from '@store/settings-store';
 import projectStore from '@store/project-store';
-import { defer } from '@util';
+import { Defer } from '@util';
 
 import { Modal } from '@store/types';
 
@@ -25,28 +25,28 @@ class AppStore{
         
         switch (page) {
             case 'project':
-                import('@page/ai-project.js');
+                import('@page/ai-project');
                 const id = Number(params['project']);
                 if(id){
                     await projectStore.openProject(id);
                 }
                 break;
             case 'projects':
-                import('@page/ai-project-index.js');
+                import('@page/ai-project-index');
                 await projectStore.closeProject();
                 break;
             case 'welcome':
-                import('@page/ai-welcome.js');
+                import('@page/ai-welcome');
                 await projectStore.closeProject();
                 break;
             case 'index':
             default:
                 if(settingsStore.get('skip_welcome')){
-                    import('@page/ai-project-index.js');
+                    import('@page/ai-project-index');
                     page = 'projects';
                 }
                 else{
-                    import('@page/ai-welcome.js');
+                    import('@page/ai-welcome');
                     page = 'welcome';
                 }
                 await projectStore.closeProject();
@@ -64,18 +64,18 @@ class AppStore{
     }
 
     @action
-    async showModal(template: string, data: object): Promise<void>{
+    async showModal(template: string, data: object): Promise<any>{
         // lazy load modal ${template}
         await import(`@modal/modal-${template}`);
 
-        const result = defer();
+        const result = new Defer<any>();
         runInAction(() => {
             if(this.modal){
                 this.modal.result.reject(Error("Previous modal not closed!"));
             }
             this.modal = { template, data, result }
         });
-        return result;
+        return result.promise;
     }
 
     @action

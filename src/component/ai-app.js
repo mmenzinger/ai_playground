@@ -14,8 +14,8 @@ debugProjectStore();
 //debugAppStore();
 //debugSettingsStore();
 
-import('@element/ai-header.js');
-import('@element/c4f-modal.js');
+import('@element/ai-header');
+import('@element/c4f-modal');
 
 
 

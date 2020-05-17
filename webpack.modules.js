@@ -18,6 +18,7 @@ function addScenarioModules(entry = {}) {
 
 module.exports = {
     entry: addScenarioModules({
+        'scenario/util': './src/scenario/util',
         'lib/prolog': './src/lib/tau-prolog',
         'lib/tf': './src/lib/tf',
     }),

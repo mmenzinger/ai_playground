@@ -1,4 +1,4 @@
-import { html, TemplateResult, customElement } from 'lit-element';
+import { html, TemplateResult } from 'lit-element';
 import { LazyElement } from '@element/lazy-element';
 
 // @ts-ignore
@@ -15,7 +15,6 @@ type State = {
     player: number,
 }
 
-@customElement('scenario-tictactoe')
 export class ScenarioTicTacToe extends LazyElement implements IScenario {
     static get styles() {
         return [
@@ -24,18 +23,23 @@ export class ScenarioTicTacToe extends LazyElement implements IScenario {
         ];
     }
 
-    static get file(){
+    getFile(){
         return '/scenario/tictactoe/scenario.js';
     }
 
-    static get autorun() { return true; }
+    getAutorun() { return true; }
 
-    #state = {
+    #state: State = {
         board: [[0,0,0],[0,0,0],[0,0,0]],
         player: Player.None,
     };
-    #playerWon: number = Player.None;
+    #playerWon: number;
     #update_resolve: any;
+
+    constructor(){
+        super();
+        this.#playerWon = Player.None;
+    }
 
     render() {
         const rows:TemplateResult[] = [];
@@ -129,3 +133,4 @@ export class ScenarioTicTacToe extends LazyElement implements IScenario {
         return (this as any)[functionName](...args);
     }
 }
+window.customElements.define('scenario-tictactoe', ScenarioTicTacToe);

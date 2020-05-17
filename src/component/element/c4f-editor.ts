@@ -15,7 +15,7 @@ interface MonarchLanguageConfiguration extends monaco.languages.IMonarchLanguage
 
 // @ts-ignore
 self.MonacoEnvironment = {
-    getWorkerUrl: function(moduleId: any, label: any) {
+    getWorkerUrl: function(_: any, label: any) {
         if (label === "json") {
             return "./monaco/json-worker.js";
           }
@@ -155,6 +155,7 @@ class C4fEditor extends LitElement {
                             projectId: model.file.projectId,
                             line: marker.startLineNumber,
                             column: marker.startColumn,
+                            functionNames: [],
                         },
                         args: [marker.message],
                     }));

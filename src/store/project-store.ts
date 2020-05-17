@@ -3,12 +3,13 @@ import db from '@localdb';
 import { throttle } from 'lodash-es';
 import settingsStore from '@store/settings-store';
 
-import type { File, Project, ProjectErrors, Caller, Log, LogType } from '@store/types';
+import type { File, Project, ProjectErrors, Caller, Log, LogType, IPosition } from '@store/types';
 
 class ProjectStore {
     @observable activeProject: Project | null = null;
     @observable activeFile: File | null = null;
     @observable log: Log[] = [];
+    @observable lastFileTreeChange: number = 0;
 
     #logThrottle: () => void;
     #logQueue: Log[] = [];
@@ -55,6 +56,7 @@ class ProjectStore {
         runInAction(() => {
             this.activeFile = file;
             this.activeProject = project;
+            this.lastFileTreeChange = Date.now();
         });
         return project;
     }
@@ -111,15 +113,28 @@ class ProjectStore {
      * File 
      */
     @action
-    async openFile(id: number, state = undefined): Promise<File> {
+    async openFile(id: number, scrollTo?: IPosition): Promise<File> {
         if (this.activeFile) {
             await this.flushFile();
         }
         const file = await db.loadFile(id);
 
+        if(scrollTo && file.state){
+            file.state.cursorState = [{
+                inSelectionMode: false,
+                position: scrollTo,
+                selectionStart: scrollTo,
+            }];
+            file.state.viewState = {
+                firstPosition: scrollTo,
+                scrollLeft: 0,
+                firstPositionDeltaTop: 0,
+            };
+        }
+
         runInAction(() => {
             this.activeFile = file;
-        })
+        });
         return file;
     }
 
@@ -128,15 +143,25 @@ class ProjectStore {
         this.activeFile = null;
     }
 
+    @action
     async createFile(name: string, projectId: number = 0, content: string = ''): Promise<number> {
         const id: number = await db.createFile(projectId, name, content);
+
+        runInAction(() => {
+            this.lastFileTreeChange = Date.now();
+        });
         return id;
     }
 
+    @action
     async deleteFile(id: number): Promise<void> {
         if (this.activeFile && this.activeFile.id === id)
             await this.closeFile();
         await db.removeFile(id);
+
+        runInAction(() => {
+            this.lastFileTreeChange = Date.now();
+        });
     }
 
     @action
@@ -156,7 +181,7 @@ class ProjectStore {
             if (this.activeFile?.id === id) {
                 this.activeFile.state = state;
             }
-        })
+        });
     }
 
     async flushFile(): Promise<void> {
@@ -169,7 +194,8 @@ class ProjectStore {
         runInAction(() => {
             if (this.activeFile?.id === id)
             this.activeFile.name = name;
-        })
+            this.lastFileTreeChange = Date.now();
+        });
     }
 
 
@@ -178,18 +204,23 @@ class ProjectStore {
      */
     async addLog(type: LogType, args: any[], caller?: Caller): Promise<void> {
         if (caller) {
-            if(!caller.fileId){
-                if(caller.projectId && caller.fileName){
-                    const file = await db.loadFileByName(caller.projectId, caller.fileName);
-                    caller.fileId = file.id;
+            try{
+                if(!caller.fileId){
+                    if(caller.projectId && caller.fileName){
+                        const file = await db.loadFileByName(caller.projectId, caller.fileName);
+                        caller.fileId = file.id;
+                    }
+                }
+                if(!caller.projectId || !caller.fileName){
+                    if(caller.fileId){
+                        const file = await db.loadFile(caller.fileId);
+                        caller.projectId = file.projectId;
+                        caller.fileName = file.name;
+                    }
                 }
             }
-            if(!caller.projectId || !caller.fileName){
-                if(caller.fileId){
-                    const file = await db.loadFile(caller.fileId);
-                    caller.projectId = file.projectId;
-                    caller.fileName = file.name;
-                }
+            catch(error){
+                console.warn(error);
             }
         }
         this.#logQueue.push({ type, args, caller });

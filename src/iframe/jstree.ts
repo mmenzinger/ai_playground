@@ -1,32 +1,28 @@
-function defer(){
-    let res, rej;
-    const promise = new Promise((resolve, reject) => {
-        res = resolve;
-        rej = reject;
-    });
-    promise.resolve = function(val) {
-        promise.resolved = true;
-        promise.value = val;
-        res(val);
-    };
-    promise.reject = function(error) {
-        promise.resolved = true;
-        promise.value = val;
-        rej(error);
-    }
-    promise.resolved = false;
-    promise.value = undefined;
-    
-    return promise;
+import { Defer } from '@util';
+import { File, ProjectErrors } from '@store/types';
+
+declare var window: JSTreeWindow;
+
+type Node = {
+    id: string,
+    parent: string,
+    text: string,
+    data: File,
 }
 
-let jstree = defer();
+type NodeData = {
+    node: Node,
+    instance: JSTree,
+};
 
-// get set by parent
-var onFile = undefined;
-var onAddFileGlobal = undefined;
-var onAddFileProject = undefined;
-var onDelete = undefined;
+
+
+let jstree = new Defer<JSTree>();
+
+window.onFile = (_: File) => {};
+window.onAddFileGlobal = () => {};
+window.onAddFileProject = () => {};
+window.onDelete = async (_: File) => {};
 
 let preventSelectNodeEvent = false;
 
@@ -47,8 +43,8 @@ onload = () => {
         jstree.resolve($('#jstree').jstree(true));
     });
 
-    let lastSelected = undefined;
-    $('#jstree').on('select_node.jstree', (e, data) => {
+    let lastSelected: Node | undefined = undefined;
+    $('#jstree').on('select_node.jstree', (_, data: NodeData) => {
         if(data.node.parent === '#'){
             data.instance.deselect_node(data.node);
             preventSelectNodeEvent = true;
@@ -56,8 +52,8 @@ onload = () => {
             preventSelectNodeEvent = false;
         }
         else{
-            if(onFile && !preventSelectNodeEvent && lastSelected?.id !== data.node.id){
-                onFile(data.node.data);
+            if(window.onFile && !preventSelectNodeEvent && lastSelected?.id !== data.node.id){
+                window.onFile(data.node.data);
             }
             lastSelected = data.node;
         }
@@ -65,29 +61,29 @@ onload = () => {
     });
 }
 
-function contextMenu(node){
+function contextMenu(node: Node){
     let create = undefined;
     let remove = undefined;
     
     let parent = node.parent;
     if(node.parent === '#')
         parent = node.id;
-    if(parent === 'global' && onAddFileGlobal){
+    if(parent === 'global'){
         create = {
             label: 'create global file',
             icon: '../assets/interface/add.svg',
-            action: (obj) => onAddFileGlobal(),
+            action: () => window.onAddFileGlobal(),
         };
     }
-    else if(parent === 'project' && onAddFileProject){
+    else if(parent === 'project'){
         create = {
             label: 'create project file',
             icon: '../assets/interface/add.svg',
-            action: (obj) => onAddFileProject(),
+            action: () => window.onAddFileProject(),
         };
     }
 
-    if(! ['global', 'project', 'index.js', 'scenario.md'].includes(node.text) && onDelete){
+    if(! ['global', 'project', 'index.js', 'scenario.md'].includes(node.text)){
         let name = node.text;
         if(name.length > 10){
             name = name.substring(0,8) + '...';
@@ -95,7 +91,7 @@ function contextMenu(node){
         remove = {
             label: `delete file '${name}'`,
             icon: '../assets/interface/trash.svg',
-            action: (obj) => onDelete(node.data),
+            action: () => window.onDelete(node.data),
         }
     }
     
@@ -105,14 +101,14 @@ function contextMenu(node){
     }
 }
 
-function getEnding(filename){
-    const parts = filename.split('.');
+function getEnding(fileName: string){
+    const parts = fileName.split('.');
     if(parts.length < 1)
         return 'unknown';
     return parts[parts.length-1];
 }
 
-async function updateFiles(global, project, activeFile, filesError){
+window.updateFiles = async function(global: File[], project: File[], activeFile: File, errors: ProjectErrors = []){
     const data = [
         {
             id: 'global',
@@ -153,27 +149,28 @@ async function updateFiles(global, project, activeFile, filesError){
             }
         }),
     ];
-    const tree = await jstree;
-    tree.settings.core.data = data;
+    const tree = await jstree.promise;
+    if(tree.settings)
+        tree.settings.core.data = data;
     tree.refresh();
-    jstree = defer();
-    setErrors(filesError);
-    selectFile(activeFile);
+    jstree = new Defer<JSTree>();
+    window.setErrors(errors);
+    window.selectFile(activeFile);
 }
 
-async function selectFile(file){
+window.selectFile = async function (file: File){
     if(file){
-        const tree = await jstree;
+        const tree = await jstree.promise;
         preventSelectNodeEvent = true;
-        tree.activate_node(file.id);
+        tree.activate_node(file.id, undefined);
         preventSelectNodeEvent = false;
     }
 }
 
-const currentErrorNodes = {};
-async function setErrors(filesError){
-    const tree = await jstree;
-    for(const [fileId, message] of Object.entries(filesError)){
+const currentErrorNodes: {[fileId: string]: Node} = {};
+window.setErrors = async function (errors: ProjectErrors){
+    const tree = await jstree.promise;
+    for(const fileId of Object.keys(errors)){
         const node = tree.get_node(fileId);
         if(node){
             tree.set_icon(node, `../assets/filetree/error.svg`);
@@ -181,10 +178,22 @@ async function setErrors(filesError){
         }
     }
     for(const node of Object.values(currentErrorNodes)){
-        if(!filesError[node.id]){
+        if(!errors[Number(node.id)]){
             const ending = getEnding(node.text);
             tree.set_icon(node, `../assets/filetree/${ending}.svg`);
             delete currentErrorNodes[node.id];
         }
     }
 }
+
+
+export type JSTreeWindow = Window & {
+    onFile: (file: File) => void;
+    onAddFileGlobal: () => void;
+    onAddFileProject: () => void;
+    onDelete: (file: File) => Promise<void>;
+
+    updateFiles: (global: File[], project: File[], activeFile: File, errors: ProjectErrors) => Promise<void>;
+    selectFile: (file: File) => Promise<void>;
+    setErrors: (errors: ProjectErrors) => Promise<void>;
+};

@@ -1,14 +1,14 @@
 import projectStore from '@store/project-store';
 import db from '@localdb';
 import { messageWithResult } from '@util';
-import { Scenario } from '@scenario/types';
+import { IScenario } from '@scenario/types';
 import { Message, LogMessage, MessageType, CallMessage, JSONMessage } from '@worker/types';
 
 export class Sandbox{
     #worker?: Worker;
-    #scenario: Scenario;
+    #scenario: IScenario;
 
-    constructor(scenario: Scenario){
+    constructor(scenario: IScenario){
         this.#scenario = scenario;
         this.#worker;
     }
@@ -28,6 +28,9 @@ export class Sandbox{
             switch (msg.type) {
                 case MessageType.LOG:{
                     const log = (msg as LogMessage).log;
+                    if(log.caller && !log.caller.projectId){
+                        log.caller.projectId = projectStore.activeProject?.id
+                    }
                     projectStore.addLog(log.type, log.args, log.caller);
                     break;
                 }
@@ -38,12 +41,12 @@ export class Sandbox{
                         project = projectStore.activeProject?.id;
                     
                     if(project){
-                        const file = await db.loadFileByName(project, data.fileName);
-                        if (file === undefined) {
-                            await projectStore.createFile(data.fileName, project, data.json);
-                        }
-                        else {
+                        try{
+                            const file = await db.loadFileByName(project, data.fileName);
                             await projectStore.saveFileContent(file.id, data.json);
+                        }
+                        catch(_){
+                            await projectStore.createFile(data.fileName, project, data.json);
                         }
                         break;
                     }
@@ -76,7 +79,7 @@ export class Sandbox{
         }, null, registration.active);
     }
     
-    async call (file: string, functionName: string, args = []) {
+    async call (file: string, functionName: string, args: any[] = []) {
         await this.simSetup();
         const msg: CallMessage = {
             type: MessageType.CALL,

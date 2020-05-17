@@ -32,68 +32,31 @@ export function deepMap(obj: any, func: (item: any) => any): any {
     return func(obj);
 }
 
-export class Defer<T> extends Promise<T> {
+export class Defer<T> {
     #resolve: (value: T) => void;
     #reject: (error: any) => void;
+    promise: Promise<T>;
     resolved: boolean = false;
     value?: T;
 
     constructor(){
-        super((resolve, reject) => {
+        this.promise = new Promise<T>((resolve, reject) => {
             this.#resolve = resolve;
             this.#reject = reject;
         });
-        //let res: (T) => void = () => {};
-        //let rej: (any) => void = () => {};
-        
-        //this.#resolve = res;
-        //this.#reject = rej;
     }
 
-    // mask as promise see https://stackoverflow.com/questions/48158730/extend-javascript-promise-and-resolve-or-reject-it-inside-constructor
-    //$FlowFixMe - computed properties not supported
-    /*static get [Symbol.species]() {
-        return Promise;
-    }
-
-    //$FlowFixMe - computed properties not supported
-    get [Symbol.toStringTag]() {
-        return 'Defer';
-    }*/
-
-    resolve(value: T){
+    resolve(value: T): T{
         this.resolved = true;
         this.value = value;
         this.#resolve(value);
+        return value;
     }
 
-    reject(error: any){
+    reject(error: any): void{
         this.resolved = true;
         this.#reject(error);
     }
-}
-
-// TODO: remove
-export function defer(): Promise<any>{
-    let res: any, rej: any;
-    const promise: any = new Promise((resolve, reject) => {
-        res = resolve;
-        rej = reject;
-    });
-    promise.resolve = function(val: any) {
-        promise.resolved = true;
-        promise.value = val;
-        res(val);
-    };
-    promise.reject = function(error: any) {
-        promise.resolved = true;
-        promise.value = error;
-        rej(error);
-    }
-    promise.resolved = false;
-    promise.value = undefined;
-    
-    return promise;
 }
 
 export function serialize(obj: any): string {
@@ -235,6 +198,10 @@ export function dispatchIframeEvents(iframe: HTMLIFrameElement, target: any = wi
 
 export function hideImport(path: string){
     return import(/* webpackIgnore: true */path);
+}
+
+export function thisShouldNotHappen(){
+    throw new UtilError(`Something went terribly wrong. This should never be called!`);
 }
 
 export class UtilError extends Error{};
