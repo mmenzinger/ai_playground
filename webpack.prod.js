@@ -5,8 +5,10 @@ const common = require('./webpack.app.js');
 const TerserPlugin = require('terser-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
+const app = require('./webpack.app.js');
+const modules = require('./webpack.modules.js');
 
-module.exports = merge(common, {
+const config = {
     mode: 'production',
 
     output: {
@@ -50,4 +52,9 @@ module.exports = merge(common, {
     devServer: {
         contentBase: path.join(__dirname, 'build/prod'),
     },
-});
+};
+
+module.exports = [
+    merge(app, config),
+    merge(modules, config),
+];

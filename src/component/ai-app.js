@@ -7,12 +7,12 @@ import { MobxLitElement } from '@adobe/lit-mobx';
 import sharedStyles from '@shared-styles';
 import style from './ai-app.css';
 
-import { debugProjectStore } from '@store/project-store';
-import { debugAppStore } from '@store/app-store';
-import { debugSettingsStore } from '@store/settings-store';
-debugProjectStore();
-//debugAppStore();
-//debugSettingsStore();
+// import { debugProjectStore } from '@store/project-store';
+// import { debugAppStore } from '@store/app-store';
+// import { debugSettingsStore } from '@store/settings-store';
+// debugProjectStore();
+// debugAppStore();
+// debugSettingsStore();
 
 import('@element/ai-header');
 import('@element/c4f-modal');

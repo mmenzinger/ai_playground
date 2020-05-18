@@ -78,7 +78,9 @@ async function userFile(arg: RouteHandlerCallbackContext): Promise<Response>{
         response = new Response(file.content, init);
     }
     catch(error){
-        console.log(`could not load user file '${arg.url.pathname}'`, error);
+        if(!PRODUCTION){
+            console.warn(`could not load user file '${arg.url.pathname}'`, error);
+        }
         if(arg.request){
             response = await fetch(arg.request);
         }

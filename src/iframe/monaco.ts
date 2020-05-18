@@ -76,6 +76,7 @@ declare var window: MonacoWindow;
             enabled: false,
         },
         lineNumbersMinChars: 3,
+        wordWrap: 'on',
         model: null,
     }) as monaco.editor.IStandaloneCodeEditor;
 

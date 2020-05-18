@@ -11,26 +11,57 @@ export const Player = Object.freeze({
     Player2: 2,
 });
 
-export class State{
+export type Player = number;
 
+export type Settings = {
+    startingPlayer: number,
 }
 
-export function createScenario(initState: any) {
-    const state = {
-        settings: {
-            startingPlayer: 1,
-        },
+export type State = {
+    board: number[][],
+    player: number,
+}
+
+export type Action = {
+    type: 'PLACE',
+    row: number,
+    col: number,
+    player: number,
+}
+
+export type PlayerObject = {
+    init?: (state: State) => Promise<void>,
+    update: (state: State, actions: Action[]) => Promise<Action>,
+    result?: (oldState: State, action: Action, newState: State, score: number) => Promise<void>,
+    finish?: (state: State, score: number) => Promise<void>,
+}
+
+export type Scenario = {
+    clone: () => Scenario,
+    getState: () => State,
+    getScore: (player?: Player) => number,
+    getWinner: () => Player,
+    getActions: () => Action[],
+    validateAction: (action: Action) => void,
+    validAction: (action: Action) => boolean,
+    performAction: (action: Action) => Player,
+    run: (player1: PlayerObject, player2?: PlayerObject) => Promise<Player>,
+}
+
+export function createScenario(initState: State | any) {
+    const state: State = {
         board: [[0, 0, 0], [0, 0, 0], [0, 0, 0]],
         player: 1,
     };
     merge(state, initState);
-    state.player = state.settings.startingPlayer;
 
-    return Object.freeze({
+    const scenario: Scenario = {
         clone() { return createScenario(deepCopy(state)); },
         getState() { return deepCopy(state); },
 
-        getScore(player: number) {
+        getScore(player?: Player) {
+            if(!player)
+                player = state.player;
             const winner = this.getWinner();
             if (winner === player)
                 return 1;
@@ -60,7 +91,7 @@ export function createScenario(initState: any) {
             return Player.None;
         },
         getActions() {
-            const actions = [];
+            const actions: Action[] = [];
             for (let row = 0; row < 3; row++) {
                 for (let col = 0; col < 3; col++) {
                     if (state.board[row][col] === Player.None)
@@ -69,14 +100,17 @@ export function createScenario(initState: any) {
             }
             return actions;
         },
-        validateAction(action: any) {
+        validateAction(action: Action) {
+            if(!action){
+                throw Error(`invalid action: ${action}\nThe update function needs to return a valid Action!`);
+            }
             if (action.type !== 'PLACE') throw Error(`unknown action type '${action.type}'`);
             if (action.row < 0 || action.row > 2) throw Error(`row index must be between 0 and 2 (was ${action.row})`);
             if (action.col < 0 || action.col > 2) throw Error(`col index must be between 0 and 2 (was ${action.col})`);
             if (state.board[action.row][action.col] !== Player.None) throw Error(`position (${action.row}, ${action.col}) not empty`);
             if (action.player !== state.player) throw Error(`invalid player ${action.player}`);
         },
-        validAction(action: any) {
+        validAction(action: Action) {
             try {
                 this.validateAction(action);
                 return true;
@@ -85,7 +119,7 @@ export function createScenario(initState: any) {
                 return false;
             }
         },
-        performAction(action: any) {
+        performAction(action: Action) {
             this.validateAction(action);
             state.board[action.row][action.col] = action.player;
             const winner = this.getWinner();
@@ -95,10 +129,15 @@ export function createScenario(initState: any) {
             return winner;
         },
 
-        async run(player1: any, player2 = {
-            init: (state: any) => call('onInit', [state]),
-            update: (state: any, actions: any) => call('onUpdate', [state, actions]),
-            finish: (state: any, score: any) => call('onFinish', [state, score]),
+        async run(player1: PlayerObject, player2: PlayerObject = {
+            init: (state: State) => 
+                call('onInit', [state]),
+            update: (state: State, actions: Action[]) => 
+                call('onUpdate', [state, actions]),
+            result: (oldState: State, action: Action, state: State, score: number) => 
+                call('onResult', [oldState, action, state, score]),
+            finish: (state: State, score: number) => 
+                call('onFinish', [state, score]),
         }) {
             const players = [player1, player2];
             if (player1.init instanceof Function)
@@ -129,11 +168,15 @@ export function createScenario(initState: any) {
             }
             return winner;
         }
-    });
+    };
+
+    return Object.freeze(scenario);
 }
 
-export async function __run(state: any) {
-    const scenario = createScenario(state);
-    const player1 = await hideImport('/project/index.js');
+export async function __run(settings: Settings) {
+    const scenario = createScenario({
+        player: settings.startingPlayer,
+    });
+    const player1 = await hideImport('/project/index.js') as PlayerObject;
     return await scenario.run(player1);
 }

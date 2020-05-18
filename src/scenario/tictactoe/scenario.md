@@ -18,11 +18,11 @@
     - [createScenario(state)](#createscenariostate)
     - [Scenario.clone()](#scenarioclone)
     - [Scenario.getActions()](#scenariogetactions)
-    - [Scenario.getScore(player)](#scenariogetscoreplayer)
+    - [Scenario.getScore(?player)](#scenariogetscoreplayer)
     - [Scenario.getState()](#scenariogetstate)
     - [Scenario.getWinner()](#scenariogetwinner)
     - [Scenario.performAction(action)](#scenarioperformactionaction)
-    - [Scenario.run(player1, player2)](#scenariorunplayer1-player2)
+    - [Scenario.run(agent1, ?agent2)](#scenariorunagent1-agent2)
     - [Scenario.validAction(action)](#scenariovalidactionaction)
     - [Scenario.validateAction(action)](#scenariovalidateactionaction)
 
@@ -55,7 +55,7 @@ Returns the chosen action.
 ```javascript
 export async function update(state, actions){
     ...
-    return action;
+    return Action;
 }
 ```
 [[Top](#tictactoe)]
@@ -128,13 +128,13 @@ Contains the [state](#state) and all available [functions](#functions).
 ```javascript
 {
     getState() {},
-    getScore(player) {},
+    getScore(player?) {},
     getWinner() {},
     getActions() {},
     validateAction(action) {},
     validAction(action) {},
     performAction(action) {},
-    async run(agent1, agent1) {},
+    async run(agent1, agent2?) {},
 }
 ```
 [[Top](#tictactoe)]
@@ -188,10 +188,10 @@ function getActions() {
 ```
 [[Top](#tictactoe)]
 
-### Scenario.getScore(player)
-Returns the current score for the given [player](#player) (1 = won, -1 = lost, 0 = draw).
+### Scenario.getScore(?player)
+Returns the score for the given [player](#player) (1 = won, -1 = lost, 0 = draw). If no player is provided, returns the score for the current player.
 ```javascript
-function getScore(player) {
+function getScore(?player) {
     return Number;
 }
 ```
@@ -227,13 +227,13 @@ function performAction(action) {
 ```
 [[Top](#tictactoe)]
 
-### Scenario.run(agent1, agent2)
-Takes two [agents](#agent) and uses their update function to decide their [actions](#action).
+### Scenario.run(agent1, ?agent2)
+Takes two [agents](#agent) and uses their update function to decide their [actions](#action). When agent2 is not provided the user acts as agent2.
 The init, result and finish functions are optional.
 Throws an error if any chosen [action](#action) is invalid.
 Returns the winning [player](#player).
 ```javascript
-async function run(agent1, agent2){
+async function run(agent1, ?agent2){
     return Player; // winner
 }
 ```

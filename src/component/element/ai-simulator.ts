@@ -65,7 +65,7 @@ class AiSimulator extends MobxLitElement {
         }
         const sandbox = await this.#sandbox.promise;
         const scenario = await this.#scenario.promise
-        sandbox.call(scenario.getFile(), '__run', [{settings: scenario.getSettings()}]);
+        sandbox.call(scenario.getFile(), '__run', [scenario.getSettings()]);
     }
 
     async simTrain() {

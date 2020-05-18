@@ -6,7 +6,7 @@ import sharedStyles from '@shared-styles';
 // @ts-ignore
 import style from './scenario-tictactoe.css';
 
-import { Player } from './scenario';
+import { Player, Action } from './scenario';
 
 import { IScenario } from '@scenario/types';
 
@@ -121,6 +121,11 @@ export class ScenarioTicTacToe extends LazyElement implements IScenario {
             this.#update_resolve = resolve;
             this.requestUpdate();
         });
+    }
+
+    async onResult(_: State, _1: Action, state: State, _2: number){
+        this.#state = state;
+        this.requestUpdate();
     }
 
     async onFinish(state: State, _: number){
