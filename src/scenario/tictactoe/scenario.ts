@@ -1,14 +1,13 @@
-import { deepCopy, hideImport } from '@util';
+import { hideImport } from '@util';
 import { call } from '@worker/types';
-import merge from 'lodash/merge';
 
 export const Player = Object.freeze({
-    None: 0,
-    Computer: 1,
-    Human: 2,
-    Both: 3,
-    Player1: 1,
-    Player2: 2,
+    None:     0b00,
+    Computer: 0b01,
+    Human:    0b10,
+    Both:     0b11,
+    Player1:  0b01,
+    Player2:  0b10,
 });
 
 export type Player = number;
@@ -18,165 +17,219 @@ export type Settings = {
 }
 
 export type State = {
-    board: number[][],
-    player: number,
+    board?: number[][],
+    player?: number,
 }
 
 export type Action = {
-    type: 'PLACE',
     row: number,
     col: number,
-    player: number,
-}
+    player: Player,
+};
 
 export type PlayerObject = {
-    init?: (state: State) => Promise<void>,
-    update: (state: State, actions: Action[]) => Promise<Action>,
-    result?: (oldState: State, action: Action, newState: State, score: number) => Promise<void>,
-    finish?: (state: State, score: number) => Promise<void>,
+    init?: (state: number) => Promise<void>,
+    update: (state: number, actions: number[]) => Promise<number>,
+    result?: (oldState: number, action: number, newState: number, score: number) => Promise<void>,
+    finish?: (state: number, score: number) => Promise<void>,
 }
 
-export type Scenario = {
-    clone: () => Scenario,
-    getState: () => State,
-    getScore: (player?: Player) => number,
-    getWinner: () => Player,
-    getActions: () => Action[],
-    validateAction: (action: Action) => void,
-    validAction: (action: Action) => boolean,
-    performAction: (action: Action) => Player,
-    run: (player1: PlayerObject, player2?: PlayerObject) => Promise<Player>,
+const bState  = 0b11111111111111111111; // 2:player 18:board
+const bPlayer = 0b11;
+const bBoard  = 0b111111111111111111; // 2:row wise, left to right
+const sPlayer = 18;
+
+const bAction = 0b111111; // 2:row 2:col 2:player
+const bRow = 0b11;
+const bCol = 0b11;
+const sRow = 4;
+const sCol = 2;
+
+export function getPlayer(state: number) : number{
+    return state >>> sPlayer & bPlayer; 
 }
 
-export function createScenario(initState: State | any) {
-    const state: State = {
-        board: [[0, 0, 0], [0, 0, 0], [0, 0, 0]],
-        player: 1,
-    };
-    merge(state, initState);
+export function getBoard(state: number): number[][]{
+    const b = state & bBoard;
+    return [
+        [(b       ) & bPlayer, (b >>>  2) & bPlayer, (b >>>  4) & bPlayer],
+        [(b >>>  6) & bPlayer, (b >>>  8) & bPlayer, (b >>> 10) & bPlayer],
+        [(b >>> 12) & bPlayer, (b >>> 14) & bPlayer, (b >>> 16) & bPlayer],
+    ];
+}
 
-    const scenario: Scenario = {
-        clone() { return createScenario(deepCopy(state)); },
-        getState() { return deepCopy(state); },
+export function createAction(player: Player, row: number, col: number): number{
+    return (row & bRow) << sRow | (col & bCol) << sCol | (player & bPlayer);
+}
 
-        getScore(player?: Player) {
-            if(!player)
-                player = state.player;
-            const winner = this.getWinner();
-            if (winner === player)
-                return 1;
-            if (winner === Player.Both || winner == Player.None)
-                return 0;
-            return -1;
-        },
+export function createState(player: Player, board?: number[][]): number{
+    let state = (player & bPlayer) << sPlayer;
+    if(board){
+        state |= 
+        (board[0][0] << 16 |
+        board[0][1] << 14 |
+        board[0][2] << 12 |
+        board[1][0] << 10 |
+        board[1][1] <<  8 |
+        board[1][2] <<  6 |
+        board[2][0] <<  4 |
+        board[2][1] <<  2 |
+        board[2][2] <<  0)
+        & bBoard;
+    }
+    
+    return state;
+}
 
-        getWinner() {
-            const board = state.board;
-            // check rows
-            for (let i = 0; i < 3; i++)
-                if (board[i].every(p => (p === board[i][0] && p !== Player.None))) return board[i][0];
-            // check cols
-            for (let i = 0; i < 3; i++)
-                if (board.every(row => (row[i] === board[0][i] && row[i] !== Player.None))) return board[0][i];
-            // check diagonals
-            if (board[1][1] !== Player.None) {
-                if (board[1][1] === board[0][0] && board[1][1] === board[2][2]) return board[1][1];
-                if (board[1][1] === board[2][0] && board[1][1] === board[0][2]) return board[1][1];
-            }
+export function stateToObject(state: number): State{
+    return  {
+        board: getBoard(state),
+        player: getPlayer(state),
+    }
+}
 
-            // check draw
-            if (!board.flat().includes(Player.None))
-                return Player.Both;
+export function actionToObject(action: number): Action{
+    return {
+        player: (action & bPlayer),
+        row: (action >>> sRow) & bRow,
+        col: (action >>> sCol) & bCol,
+    }
+}
 
+export function getScore(state: number, player: Player): number {
+    const winner = getWinner(state);
+    if (winner === player)
+        return 1 | 0;
+    if (winner === Player.Both || winner === Player.None)
+        return 0 | 0;
+    return -1 | 0;
+}
+
+export function getWinner(state: number): number {
+    const b = state & bBoard;
+
+    // check rows
+    if(((b >>> 16) & (b >>> 14) & (b >>> 12) & bPlayer) !== 0) return (b >>> 12) & bPlayer;
+    if(((b >>> 10) & (b >>>  8) & (b >>>  6) & bPlayer) !== 0) return (b >>>  6) & bPlayer;
+    if(((b >>>  4) & (b >>>  2) & (b       ) & bPlayer) !== 0) return  b         & bPlayer;
+
+    // check cols
+    if(((b >>> 16) & (b >>> 10) & (b >>>  4) & bPlayer) !== 0) return (b >>> 4) & bPlayer;
+    if(((b >>> 14) & (b >>>  8) & (b >>>  2) & bPlayer) !== 0) return (b >>> 2) & bPlayer;
+    if(((b >>> 12) & (b >>>  6) & (b       ) & bPlayer) !== 0) return  b        & bPlayer;
+
+    // check diagonals
+    if(((b >>> 16) & (b >>>  8) & (b      ) & bPlayer) !== 0) return (b      ) & bPlayer;
+    if(((b >>> 12) & (b >>>  8) & (b >>> 4) & bPlayer) !== 0) return (b >>> 4) & bPlayer;
+
+    // check draw
+    for(let i = 0; i < 18; i+=2){
+        if(((b >>> i) & bPlayer) === 0)
             return Player.None;
-        },
-        getActions() {
-            const actions: Action[] = [];
-            for (let row = 0; row < 3; row++) {
-                for (let col = 0; col < 3; col++) {
-                    if (state.board[row][col] === Player.None)
-                        actions.push({ type: 'PLACE', row, col, player: state.player });
-                }
-            }
-            return actions;
-        },
-        validateAction(action: Action) {
-            if(!action){
-                throw Error(`invalid action: ${action}\nThe update function needs to return a valid Action!`);
-            }
-            if (action.type !== 'PLACE') throw Error(`unknown action type '${action.type}'`);
-            if (action.row < 0 || action.row > 2) throw Error(`row index must be between 0 and 2 (was ${action.row})`);
-            if (action.col < 0 || action.col > 2) throw Error(`col index must be between 0 and 2 (was ${action.col})`);
-            if (state.board[action.row][action.col] !== Player.None) throw Error(`position (${action.row}, ${action.col}) not empty`);
-            if (action.player !== state.player) throw Error(`invalid player ${action.player}`);
-        },
-        validAction(action: Action) {
-            try {
-                this.validateAction(action);
-                return true;
-            }
-            catch (e) {
-                return false;
-            }
-        },
-        performAction(action: Action) {
-            this.validateAction(action);
-            state.board[action.row][action.col] = action.player;
-            const winner = this.getWinner();
-            if (winner === Player.None) {
-                state.player = state.player % 2 + 1;
-            }
-            return winner;
-        },
+    }
+    
+    return Player.Both;
+}
 
-        async run(player1: PlayerObject, player2: PlayerObject = {
-            init: (state: State) => 
-                call('onInit', [state]),
-            update: (state: State, actions: Action[]) => 
-                call('onUpdate', [state, actions]),
-            result: (oldState: State, action: Action, state: State, score: number) => 
-                call('onResult', [oldState, action, state, score]),
-            finish: (state: State, score: number) => 
-                call('onFinish', [state, score]),
-        }) {
-            const players = [player1, player2];
-            if (player1.init instanceof Function)
-                await player1.init(this.getState());
-            if (player2.init instanceof Function)
-                await player2.init(this.getState());
-
-            let winner = Player.None;
-            while (winner === Player.None) {
-                const currentPlayer = players[state.player - 1];
-                const oldState = this.getState();
-                const actions = this.getActions();
-                const action = await currentPlayer.update(oldState, actions);
-                winner = this.performAction(action);
-                if (currentPlayer.result instanceof Function)
-                    await currentPlayer.result(oldState, action, this.getState(), this.getScore(state.player));
-            }
-            state.player = winner;
-            if (player1.finish instanceof Function) {
-                const score1 = this.getScore(Player.Player1);
-                const state = this.getState();
-                await player1.finish(state, score1);
-            }
-            if (player2.finish instanceof Function) {
-                const score2 = this.getScore(Player.Player2);
-                const state = this.getState();
-                await player2.finish(state, score2);
-            }
-            return winner;
+export function getActions(state: number): number[] {
+    const actions: number[] = [];
+    const b = state & bBoard;
+    for(let i = 0; i < 9; i++){
+        if(((b >>> (i*2)) & bPlayer) === 0){
+            actions.push(
+                ((i/3|0) << sRow |
+                (i % 3) << sCol) |
+                (state >>> sPlayer) & bPlayer
+            );
         }
-    };
+    }
+    return actions;
+}
 
-    return Object.freeze(scenario);
+export function validateAction(state: number, action: number) {
+    const player = action & bPlayer;
+    const board = state & bBoard;
+    const row = (action >>> sRow) & bRow;
+    const col = (action >>> sCol) & bCol;
+
+    if(!Number.isInteger(action) || (action & (~bAction))){
+        throw new ScenarioError(`invalid action: ${action}\nThe update function needs to return a valid Action!`);
+    }
+    if (row === 3) throw new ScenarioError(`row index must be between 0 and 2 (was ${row})`);
+    if (col === 3) throw new ScenarioError(`col index must be between 0 and 2 (was ${col})`);
+    if (((board >>> (row * 6 + col*2)) & bPlayer) !== Player.None) throw new ScenarioError(`position (${row}, ${col}) not empty`);
+    if (player !== ((state >>> sPlayer) & bPlayer)) throw new ScenarioError(`invalid player ${player}`);
+}
+
+export function validAction(state: number, action: number) {
+    try {
+        validateAction(state, action);
+        return true;
+    }
+    catch (e) {
+        return false;
+    }
+}
+
+export function performAction(state: number, action: number) {
+    validateAction(state, action);
+
+    const row = (action >>> sRow) & bRow;
+    const col = (action >>> sCol) & bCol;
+    const newState = (
+        ((state & bBoard) | (action & bPlayer) << (row * 6 + col*2)) | 
+        (((action & bPlayer) ^ 0b11) << sPlayer)
+    );
+
+    return newState;
+}
+
+export async function run(state: number, player1: PlayerObject, player2: PlayerObject = {
+    init: (state: number) => 
+        call('onInit', [state]),
+    update: (state: number, actions: number[]) => 
+        call('onUpdate', [state, actions]),
+    result: (oldState: number, action: number, state: number, score: number) => 
+        call('onResult', [oldState, action, state, score]),
+    finish: (state: number, score: number) => 
+        call('onFinish', [state, score]),
+}) {
+    const players = [player1, player2];
+    if (player1.init instanceof Function)
+        await player1.init(state);
+    if (player2.init instanceof Function)
+        await player2.init(state);
+
+    let winner = Player.None;
+    while (winner === Player.None) {
+        const currentPlayer = players[getPlayer(state) - 1];
+        const oldState = state;
+        const actions = getActions(oldState);
+        const action = await currentPlayer.update(oldState, actions);
+        state = performAction(oldState, action);
+        winner = getWinner(state);
+        if (currentPlayer.result instanceof Function){
+            await currentPlayer.result(oldState, action, state, getScore(state, getPlayer(state)));
+        }
+    }
+
+    state = (state & bBoard) | (winner << sPlayer);
+    if (player1.finish instanceof Function) {
+        const score1 = getScore(state, Player.Player1);
+        await player1.finish(state, score1);
+    }
+    if (player2.finish instanceof Function) {
+        const score2 = getScore(state, Player.Player2);
+        await player2.finish(state, score2);
+    }
+    return state;
 }
 
 export async function __run(settings: Settings) {
-    const scenario = createScenario({
-        player: settings.startingPlayer,
-    });
+    const state = createState(settings.startingPlayer);
+
     const player1 = await hideImport('/project/index.js') as PlayerObject;
-    return await scenario.run(player1);
+    return await run(state, player1);
 }
+
+export class ScenarioError extends Error{}; 

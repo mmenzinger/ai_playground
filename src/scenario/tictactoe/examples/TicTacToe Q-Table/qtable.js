@@ -1,11 +1,24 @@
-import { Player } from '/scenario/tictactoe/scenario.js';
+import { 
+    validAction, createAction, Player,
+} from '/scenario/tictactoe/scenario.js';
 
-function shuffle(a) {
-    for (let i = a.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [a[i], a[j]] = [a[j], a[i]];
+import { storeJson, loadJson } from '/scenario/util.js';
+
+function createEmptyEntry(value){
+    const entry = {};
+    for(let row = 0; row < 3; row++){
+        for(let col = 0; col < 3; col++){
+            const action = createAction(Player.Computer, row, col);
+            entry[action] = value;
+        }
     }
-    return a;
+    return entry;
+}
+
+//------------------------------------------------------------------------------
+// pseudo-randomly shuffle an array
+function shuffle(array) {
+    return array.sort(() => Math.random() - 0.5);
 }
 
 export class QTable{
@@ -14,55 +27,41 @@ export class QTable{
         this._initialValue = initialValue;
     }
     
-    stateToKey(state){
-        return state.board.flat().reduce(
-                (a,c,i) => a + c * 10**(8-i)
-            , 0);
-    }
-    
     idToAction(id){
-        return {
-            type: "PLACE",
-            row: Math.floor(id / 3),
-            col: id % 3,
-            player: Player.Computer,
-        }
+        return createAction(Player.Computer, id/3|0, id%3);
     }
     
     actionToId(action){
-        return action.row*3 + action.col;
+        return (action >> 4 & 0b11)*3 + (action >> 2 & 0b11);
     }
     
     set(state, action, value){
-        const key = this.stateToKey(state);
         const actionId = this.actionToId(action);
-        if(this._data.has(key)){
-            this._data.get(key)[actionId] = value;
+        if(this._data.has(state)){
+            this._data.get(state)[actionId] = value;
         }
         else{
             const cols = new Array(9).fill(this._initialValue);
             cols[actionId] = value;
-            this._data.set(key, cols);
+            this._data.set(state, cols);
         }
     }
     
     get(state, action = undefined){
-        const key = this.stateToKey(state);
-        if(!this._data.has(key)){
+        if(!this._data.has(state)){
             if(action === undefined)
                 return new Array(9).fill(this._initialValue);
             else
                 return this._initialValue;
         }
         if(action === undefined){ // return full row
-            return this._data.get(key);
+            return this._data.get(state);
         }
         const actionId = this.actionToId(action);
-        return this._data.get(key)[actionId];
+        return this._data.get(state)[actionId];
     }
     
-    getBestValidAction(scenario){
-        const state = scenario.getState();
+    getBestValidAction(state){
         const actions = this.get(state).map((x,i) => [i, x]);
         shuffle(actions);
         actions.sort((a,b) => b[1] - a[1]);
@@ -70,7 +69,7 @@ export class QTable{
         let bestAction;
         for(let i = 0; i < actions.length; i++){
             bestAction = this.idToAction(actions[i][0]);
-            if(scenario.validAction(bestAction))
+            if(validAction(state, bestAction))
                 break;
         }
         

@@ -1,5 +1,7 @@
 import { QTable } from '/project/qtable.js';
-import { createScenario, Player } from '/scenario/tictactoe/scenario.js';
+import { 
+    run, createState, getScore, getWinner, Player 
+} from '/scenario/tictactoe/scenario.js';
 
 export async function generateQTable(){
     const qtable = new QTable();
@@ -19,9 +21,6 @@ export async function generateQTable(){
         
         let epsilon = epsilonStart;
         for(let episode = 0; episode < episodes; episode++){
-            const scenario = createScenario({settings: {
-                startingPlayer: episode % 2 + 1
-            }});
             const memoryPlayer1 = [];
             const memoryPlayer2 = [];
             
@@ -32,7 +31,7 @@ export async function generateQTable(){
                         return actions[actionId];
                     }
                     else{ // use qtable to get best move
-                        return qtable.getBestValidAction(scenario);
+                        return qtable.getBestValidAction(state);
                     }
                 },
                 async result(oldState, action, newState, reward){
@@ -49,14 +48,15 @@ export async function generateQTable(){
                     memoryPlayer2.unshift({action:action, state:oldState});
                 }
             };
-            
-            const winner = await scenario.run(player1, player2);
+
+            const state = await run(createState(episode % 2 + 1), player1, player2);
+            const winner = getWinner(state);
             if(winner === Player.Player1)
                 wins++;
             if(winner === Player.Player2)
                 losses++;
 
-            const score = scenario.getScore(Player.Player1);
+            const score = getScore(state, Player.Player1);
             let lastMemory = memoryPlayer1.shift();
             qtable.set(lastMemory.state, lastMemory.action, score);
             memoryPlayer1.forEach(memory => {

@@ -8,13 +8,13 @@ Working with exhaustive search algorithms often means to calculate thousends of 
 
 For development purposes it can be useful to start with a reduced state by manually setting the initial state, so that at least one or two turns have already passed:
 ```javascript
-const scenario = createScenario({
-    board: [
+const state = createState(
+    Player.Computer,
+    [
         [1,2,1],
         [0,2,0],
         [0,0,0],
-    ],
-    player: 1,
-});
+    ]
+);
 ```
-This reduces the amount of work dramatically, so that debugging statements can be used.
+This reduces the amount of work dramatically, so that debugging statements can be used again.

@@ -6,14 +6,9 @@ import sharedStyles from '@shared-styles';
 // @ts-ignore
 import style from './scenario-tictactoe.css';
 
-import { Player, Action } from './scenario';
+import { Player, Action, getPlayer, getBoard, createAction } from '@scenario/tictactoe/scenario';
 
 import { IScenario } from '@scenario/types';
-
-type State = {
-    board: number[][],
-    player: number,
-}
 
 export class ScenarioTicTacToe extends LazyElement implements IScenario {
     static get styles() {
@@ -29,22 +24,15 @@ export class ScenarioTicTacToe extends LazyElement implements IScenario {
 
     getAutorun() { return true; }
 
-    #state: State = {
-        board: [[0,0,0],[0,0,0],[0,0,0]],
-        player: Player.None,
-    };
-    #playerWon: number;
+    #state: number = 0;
+    #playerWon: number = Player.None;
     #update_resolve: any;
-
-    constructor(){
-        super();
-        this.#playerWon = Player.None;
-    }
 
     render() {
         const rows:TemplateResult[] = [];
         let rowId = 0;
-        this.#state.board.forEach(row => {
+        const board = getBoard(this.#state);
+        board.forEach(row => {
             const cols:TemplateResult[] = [];
             let colId = 0;
             row.forEach(col => {
@@ -83,7 +71,9 @@ export class ScenarioTicTacToe extends LazyElement implements IScenario {
                 if(event.target instanceof HTMLElement){
                     const row = Number(event.target.dataset.row);
                     const col = Number(event.target.dataset.col);
-                    const action = { type: 'PLACE', player: this.#state.player, row, col };
+                    
+                    const action = createAction(getPlayer(this.#state), row, col);
+                    
                     this.#update_resolve(action);
                     this.#update_resolve = undefined;
                 }
@@ -92,7 +82,7 @@ export class ScenarioTicTacToe extends LazyElement implements IScenario {
                 console.warn('invalid move: ', error.message);
             }
         }
-        else if(this.#state.player === Player.None){
+        else if(getPlayer(this.#state) === Player.None){
             console.log("game not started...");
         }
         else {
@@ -108,13 +98,13 @@ export class ScenarioTicTacToe extends LazyElement implements IScenario {
         };
     }
 
-    async onInit(state: State){
+    async onInit(state: number){
         this.#state = state;
         this.#playerWon = Player.None;
         this.requestUpdate();
     }
 
-    async onUpdate(state: State, _: any[]){
+    async onUpdate(state: number, _: any[]){
         this.#state = state;
         
         return new Promise((resolve, _) => {
@@ -123,14 +113,14 @@ export class ScenarioTicTacToe extends LazyElement implements IScenario {
         });
     }
 
-    async onResult(_: State, _1: Action, state: State, _2: number){
+    async onResult(_: number, _1: Action, state: number, _2: number){
         this.#state = state;
         this.requestUpdate();
     }
 
-    async onFinish(state: State, _: number){
+    async onFinish(state: number, _: number){
         this.#state = state;
-        this.#playerWon = state.player;
+        this.#playerWon = getPlayer(state);
         this.requestUpdate();
     }
 
