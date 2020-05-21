@@ -5,7 +5,7 @@ import sharedStyles from '@shared-styles';
 import style from './tab-group.css';
 
 
-class TabGroup extends LitElement {
+export class TabGroup extends LitElement {
     static get properties() {
         return {
             direction: { type: String },

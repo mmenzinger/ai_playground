@@ -1,7 +1,7 @@
-import { QTable } from '/project/qtable.js';
+import { QTable } from 'http:/project/qtable.js';
 import { 
     run, createState, getScore, getWinner, Player 
-} from '/scenario/tictactoe/scenario.js';
+} from 'http:/scenario/tictactoe/scenario.js';
 
 export async function generateQTable(){
     const qtable = new QTable();

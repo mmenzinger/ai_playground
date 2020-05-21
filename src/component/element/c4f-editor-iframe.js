@@ -1,10 +1,12 @@
 import { html, unsafeCSS, css, LitElement } from 'lit-element';
-import { autorun } from 'mobx';
+import { autorun, observe } from 'mobx';
 import projectStore from '@store/project-store';
 import settingsStore from '@store/settings-store';
 import { ResizeObserver } from 'resize-observer';
 import { Defer, dispatchIframeEvents } from '@util';
+import { utilExports } from '@scenario/types';
 
+import db from '@localdb';
 
 import sharedStyles from '@shared-styles';
 import style from './c4f-editor.css';
@@ -84,6 +86,34 @@ class C4fEditorIframe extends LitElement {
                 monaco.openFile(file);
             }
         });
+
+        autorun(async _ => {
+            const project = projectStore.activeProject;
+            if(project){
+                const monaco = await this._monaco.promise;
+                
+                let files = await db.getProjectFiles(project.id);
+                files = [...files, ...await db.getProjectFiles(0)]
+                for(const file of files){
+                    monaco.preloadFile(file);
+                }
+            }
+        });
+
+        /*autorun(async _ => {
+            const exports = projectStore.activeProject?.exports;
+            if(exports){
+                const monaco = await this._monaco.promise;
+                const libs = Array.from(exports).map(
+                    e => ({content: e[1], filePath: 'http:' + e[0]})
+                );
+                libs.push({
+                    content: utilExports,
+                    filePath: 'http:/scenario/util.js',
+                });
+                monaco.setExtraLibs(libs);
+            }
+        });*/
     }
 }
 

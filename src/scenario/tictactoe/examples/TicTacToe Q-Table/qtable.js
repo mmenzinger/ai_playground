@@ -1,19 +1,9 @@
 import { 
     validAction, createAction, Player,
-} from '/scenario/tictactoe/scenario.js';
+} from 'http:/scenario/tictactoe/scenario.js';
 
-import { storeJson, loadJson } from '/scenario/util.js';
+import { storeJson, loadJson } from 'http:/scenario/util.js';
 
-function createEmptyEntry(value){
-    const entry = {};
-    for(let row = 0; row < 3; row++){
-        for(let col = 0; col < 3; col++){
-            const action = createAction(Player.Computer, row, col);
-            entry[action] = value;
-        }
-    }
-    return entry;
-}
 
 //------------------------------------------------------------------------------
 // pseudo-randomly shuffle an array

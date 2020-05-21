@@ -10,6 +10,7 @@ export interface IFiles {
     content: string,
     lastChange: number,
     state?: editor.ICodeEditorViewState,
+    exports?: string,
 }
 
 export interface IProjects {

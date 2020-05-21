@@ -69,12 +69,13 @@ async function userFile(arg: RouteHandlerCallbackContext): Promise<Response>{
         let id;
         switch(path[1]){
             case 'project': id = project.id; break;
-            case 'global': id = 0;
+            case 'global': id = 0; break;
             default: id = Number(path[1]);
         }
 
         let filename = path[2];
         const file = await db.loadFileByName(id, filename);
+        file.content = file.content?.replace(/http:\/(project|global|scenario)\//g, '/$1/');
         response = new Response(file.content, init);
     }
     catch(error){

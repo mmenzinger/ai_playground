@@ -1,6 +1,6 @@
 import {
     getWinner, getScore, getActions, performAction, actionToObject, Player,
-} from '/scenario/tictactoe/scenario.js';
+} from 'http:/scenario/tictactoe/scenario.js';
 
 //------------------------------------------------------------------------------
 // pseudo-randomly shuffle an array

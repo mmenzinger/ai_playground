@@ -2,8 +2,11 @@ import { html, unsafeCSS } from 'lit-element';
 import { LazyElement } from '@element/lazy-element';
 import { autorun } from 'mobx';
 import projectStore from '@store/project-store';
+import { File, Project } from '@store/types';
 
 import { Defer } from '@util';
+
+import { TabGroup } from '@element/tab-group';
 
 import '@element/dynamic-split';
 import '@element/tab-group';
@@ -15,11 +18,9 @@ import '@element/c4f-console';
 import '@element/c4f-markdown';
 
 class AiProject extends LazyElement {
-    constructor(){
-        super();
-        this._activeFile = { id: null };
-        this._editorTabGroup = new Defer();
-    }
+    #activeFile: File | null = null;
+    #activeProject: Project | null = null;
+    #editorTabGroup = new Defer<TabGroup>();
 
     render() {
         return html`
@@ -44,36 +45,22 @@ class AiProject extends LazyElement {
     }
 
     firstUpdated() {
-        const tabGroup = this.shadowRoot.getElementById('editorTabGroup');
-        this._editorTabGroup.resolve(tabGroup);
+        const tabGroup = this.shadowRoot?.getElementById('editorTabGroup') as TabGroup;
+        this.#editorTabGroup.resolve(tabGroup);
 
-        autorun(async reaction => {
-            const activeFile = projectStore.activeFile
-            if(activeFile && activeFile !== this._activeFile.id){
-                const tabGroup = await this._editorTabGroup.promise;
+        autorun(async _ => {
+            const activeFile = projectStore.activeFile;
+            if(activeFile && activeFile !== this.#activeFile){
+                const tabGroup = await this.#editorTabGroup.promise;
                 if(activeFile.name.endsWith('.md')){
                     tabGroup.select('Markdown');
                 }
                 else{
                     tabGroup.select('Editor');
                 }
-                this._activeFile = activeFile;
+                this.#activeFile = activeFile;
             }
         });
-    }
-
-    async stateChanged(state) {
-        if(state.files.currentFile && state.files.currentFile.id !== this._currentFile.id)
-        {
-            this._currentFile = state.files.currentFile;
-            const tabGroup = await this._editorTabGroup.promise;
-            if(this._currentFile.name.endsWith('.md')){
-                tabGroup.select('Markdown');
-            }
-            else{
-                tabGroup.select('Editor');
-            }
-        }
     }
 }
 

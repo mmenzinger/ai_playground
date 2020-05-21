@@ -47,12 +47,9 @@ class ProjectStore {
                 file = await db.loadFileByName(id, fileName);
                 break;
             }
-            catch(e){}
+            catch(_){}
         }
         const project = await db.getProject(id);
-        const files = await db.getProjectFiles(id);
-        files.push(...await db.getProjectFiles(0));
-
         runInAction(() => {
             this.activeFile = file;
             this.activeProject = project;
