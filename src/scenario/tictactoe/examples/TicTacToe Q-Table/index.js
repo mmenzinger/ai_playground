@@ -1,5 +1,5 @@
-import { QTable } from 'http:/project/qtable.js';
-import { generateQTable } from 'http:/project/train.js';
+import { QTable } from 'project/qtable.js';
+import { generateQTable } from 'project/train.js';
 
 let qtable = new QTable();
 

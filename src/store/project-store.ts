@@ -92,8 +92,6 @@ class ProjectStore {
                 this.activeProject.errors = errors;
             }
         });
-        
-        await db.setProjectErrors(id, errors);
     }
 
     async deleteProject(id: number): Promise<void> {
@@ -127,6 +125,18 @@ class ProjectStore {
                 scrollLeft: 0,
                 firstPositionDeltaTop: 0,
             };
+        }
+
+        runInAction(() => {
+            this.activeFile = file;
+        });
+        return file;
+    }
+
+    @action
+    async openVirtualFile(file: File): Promise<File> {
+        if (this.activeFile) {
+            await this.flushFile();
         }
 
         runInAction(() => {

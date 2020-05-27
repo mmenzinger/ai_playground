@@ -62,13 +62,13 @@ class AiProjectIndex extends LazyElement {
                     </a>
                 </header>
                 <footer>
+                    <a title="load example" @click=${this.onNewExample}><img src="assets/interface/file.svg"></a>
                     <a title="upload" @click=${this.onUploadProject}><img src="assets/interface/upload.svg"></a>
                 </footer>
         `);
         return html`
             <h1>Projects</h1>
             <ul id="projects">${elements}</ul>
-            <button @click=${this.onNewExample}>Load Example</button>
         `;
     }
 

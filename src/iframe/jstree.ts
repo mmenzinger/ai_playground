@@ -1,6 +1,8 @@
 import { Defer } from '@util';
 import { File, ProjectErrors } from '@store/types';
 
+import { docs } from '@doc/docs';
+
 declare var window: JSTreeWindow;
 
 type Node = {
@@ -8,6 +10,9 @@ type Node = {
     parent: string,
     text: string,
     data: File,
+    state: {
+        opened: boolean,
+    }
 }
 
 type NodeData = {
@@ -47,6 +52,12 @@ onload = () => {
     $('#jstree').on('select_node.jstree', (_, data: NodeData) => {
         if(data.node.parent === '#'){
             data.instance.deselect_node(data.node);
+            if(data.node.state.opened){
+                $('#jstree').jstree('close_node', data.node);
+            }
+            else{
+                $('#jstree').jstree('open_node', data.node);
+            }
             preventSelectNodeEvent = true;
             data.instance.select_node(lastSelected);
             preventSelectNodeEvent = false;
@@ -66,8 +77,6 @@ function contextMenu(node: Node){
     let remove = undefined;
     
     let parent = node.parent;
-    if(node.parent === '#')
-        parent = node.id;
     if(parent === 'global'){
         create = {
             label: 'create global file',
@@ -83,13 +92,13 @@ function contextMenu(node: Node){
         };
     }
 
-    if(! ['global', 'project', 'index.js', 'scenario.md'].includes(node.text)){
+    if(! ['index.js', 'scenario.md'].includes(node.text) && !['#', 'docs'].includes(parent)){
         let name = node.text;
         if(name.length > 10){
             name = name.substring(0,8) + '...';
         }
         remove = {
-            label: `delete file '${name}'`,
+            label: `delete&nbsp;file&nbsp;'${name}'`,
             icon: '../assets/interface/trash.svg',
             action: () => window.onDelete(node.data),
         }
@@ -109,7 +118,33 @@ function getEnding(fileName: string){
 }
 
 window.updateFiles = async function(global: File[], project: File[], activeFile: File, errors: ProjectErrors = []){
+    const allDocs = Array.from(docs).map(([key, value]) => {
+        let ending = getEnding(key);
+        return {
+            id: `docs/${key}`,
+            parent: 'docs',
+            text: key,
+            icon: `../assets/filetree/${ending}.svg`,
+            data: {
+                id: 0,
+                projectId: 0,
+                name: `docs/${key}`,
+                content: value,
+            } as File,
+        }
+    });
+
     const data = [
+        ...allDocs,
+        {
+            id: 'docs',
+            parent: '#',
+            text: 'docs',
+            state: {
+               opened: false,
+               selected: false
+            }
+        },
         {
             id: 'global',
             parent: '#',
@@ -149,6 +184,7 @@ window.updateFiles = async function(global: File[], project: File[], activeFile:
             }
         }),
     ];
+
     const tree = await jstree.promise;
     if(tree.settings)
         tree.settings.core.data = data;
@@ -162,7 +198,12 @@ window.selectFile = async function (file: File){
     if(file){
         const tree = await jstree.promise;
         preventSelectNodeEvent = true;
-        tree.activate_node(file.id, undefined);
+        if(file.id){
+            tree.activate_node(file.id, undefined);
+        }
+        else{
+            tree.activate_node(file.name, undefined);
+        }
         preventSelectNodeEvent = false;
     }
 }

@@ -1,13 +1,11 @@
 const path = require('path');
 const webpack = require('webpack');
 const CopyPlugin = require('copy-webpack-plugin');
-const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const PreloadWebpackPlugin = require('preload-webpack-plugin');
 
 const staticFiles = [
-    //'srcdoc.html',
-    'index.html',
     { from: './src/iframe/*.html', to: '[name].[ext]' },
-    //{ from: './src/iframe/*.js', to: '[name].[ext]' },
     { from: 'assets', to: 'assets' },
     { from: 'node_modules/jstree/dist/jstree.min.js', to: 'jstree/jstree.min.js' },
     { from: 'node_modules/jstree/dist/themes/default/style.min.css', to: 'jstree/jstree.min.css' },
@@ -27,8 +25,6 @@ module.exports = {
         'jstree': './src/iframe/jstree',
         'monaco/editor-worker': 'monaco-editor/esm/vs/editor/editor.worker',
         'monaco/json-worker': 'monaco-editor/esm/vs/language/json/json.worker',
-        'monaco/css-worker': 'monaco-editor/esm/vs/language/css/css.worker',
-        'monaco/html-worker': 'monaco-editor/esm/vs/language/html/html.worker',
         'monaco/ts-worker': 'monaco-editor/esm/vs/language/typescript/ts.worker',
     },
 
@@ -98,15 +94,15 @@ module.exports = {
     },
 
     plugins: [
-        new webpack.ProvidePlugin({
-            //$: "jquery",
-            //jQuery: "jquery",
-        }),
         new CopyPlugin(staticFiles),
-        /*new MonacoWebpackPlugin(/*{
-            //publicPath: '/monaco',
-            languages: ['typecript', 'json', 'markdown'],
-        }),*/
+        new HtmlWebpackPlugin({
+            template: 'src/index.ejs',
+            chunks: ['app'],
+        }),
+        new PreloadWebpackPlugin({
+            rel: 'prefetch',
+            include: 'allAssets',
+        }),
     ],
 
     devServer: {

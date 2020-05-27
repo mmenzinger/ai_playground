@@ -24,6 +24,11 @@ td.Wumpus{ background: url('assets/wumpus/wumpus.svg') center center/cover no-re
 td.Gold{ background: url('assets/wumpus/gold.svg') center center/cover no-repeat rgb(206, 206, 206); }
 td.u{ filter: brightness(50%); }
 
+td.t0{ background: rgb(206, 206, 206); }
+td.t1{ background: url('assets/wumpus/pit.svg') center center/cover no-repeat rgb(224, 107, 107); }
+td.t2{ background: url('assets/wumpus/wumpus.svg') center center/cover no-repeat rgb(224, 107, 107); }
+td.t4{ background: url('assets/wumpus/gold.svg') center center/cover no-repeat rgb(206, 206, 206); }
+
 td > img{
     position: absolute;
 }

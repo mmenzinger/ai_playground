@@ -1,8 +1,8 @@
-import { html, unsafeCSS } from 'lit-element';
+import { html } from 'lit-element';
 import { LazyElement } from '@element/lazy-element';
 import { autorun } from 'mobx';
 import projectStore from '@store/project-store';
-import { File, Project } from '@store/types';
+import { File } from '@store/types';
 
 import { Defer } from '@util';
 
@@ -19,7 +19,6 @@ import '@element/c4f-markdown';
 
 class AiProject extends LazyElement {
     #activeFile: File | null = null;
-    #activeProject: Project | null = null;
     #editorTabGroup = new Defer<TabGroup>();
 
     render() {

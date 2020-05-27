@@ -40,7 +40,7 @@ export async function getFileContent(path: string): Promise<string> {
     return await body.text();
 }
 
-function fixPath(path: string, ending: string = ''): string {
+export function fixPath(path: string, ending: string = ''): string {
     if (! /^\//.test(path))
         path = '/' + path;
     if (! /^\/(project|global)\//.test(path)){

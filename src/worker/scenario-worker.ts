@@ -2,7 +2,6 @@ import { serialize } from '@util';
 import StackTrace from 'stacktrace-js';
 import { Caller, LogType } from '@store/types';
 import { Message, MessageType, CallMessage, LogMessage } from '@worker/types';
-import { initLocalStorage } from '@scenario/util';
 
 interface Scope extends WorkerGlobalScope{
     __console: Console,
@@ -108,12 +107,15 @@ onmessage = async m => {
         case MessageType.CALL: {
             const data = (msg as CallMessage);
             try {
-                if(!data.file)
+                if(!data.file){
                     data.file = '/project/index.js';
-                // @ts-ignore
-                const util = await import(/* webpackIgnore: true */ '/scenario/util.js');
+                }
+                const [util, index] = await Promise.all([
+                    // @ts-ignore
+                    import(/* webpackIgnore: true */ '/scenario/util.js'),
+                    import(/* webpackIgnore: true */ data.file),
+                ]);
                 await util.initLocalStorage();
-                const index = await import(/* webpackIgnore: true */ data.file);
                 await index[data.functionName](...data.args);
                 m.ports[0].postMessage({ result: true });
                 break;

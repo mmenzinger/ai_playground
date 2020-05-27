@@ -10,7 +10,7 @@ function addScenarioModules(entry = {}) {
     const files = glob.sync(path.join(__dirname, 'src/scenario/*/scenario.{js,ts}'));
     for(const file of files){
         const path = file.replace(__dirname, '.');
-        const name = path.replace(/(\.\/src\/|\.(t|j)s)/g, '');
+        const name = path.replace(/(\.\/src\/|\/scenario\.(t|j)s)/g, '');
         entry[name] = path;
     }
     return entry;
@@ -19,8 +19,8 @@ function addScenarioModules(entry = {}) {
 module.exports = {
     entry: addScenarioModules({
         'scenario/util': './src/scenario/util',
-        'lib/prolog': './src/lib/tau-prolog',
-        'lib/tf': './src/lib/tf',
+        'lib/prolog': './src/lib/prolog',
+        'lib/tensorflow': './src/lib/tensorflow',
     }),
 
     output: {

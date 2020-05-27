@@ -1,5 +1,5 @@
-import type { File, FileError, ProjectErrors } from '@store/types';
 //import * as monaco from 'monaco-editor';
+import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js';
 
 // (1) Desired editor features:
 import 'monaco-editor/esm/vs/editor/browser/controller/coreCommands.js';
@@ -18,13 +18,13 @@ import 'monaco-editor/esm/vs/editor/contrib/bracketMatching/bracketMatching.js';
 // import 'monaco-editor/esm/vs/editor/contrib/dnd/dnd.js';
 import 'monaco-editor/esm/vs/editor/contrib/find/findController.js';
 import 'monaco-editor/esm/vs/editor/contrib/folding/folding.js';
-// import 'monaco-editor/esm/vs/editor/contrib/format/formatActions.js';
+import 'monaco-editor/esm/vs/editor/contrib/format/formatActions.js';
 // import 'monaco-editor/esm/vs/editor/contrib/goToDeclaration/goToDeclarationCommands.js';
 // import 'monaco-editor/esm/vs/editor/contrib/goToDeclaration/goToDeclarationMouse.js';
 // import 'monaco-editor/esm/vs/editor/contrib/gotoError/gotoError.js';
 import 'monaco-editor/esm/vs/editor/contrib/hover/hover.js';
 // import 'monaco-editor/esm/vs/editor/contrib/inPlaceReplace/inPlaceReplace.js';
-// import 'monaco-editor/esm/vs/editor/contrib/linesOperations/linesOperations.js';
+import 'monaco-editor/esm/vs/editor/contrib/linesOperations/linesOperations.js';
 // import 'monaco-editor/esm/vs/editor/contrib/links/links.js';
 import 'monaco-editor/esm/vs/editor/contrib/multicursor/multicursor.js';
 import 'monaco-editor/esm/vs/editor/contrib/parameterHints/parameterHints.js';
@@ -33,10 +33,10 @@ import 'monaco-editor/esm/vs/editor/contrib/parameterHints/parameterHints.js';
 import 'monaco-editor/esm/vs/editor/contrib/rename/rename.js';
 import 'monaco-editor/esm/vs/editor/contrib/smartSelect/smartSelect.js';
 // import 'monaco-editor/esm/vs/editor/contrib/snippet/snippetController2.js';
-// import 'monaco-editor/esm/vs/editor/contrib/suggest/suggestController.js';
+import 'monaco-editor/esm/vs/editor/contrib/suggest/suggestController.js';
 // import 'monaco-editor/esm/vs/editor/contrib/toggleTabFocusMode/toggleTabFocusMode.js';
 // import 'monaco-editor/esm/vs/editor/contrib/wordHighlighter/wordHighlighter.js';
-// import 'monaco-editor/esm/vs/editor/contrib/wordOperations/wordOperations.js';
+import 'monaco-editor/esm/vs/editor/contrib/wordOperations/wordOperations.js';
 // import 'monaco-editor/esm/vs/editor/standalone/browser/accessibilityHelp/accessibilityHelp.js';
 // import 'monaco-editor/esm/vs/editor/standalone/browser/inspectTokens/inspectTokens.js';
 // import 'monaco-editor/esm/vs/editor/standalone/browser/iPadShowKeyboard/iPadShowKeyboard.js';
@@ -44,7 +44,6 @@ import 'monaco-editor/esm/vs/editor/standalone/browser/quickOpen/quickOutline.js
 // import 'monaco-editor/esm/vs/editor/standalone/browser/quickOpen/gotoLine.js';
 // import 'monaco-editor/esm/vs/editor/standalone/browser/quickOpen/quickCommand.js';
 // import 'monaco-editor/esm/vs/editor/standalone/browser/toggleHighContrast/toggleHighContrast.js';
-import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js';
 
 // (2) Desired languages:
 import 'monaco-editor/esm/vs/language/typescript/monaco.contribution';
@@ -92,14 +91,20 @@ import 'monaco-editor/esm/vs/basic-languages/markdown/markdown.contribution.js';
 import 'monaco-editor/esm/vs/basic-languages/javascript/javascript.contribution';
 // import 'monaco-editor/esm/vs/basic-languages/typescript/typescript.contribution';
 
+
+import type { File, FileError, ProjectErrors, Project } from '@store/types';
+import { isString } from 'lodash-es';
+
 // @ts-ignore
 import tUtil from '!!raw-loader!@scenario/util.d.ts';
 // @ts-ignore
 import tTicTacToe from '!!raw-loader!@scenario/tictactoe/scenario.d.ts';
-
-type Model = {
-    model: monaco.editor.ITextModel, file: File
-}
+// @ts-ignore
+import tWumpus from '!!raw-loader!@scenario/wumpus/scenario.d.ts';
+// @ts-ignore
+import tProlog from '!!raw-loader!@lib/prolog.d.ts';
+// @ts-ignore
+import tTensorflow from '!!raw-loader!@lib/tensorflow.d.ts';
 
 // fix for monaco language keywords, see https://github.com/microsoft/monaco-editor/issues/1423 
 interface MonarchLanguageConfiguration extends monaco.languages.IMonarchLanguage {
@@ -112,12 +117,12 @@ self.MonacoEnvironment = {
         if (label === "json") {
             return "./monaco/json-worker.js";
         }
-        if (label === "css") {
-            return "./monaco/css-worker.js";
-        }
-        if (label === "html") {
-            return "./monaco/html-worker.js";
-        }
+        // if (label === "css") {
+        //     return "./monaco/css-worker.js";
+        // }
+        // if (label === "html") {
+        //     return "./monaco/html-worker.js";
+        // }
         if (label === "typescript" || label === "javascript") {
             return "./monaco/ts-worker.js";
         }
@@ -125,9 +130,14 @@ self.MonacoEnvironment = {
     }
 };
 
-const models: Map<number, Model> = new Map();
-let editor: monaco.editor.IStandaloneCodeEditor | null = null;
+//const models: Map<number, Model> = new Map();
+const modelFiles: Map<string, File> = new Map(); // model.id => File
 let activeFile: File | null = null;
+let activeProject: Project | null = null;
+//let activeEditor: monaco.editor.IStandaloneCodeEditor | null = null;
+let lastMarkers: monaco.editor.IMarker[] | null = null;
+let projectErrors: ProjectErrors = {};
+
 
 declare var window: MonacoWindow;
 //declare var monaco: any;
@@ -153,12 +163,18 @@ monaco.languages.typescript.javascriptDefaults.setCompilerOptions({
     checkJs: true,
     esModuleInterop: true,
     module: monaco.languages.typescript.ModuleKind.ESNext,
-    baseUrl: 'file:///',
+    paths: {
+        "@/*": ["./"]
+    },
+    baseUrl: './',
 });
 
 monaco.languages.typescript.javascriptDefaults.setExtraLibs([
-    { filePath: 'http:/scenario/util.js', content: tUtil },
-    { filePath: 'http:/scenario/tictactoe/scenario.js', content: tTicTacToe },
+    { filePath: 'scenario/util.js', content: tUtil },
+    { filePath: 'scenario/tictactoe.js', content: tTicTacToe },
+    { filePath: 'scenario/wumpus.js', content: tWumpus },
+    { filePath: 'lib/prolog.js', content: tProlog },
+    { filePath: 'lib/tensorflow.js', content: tTensorflow },
 ]);
 
 monaco.languages.typescript.javascriptDefaults.setEagerModelSync(true);
@@ -188,8 +204,9 @@ monaco.languages.setMonarchTokensProvider('prolog', {
     }
 } as MonarchLanguageConfiguration);
 
-const container = document.getElementById('container') as HTMLElement;
-editor = monaco.editor.create(container, {
+
+const container = document.getElementById('editor') as HTMLElement;
+const editor = monaco.editor.create(container, {
     fontSize: 14,
     scrollBeyondLastLine: false,
     scrollBeyondLastColumn: 1,
@@ -204,108 +221,140 @@ editor = monaco.editor.create(container, {
 }) as monaco.editor.IStandaloneCodeEditor;
 
 editor.onDidChangeModelContent(_ => {
-    if (activeFile && editor)
+    if (activeFile && activeFile.id)
         window.onContentChange(activeFile.id, editor.getValue());
 });
 
 editor.onDidChangeCursorSelection(_ => {
-    if (activeFile && editor)
+    if (activeFile && activeFile.id)
         window.onStateChange(activeFile.id, editor.saveViewState());
 });
 editor.onDidScrollChange(_ => {
-    if (activeFile && editor)
+    if (activeFile && activeFile.id)
         window.onStateChange(activeFile.id, editor.saveViewState());
 })
 
-let lastMarkers: monaco.editor.IMarker[] | null = null;
-let projectErrors: ProjectErrors = {};
-editor.onDidChangeModelDecorations(() => {
+editor.onDidChangeModelDecorations(_ => {
+    markersUpdated();
+});
+
+
+
+function markersUpdated() {
     const markers: monaco.editor.IMarker[] = monaco.editor.getModelMarkers({});
     const errorMarkers = markers.filter(marker => marker.severity === 8);
-
     //console.log(lastMarkers, errorMarkers, !lastMarkers)
-    // !lastMarkers needs testing
     if (!lastMarkers || !sameMarkers(lastMarkers, errorMarkers)) {
-        lastMarkers = errorMarkers;
-        //const fileErrorsList = [];
         let errorsChanged = false;
-        for (const [fileId, model] of models) {
-            const fileErrors = errorMarkers.filter(marker => marker.resource.path === (model.model as any)._associatedResource.path);
+        lastMarkers = errorMarkers;
+        const models = monaco.editor.getModels();
+        for (const model of models) {
+            const fileErrors = errorMarkers.filter(marker => marker.resource.path === (model as any)._associatedResource.path);
+            const file = modelFiles.get(model.id) as File;
             const errors: FileError[] = fileErrors.map((marker): FileError => ({
                 caller: {
-                    fileId: fileId,
-                    fileName: model.file.name,
-                    projectId: model.file.projectId,
+                    fileId: file.id,
+                    fileName: file.name,
+                    projectId: file.projectId,
                     line: marker.startLineNumber,
                     column: marker.startColumn,
                     functionNames: [],
                 },
                 args: [marker.message],
             }));
-            if (!sameErrors(projectErrors[fileId] || [], errors)) {
-                projectErrors[fileId] = errors;
+            if (!sameErrors(projectErrors[file.id] || [], errors)) {
+                projectErrors[file.id] = errors;
                 errorsChanged = true;
-                //fileErrorsList.push({fileId, fileName: model.file.name, project: model.file.project, errors});
             }
         }
-        if (errorsChanged)
+        //console.log(errorsChanged, projectErrors);
+        if (errorsChanged){
             window.onErrorChange(projectErrors);
+        }
     }
-});
-
-window.setErrors = (errors: ProjectErrors) => {
-    projectErrors = errors;
 }
 
-window.preloadFile = (file: File) => {
-    let model = null
-    if(editor){
-        const path = (file.projectId ? '/project/' : '/global/') + file.name;
-        const uri = monaco.Uri.parse(`http://${path}`)
-    
-        model = monaco.editor.getModel(uri);
-        if(!model){
-            let language = 'javascript';
-            const ending = file.name.match(/\.([a-z]+)$/);
-            if (ending) {
-                switch (ending[1]) {
-                    case 'js': language = 'javascript'; break;
-                    case 'json': language = 'json'; break;
-                    case 'pl': language = 'prolog'; break;
-                    case 'md': language = 'markdown'; break;
-                }
-            }
-            model = monaco.editor.createModel(
-                file.content || '',
-                language,
-                uri
-            );
+function createModel(file: File, uri: monaco.Uri){
+    let language = 'javascript';
+    const ending = file.name.match(/\.([a-z]+)$/);
+    if (ending) {
+        switch (ending[1]) {
+            case 'js': language = 'javascript'; break;
+            case 'json': language = 'json'; break;
+            case 'pl': language = 'prolog'; break;
+            case 'md': language = 'markdown'; break;
         }
-        models.set(file.id, {model, file});
     }
-    return model;
+    return monaco.editor.createModel(
+        file.content || '',
+        language,
+        uri
+    );
+}
+
+window.openProject = (project: Project, files: File[], initialFile?: File) => {
+    projectErrors = {};
+    // preload files
+    const modelsValidated = [];
+    for(const file of files){
+        const path = (file.projectId ? '/project/' : '/global/') + file.name;
+        const uri = monaco.Uri.parse(path)
+        let model = monaco.editor.getModel(uri);
+        if (!model) {
+            model = createModel(file, uri);
+        }
+        else{
+            model.setValue(file.content || '');
+        }
+        //monaco.languages.typescript.javascriptDefaults.addExtraLib(file.content || '', path);
+        modelsValidated.push(validateModel(model));
+        modelFiles.set(model.id, file);
+    }
+    Promise.all(modelsValidated).then(_ => {
+        markersUpdated();
+    });
+
+    activeProject = project;
+    if(initialFile){
+        window.openFile(initialFile);window.openFile(initialFile);
+    }
 }
 
 window.openFile = (file: File) => {
-    if (editor) {
-        if (activeFile) {
-            activeFile.state = editor.saveViewState() || undefined;
-        }
-
-        let model = window.preloadFile(file);
-        editor.setModel(model);
-        if (file.state) {
-            editor.restoreViewState(file.state);
-        }
-        activeFile = file;
-
-        editor.focus();
+    if (activeFile) {
+        activeFile.state = editor.saveViewState() || undefined;
     }
+    let path;
+    if(file.id){
+        path = (file.projectId ? '/project/' : '/global/') + file.name;
+    }
+    else{
+        path = file.name;
+    }
+    const uri = monaco.Uri.parse(path)
+    let model = monaco.editor.getModel(uri);
+    if(!model){
+        model = createModel(file, uri);
+    }
+    editor.setModel(model);
+
+    if (file.state) {
+        editor.restoreViewState(file.state);
+    }
+    activeFile = file;
+
+    if(file.id){
+        editor.updateOptions({ readOnly: false });
+    }
+    else{
+        editor.updateOptions({ readOnly: true });
+    }
+
+    editor.focus();
 }
 
 window.resize = () => {
-    if (editor)
-        editor.layout();
+    editor.layout();
 }
 
 window.setTheme = (theme: string) => {
@@ -313,8 +362,7 @@ window.setTheme = (theme: string) => {
 }
 
 window.focus = () => {
-    if (editor)
-        editor.focus();
+    editor.focus();
 }
 
 window.onContentChange = (_: number, _1: string) => { };
@@ -322,6 +370,42 @@ window.onStateChange = (_: number, _1: Object) => { };
 window.onErrorChange = (_: ProjectErrors) => { };
 //});
 
+async function validateModel(model: monaco.editor.ITextModel, getWorker?: (...uris: monaco.Uri[]) => Promise<monaco.languages.typescript.TypeScriptWorker>) {
+    const owner = model.getModeId();
+    if (!model.isDisposed() && owner === 'javascript') {
+        if (getWorker === undefined) {
+            getWorker = await monaco.languages.typescript.getJavaScriptWorker();
+        }
+        const worker = await getWorker(model.uri);
+        const diagnostics = (await Promise.all([
+            worker.getSyntacticDiagnostics(model.uri.toString()),
+            worker.getSemanticDiagnostics(model.uri.toString())
+        ])).reduce((a, it) => a.concat(it));
+
+        const markers = diagnostics.map(d => {
+            const start = model.getPositionAt(d.start || 0);
+            const end = model.getPositionAt((d.start || 0) + (d.length || 0));
+            return {
+                severity: monaco.MarkerSeverity.Error,
+                startLineNumber: start.lineNumber,
+                startColumn: start.column,
+                endLineNumber: end.lineNumber,
+                endColumn: end.column,
+                message: flattenMessageChain(d.messageText),
+            };
+        });
+
+        monaco.editor.setModelMarkers(model, owner, markers);
+    }
+}
+
+function flattenMessageChain(chain: string | monaco.languages.typescript.DiagnosticMessageChain): string {
+    if (isString(chain))
+        return chain;
+    else {
+        return chain.messageText;
+    }
+}
 
 function sameMarker(a: monaco.editor.IMarker, b: monaco.editor.IMarker) {
     return (
@@ -365,10 +449,8 @@ export type MonacoWindow = Window & {
     onContentChange: (fileId: number, content: string) => void,
     onStateChange: (fileId: number, state: any) => void,
     onErrorChange: (errors: ProjectErrors) => void,
-    setErrors: (errors: ProjectErrors) => void,
-    preloadFile:(file: File) => monaco.editor.ITextModel | null,
+    openProject: (project: Project, files: File[], initialFile?: File) => void,
     openFile: (file: File) => void,
-    setExtraLibs: (libs: { content: string, filePath?: string }[]) => void,
     resize: () => void,
     setTheme: (theme: string) => void,
     focus: () => void,

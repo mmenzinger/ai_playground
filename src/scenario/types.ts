@@ -3,7 +3,6 @@ export interface IScenario extends HTMLElement{
     getSettings: () => any;
     getFile: () => string;
     getAutorun: () => boolean;
-    getExports: () => string;
 }
 
 export const utilExports = `

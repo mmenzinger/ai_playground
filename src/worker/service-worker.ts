@@ -75,7 +75,7 @@ async function userFile(arg: RouteHandlerCallbackContext): Promise<Response>{
 
         let filename = path[2];
         const file = await db.loadFileByName(id, filename);
-        file.content = file.content?.replace(/http:\/(project|global|scenario)\//g, '/$1/');
+        file.content = file.content?.replace(/(from\s*['"`])(project|global|scenario|lib)\//g, '$1/$2/');
         response = new Response(file.content, init);
     }
     catch(error){

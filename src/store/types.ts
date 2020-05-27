@@ -38,6 +38,7 @@ export type File = {
     state?: editor.ICodeEditorViewState,
     content?: string,
     lastChange?: number,
+    virtual?: boolean,
 };
 
 export type Project = {

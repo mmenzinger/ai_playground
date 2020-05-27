@@ -1,4 +1,4 @@
-//import * as scenario from '/scenario/tictactoe/scenario.js';
+//import * as scenario from 'scenario/tictactoe.js';
 
 export async function init(state){
     console.log('initial state: ', state);

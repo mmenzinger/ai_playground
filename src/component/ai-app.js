@@ -7,10 +7,10 @@ import { MobxLitElement } from '@adobe/lit-mobx';
 import sharedStyles from '@shared-styles';
 import style from './ai-app.css';
 
-import { debugProjectStore } from '@store/project-store';
+//import { debugProjectStore } from '@store/project-store';
 // import { debugAppStore } from '@store/app-store';
 // import { debugSettingsStore } from '@store/settings-store';
-debugProjectStore();
+//debugProjectStore();
 // debugAppStore();
 // debugSettingsStore();
 

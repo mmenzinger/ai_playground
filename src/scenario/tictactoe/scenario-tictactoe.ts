@@ -23,62 +23,10 @@ export class ScenarioTicTacToe extends LazyElement implements IScenario {
     }
 
     getFile(){
-        return '/scenario/tictactoe/scenario.js';
+        return '/scenario/tictactoe.js';
     }
 
     getAutorun() { return true; }
-
-    getExports() {
-        return`
-        export const Player = Object.freeze({
-            None:     0b00,
-            Computer: 0b01,
-            Human:    0b10,
-            Both:     0b11,
-            Player1:  0b01,
-            Player2:  0b10,
-        });
-        export type Player = number;
-        export type Settings = {
-            startingPlayer: number,
-        }
-        export type State = {
-            board?: number[][],
-            player?: number,
-        }
-        export type Action = {
-            row: number,
-            col: number,
-            player: Player,
-        }
-        export type PlayerObject = {
-            init?: (state: number) => Promise<void>,
-            update: (state: number, actions: number[]) => Promise<number>,
-            result?: (oldState: number, action: number, newState: number, score: number) => Promise<void>,
-            finish?: (state: number, score: number) => Promise<void>,
-        }
-        export function getPlayer(state: number) : number;
-        export function getBoard(state: number): number[][];
-        export function createAction(player: Player, row: number, col: number): number;
-        export function createState(player: Player, board?: number[][]): number;
-        export function stateToObject(state: number): State;
-        export function actionToObject(action: number): Action;
-        export function getScore(state: number, player: Player): number;
-        export function getWinner(state: number): number;
-        export function getActions(state: number): number[];
-        export function validateAction(state: number, action: number): void;
-        export function validAction(state: number, action: number): boolean;
-        export function performAction(state: number, action: number): number;
-        export async function run(state: number, player1: PlayerObject, player2: PlayerObject = {
-            init: (state: number) => Promise<void>,
-            update: (state: number, actions: number[]) => Promise<Action>,
-            result: (oldState: number, action: number, state: number, score: number) => Promise<void>,
-            finish: (state: number, score: number) => Promise<void>,
-        }): number;
-        export async function __run(settings: Settings)
-        export class ScenarioError extends Error; 
-        `;
-    }
 
     render() {
         const rows:TemplateResult[] = [];

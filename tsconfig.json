@@ -50,6 +50,12 @@
             "@store/*": [
                 "store/*"
             ],
+            "@doc/*": [
+                "doc/*"
+            ],
+            "@lib/*": [
+                "lib/*"
+            ],
             "@page/*": [
                 "component/page/*"
             ],

@@ -39,5 +39,4 @@ export declare function validAction(state: number, action: number): boolean;
 export declare function performAction(state: number, action: number): number;
 export declare function run(state: number, player1: PlayerObject, player2?: PlayerObject): Promise<number>;
 export declare function __run(settings: Settings): Promise<number>;
-export declare class ScenarioError extends Error {
-}
+export declare class ScenarioError extends Error {}

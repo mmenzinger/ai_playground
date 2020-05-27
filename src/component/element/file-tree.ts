@@ -39,7 +39,6 @@ class FileTree extends LitElement {
             try {
                 await appStore.showModal(Modals.GENERIC, deleteFileTemplate(file));
                 const selectFile = await db.loadFileByName(projectStore.activeProject.id, 'index.js');
-                console.log(selectFile)
                 await projectStore.openFile(selectFile.id);
                 await projectStore.deleteFile(file.id);
             }
@@ -51,8 +50,15 @@ class FileTree extends LitElement {
     }
 
     onFile(file: File) {
-        if(projectStore.activeProject)
-            projectStore.openFile(file.id);
+        if(projectStore.activeProject){
+            if(file.id){
+                projectStore.openFile(file.id);
+            }
+            else{
+                projectStore.openVirtualFile(file);
+            }
+        }
+            
     }
 
     onAddFileGlobal() {

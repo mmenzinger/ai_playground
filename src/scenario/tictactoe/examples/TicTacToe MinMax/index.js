@@ -1,6 +1,6 @@
 import {
     getWinner, getScore, getActions, performAction, actionToObject, Player,
-} from 'http:/scenario/tictactoe/scenario.js';
+} from 'scenario/tictactoe.js';
 
 //------------------------------------------------------------------------------
 // pseudo-randomly shuffle an array
@@ -27,8 +27,8 @@ function minmax(state, player = Player.Computer) {
     // count the simulated turns; not needed but interesting
     let turnsSimulated = 0;
 
-    // shuffle actions just to spice things up; remove shuffle to increase
-    const actions = getActions(state);
+    // shuffle actions just to spice things up; remove shuffle to increase performance
+    const actions = shuffle(getActions(state));
     for(const action of actions){
         // make a copy of the scenario; without this all simulated moves would
         // take place at the same board which basically breaks everything...

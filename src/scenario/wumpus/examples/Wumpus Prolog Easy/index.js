@@ -1,6 +1,6 @@
-import { Action } from '/scenario/wumpus/scenario.js';
+import { Action, Percept } from 'scenario/wumpus.js';
 // import tau-prolog
-import pl from '/libs/prolog.js';
+import { pl } from 'lib/prolog.js';
 
 // global variable for knowledge base
 const kb = pl.create();
@@ -14,49 +14,35 @@ function unique(array){
 }
 
 // shuffle an array, used to randomize equal actions
-function shuffle(a) {
-    var j, x, i;
-    for (i = a.length - 1; i > 0; i--) {
-        j = Math.floor(Math.random() * (i + 1));
-        x = a[i];
-        a[i] = a[j];
-        a[j] = x;
-    }
-    return a;
+function shuffle(array) {
+    return array.sort(() => Math.random() - 0.5);
 }
 
 export async function init(state){
     // load knowledge base
     await kb.consult('knowledge.pl');
     // set map size and starting tile
-    await kb.asserta(`size(${state.map.length})`);
+    await kb.asserta(`size(${state.size})`);
     await kb.asserta(`visited(0,0)`);
 }
 
 export async function update(state, actions){
     const x = state.position.x;
     const y = state.position.y;
-    
+
     // update knowledge base with percepts
-    for(const percept of state.percepts){
-        switch(percept){
-            case 'Breeze':
-                await kb.run(`asserta(breeze(${x},${y})).`);
-                break;
-            case 'Stench':
-                await kb.run(`asserta(stench(${x},${y})).`);
-                break;
-            case 'Scream':
-                await kb.run(`asserta(scream).`);
-                break;
-            case 'Glitter':
-                // this one doesn't matter since the scenario is over at this point
-                break;
-        }
-    };
+    if(state.percepts & Percept.Breeze){
+        await kb.run(`asserta(breeze(${x},${y})).`);
+    }
+    if(state.percepts & Percept.Stench){
+        await kb.run(`asserta(stench(${x},${y})).`);
+    }
+    if(state.percepts & Percept.Scream){
+        await kb.run(`asserta(scream).`);
+    }
 
     // shoot wumpus if possible
-    if(state.arrows > 0 && state.percepts.has('Stench')){
+    if(state.arrows > 0 && state.percepts & Percept.Stench){
         if(await kb.isTrue(`certainWumpus(${x-1}, ${y}).`))
             return {type: Action.ShootLeft};
         if(await kb.isTrue(`certainWumpus(${x+1}, ${y}).`))
@@ -69,7 +55,7 @@ export async function update(state, actions){
     
     // make a save move whenever possible
     for(const action of shuffle(actions)){
-        if(action.type === 'MoveTo'){
+        if(action.type === Action.MoveTo){
             if(await kb.isTrue(`saveMove(${action.x}, ${action.y}).`)){
                 return action;
             }
