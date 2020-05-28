@@ -1,5 +1,5 @@
 import {
-    validAction, createAction, Player,
+    validAction, createAction, EPlayer,
 } from 'scenario/tictactoe.js';
 
 import { storeJson, loadJson } from 'scenario/util.js';
@@ -18,7 +18,7 @@ export class QTable {
     }
 
     idToAction(id) {
-        return createAction(Player.Computer, id / 3 | 0, id % 3);
+        return createAction(EPlayer.Computer, id / 3 | 0, id % 3);
     }
 
     actionToId(action) {

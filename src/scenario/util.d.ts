@@ -9,3 +9,4 @@ export declare const localStorage: {
     removeItem(key: string): void,
     clear(): void,
 }
+export declare const realConsole: Console;

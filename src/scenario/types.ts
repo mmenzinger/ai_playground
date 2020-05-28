@@ -5,15 +5,4 @@ export interface IScenario extends HTMLElement{
     getAutorun: () => boolean;
 }
 
-export const utilExports = `
-export async function storeJson(path: string, data: any): Promise<any>;
-export async function loadJson(path: string): Promise<any>;
-export async function getFileContent(path: string): Promise<string>;
-export const localStorage = {
-    get length(): number,
-    key(n: number): string | null,
-    setItem(key: string, value: any): void,
-    getItem(key: string): any,
-    removeItem(key: string): void,
-    clear(): void,
-}`;
+export class ScenarioError extends Error{}; 

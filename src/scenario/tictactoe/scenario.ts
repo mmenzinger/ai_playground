@@ -1,37 +1,33 @@
 import { hideImport } from '@util';
 import { call } from '@worker/types';
+import { ScenarioError } from '@scenario/types';
 
-export const Player = Object.freeze({
-    None:     0b00,
-    Computer: 0b01,
-    Human:    0b10,
-    Both:     0b11,
-    Player1:  0b01,
-    Player2:  0b10,
-});
+export { ScenarioError } from '@scenario/types';
 
 export type Player = number;
+
+export enum EPlayer {
+    None =     0 | 0,
+    Computer = 1 | 0,
+    Human =    2 | 0,
+    Both =     Computer | Human,
+    Player1 =  Computer,
+    Player2 =  Human,
+}
 
 export type Settings = {
     startingPlayer: number,
 }
 
-export type State = {
-    board?: number[][],
-    player?: number,
-}
+export type State = number;
 
-export type Action = {
-    row: number,
-    col: number,
-    player: Player,
-};
+export type Action = number;
 
-export type PlayerObject = {
-    init?: (state: number) => Promise<void>,
-    update: (state: number, actions: number[]) => Promise<number>,
-    result?: (oldState: number, action: number, newState: number, score: number) => Promise<void>,
-    finish?: (state: number, score: number) => Promise<void>,
+export type Agent = {
+    init?: (state: State) => Promise<void>,
+    update: (state: State, actions: Action[]) => Promise<State>,
+    result?: (oldState: State, action: Action, newState: State, score: number) => Promise<void>,
+    finish?: (state: State, score: number) => Promise<void>,
 }
 
 const bState  = 0b11111111111111111111; // 2:player 18:board
@@ -45,11 +41,11 @@ const bCol = 0b11;
 const sRow = 4;
 const sCol = 2;
 
-export function getPlayer(state: number) : number{
+export function getPlayer(state: State) : Player{
     return state >>> sPlayer & bPlayer; 
 }
 
-export function getBoard(state: number): number[][]{
+export function getBoard(state: State): Player[][]{
     const b = state & bBoard;
     return [
         [(b       ) & bPlayer, (b >>>  2) & bPlayer, (b >>>  4) & bPlayer],
@@ -58,11 +54,11 @@ export function getBoard(state: number): number[][]{
     ];
 }
 
-export function createAction(player: Player, row: number, col: number): number{
+export function createAction(player: Player, row: number, col: number): Action{
     return (row & bRow) << sRow | (col & bCol) << sCol | (player & bPlayer);
 }
 
-export function createState(player: Player, board?: number[][]): number{
+export function createState(player: Player, board?: Player[][]): State{
     let state = (player & bPlayer) << sPlayer;
     if(board){
         state |= 
@@ -81,14 +77,14 @@ export function createState(player: Player, board?: number[][]): number{
     return state;
 }
 
-export function stateToObject(state: number): State{
+export function stateToObject(state: State): {board: Player[][], player: Player}{
     return  {
         board: getBoard(state),
         player: getPlayer(state),
     }
 }
 
-export function actionToObject(action: number): Action{
+export function actionToObject(action: Action): {player: Player, row: number, col: number}{
     return {
         player: (action & bPlayer),
         row: (action >>> sRow) & bRow,
@@ -96,16 +92,16 @@ export function actionToObject(action: number): Action{
     }
 }
 
-export function getScore(state: number, player: Player): number {
+export function getScore(state: State, player: Player): number {
     const winner = getWinner(state);
     if (winner === player)
         return 1 | 0;
-    if (winner === Player.Both || winner === Player.None)
+    if (winner === EPlayer.Both || winner === EPlayer.None)
         return 0 | 0;
     return -1 | 0;
 }
 
-export function getWinner(state: number): number {
+export function getWinner(state: State): Player {
     const b = state & bBoard;
 
     // check rows
@@ -125,14 +121,14 @@ export function getWinner(state: number): number {
     // check draw
     for(let i = 0; i < 18; i+=2){
         if(((b >>> i) & bPlayer) === 0)
-            return Player.None;
+            return EPlayer.None;
     }
     
-    return Player.Both;
+    return EPlayer.Both;
 }
 
-export function getActions(state: number): number[] {
-    const actions: number[] = [];
+export function getActions(state: State): Action[] {
+    const actions: Action[] = [];
     const b = state & bBoard;
     for(let i = 0; i < 9; i++){
         if(((b >>> (i*2)) & bPlayer) === 0){
@@ -146,7 +142,7 @@ export function getActions(state: number): number[] {
     return actions;
 }
 
-export function validateAction(state: number, action: number) {
+export function validateAction(state: State, action: Action): void {
     const player = action & bPlayer;
     const board = state & bBoard;
     const row = (action >>> sRow) & bRow;
@@ -157,11 +153,11 @@ export function validateAction(state: number, action: number) {
     }
     if (row === 3) throw new ScenarioError(`row index must be between 0 and 2 (was ${row})`);
     if (col === 3) throw new ScenarioError(`col index must be between 0 and 2 (was ${col})`);
-    if (((board >>> (row * 6 + col*2)) & bPlayer) !== Player.None) throw new ScenarioError(`position (${row}, ${col}) not empty`);
+    if (((board >>> (row * 6 + col*2)) & bPlayer) !== EPlayer.None) throw new ScenarioError(`position (${row}, ${col}) not empty`);
     if (player !== ((state >>> sPlayer) & bPlayer)) throw new ScenarioError(`invalid player ${player}`);
 }
 
-export function validAction(state: number, action: number) {
+export function validAction(state: State, action: Action): boolean{
     try {
         validateAction(state, action);
         return true;
@@ -171,7 +167,7 @@ export function validAction(state: number, action: number) {
     }
 }
 
-export function performAction(state: number, action: number) {
+export function performAction(state: State, action: Action): State {
     validateAction(state, action);
 
     const row = (action >>> sRow) & bRow;
@@ -184,7 +180,7 @@ export function performAction(state: number, action: number) {
     return newState;
 }
 
-export async function run(state: number, player1: PlayerObject, player2: PlayerObject = {
+export async function run(state: State, player1: Agent, player2: Agent = {
     init: (state: number) => 
         call('onInit', [state]),
     update: (state: number, actions: number[]) => 
@@ -193,15 +189,15 @@ export async function run(state: number, player1: PlayerObject, player2: PlayerO
         call('onResult', [oldState, action, state, score]),
     finish: (state: number, score: number) => 
         call('onFinish', [state, score]),
-}) {
+}): Promise<State> {
     const players = [player1, player2];
     if (player1.init instanceof Function)
         await player1.init(state);
     if (player2.init instanceof Function)
         await player2.init(state);
 
-    let winner = Player.None;
-    while (winner === Player.None) {
+    let winner = EPlayer.None;
+    while (winner === EPlayer.None) {
         const currentPlayer = players[getPlayer(state) - 1];
         const oldState = state;
         const actions = getActions(oldState);
@@ -215,11 +211,11 @@ export async function run(state: number, player1: PlayerObject, player2: PlayerO
 
     state = (state & bBoard) | (winner << sPlayer);
     if (player1.finish instanceof Function) {
-        const score1 = getScore(state, Player.Player1);
+        const score1 = getScore(state, EPlayer.Player1);
         await player1.finish(state, score1);
     }
     if (player2.finish instanceof Function) {
-        const score2 = getScore(state, Player.Player2);
+        const score2 = getScore(state, EPlayer.Player2);
         await player2.finish(state, score2);
     }
     return state;
@@ -227,9 +223,7 @@ export async function run(state: number, player1: PlayerObject, player2: PlayerO
 
 export async function __run(settings: Settings) {
     const state = createState(settings.startingPlayer);
-
-    const player1 = await hideImport('/project/index.js') as PlayerObject;
+    const player1 = await hideImport('/project/index.js') as Agent;
     return await run(state, player1);
 }
 
-export class ScenarioError extends Error{}; 

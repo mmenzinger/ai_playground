@@ -1,5 +1,5 @@
 import {
-    getWinner, getScore, getActions, performAction, actionToObject, Player,
+    getWinner, getScore, getActions, performAction, actionToObject, EPlayer,
 } from 'scenario/tictactoe.js';
 
 //------------------------------------------------------------------------------
@@ -12,13 +12,13 @@ function shuffle(array) {
 // calculates the least harmful action for the player
 // returns the calculated score, action and the number 
 // of simulated turns
-function minmax(state, player = Player.Computer) {
+function minmax(state, player = EPlayer.Computer) {
     const oponent = player % 2 + 1; // switch between player 1 and 2
     
     // when there is a winner return the resulting score
     // recursive functions NEED an exit condition
     const winner = getWinner(state);
-    if(winner !== Player.None){
+    if(winner !== EPlayer.None){
         return [getScore(state, player), null, 0];
     }
 
@@ -64,7 +64,7 @@ export async function update(state, actions) {
 //------------------------------------------------------------------------------
 export async function init(state){
     console.log('game started');
-    if(state.player === Player.Computer){
+    if(state.player === EPlayer.Computer){
         console.log('calculating first action...');
     }
     else{

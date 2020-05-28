@@ -7,30 +7,32 @@
     - [update(state, actions)](#updatestate-actions)
     - [result(oldState, action, newState, score)](#resultoldstate-action-newstate-score)
     - [finish(state, score)](#finishstate-score)
-3. [Globals](#globals)
-    - [Player](#player)
-4. [Objects](#objects)
+    - [train()](#train)
+3. [Objects and Types](#objectsandtypes)
     - [Action](#action)
     - [Agent](#agent)
-    - [Scenario](#scenario)
+    - [Player](#player)
+    - [Settings](#settings)
     - [State](#state)
-5. [Functions](#functions)
-    - [createScenario(state)](#createscenariostate)
-    - [Scenario.clone()](#scenarioclone)
-    - [Scenario.getActions()](#scenariogetactions)
-    - [Scenario.getScore(?player)](#scenariogetscoreplayer)
-    - [Scenario.getState()](#scenariogetstate)
-    - [Scenario.getWinner()](#scenariogetwinner)
-    - [Scenario.performAction(action)](#scenarioperformactionaction)
-    - [Scenario.run(agent1, ?agent2)](#scenariorunagent1-agent2)
-    - [Scenario.validAction(action)](#scenariovalidactionaction)
-    - [Scenario.validateAction(action)](#scenariovalidateactionaction)
+4. [Functions](#functions)
+    - [createAction(player, row, col)](#createactionplayer-row-col)
+    - [createState(player, board?)](#createstateplayer-board)
+    - [actionToObject(action)](#actiontoobjectaction)
+    - [stateToObject(state)](#statetoobject)
+    - [getPlayer(state)](#getplayerstate)
+    - [getBoard(state)](#getboardstate)
+    - [getScore(state, player)](getscorestate-player)
+    - [getWinner(state)](#getwinnerstate])
+    - [validateAction(state, action)](#validateactionstate-action)
+    - [validAction(state, action)](#validactionstate-action)
+    - [performAction(state, action)](#performactionstate-action)
+    - [run(state, agent1, agent2?)](#runstate-agent1-agent2)
 
 
 ## Introduction
 [Tic-Tac-Toe](https://en.wikipedia.org/wiki/Tic-tac-toe) is a two player game played on a 3 by 3 board. In alternating turns the players put their token (represented by X and O) on the board. The first player who has 3 of his tokens in a row (horizontally, vertically or diagonally) wins.
 
-The complexity of the game is quite low, when both players play perfectly neither can win. An unbeatable AI can easily be created using an [min-max](https://en.wikipedia.org/wiki/Minimax) approach. Since the number of different states is also fairly low a simple [Q-learning](https://en.wikipedia.org/wiki/Q-learning) algorithm (with a complete Q-table) can also be used.
+The complexity of the game is quite low, when both players play perfectly neither can win. An unbeatable AI can easily be created using an [min-max](https://en.wikipedia.org/wiki/Minimax) approach. Since the number of possible states is also fairly low a simple [Q-learning](https://en.wikipedia.org/wiki/Q-learning) algorithm (with a complete Q-table) can also be used.
 
 [[Top](#tictactoe)]
 
@@ -79,182 +81,173 @@ export async function finish(state, score){
 ```
 [[Top](#tictactoe)]
 
-
-## Globals
-
-### Player
-By default Player1 equals Computer and Player2 equals Human.
+### train()
+Called when the train-button is pressed. Can be used to do anything, for example train a neural network.  
 ```javascript
-const Player = {
-    None: 0,
-    Computer: 1,
-    Human: 2,
-    Both: 3,
-    Player1: 1,
-    Player2: 2,
-};
+export async function train(){
+    ...
+}
 ```
 [[Top](#tictactoe)]
 
 
-## Objects
+## Globals
+
+
+## Objects and Types
 
 ### Action
-Contains a position (row and column starting with 0,0 at the upper left corner), a type (always 'PLACE') and the current [player](#player).
+Contains a position and the current [player](#player).
+Action is a 6-bit number containing the row in the 2 upper bits, col in the 2 middle bits and the [player](#player) in the 2 lower bits.
+Can be created using the [createAction]() function.
 ```javascript
-{ 
-    type: 'PLACE',
-    row: Number([0-2]),
-    col: Number([0-2]),
-    player: Player,
-}
+type Action: number;
 ```
 [[Top](#tictactoe)]
 
 ### Agent
-Contains all [callbacks](#callbacks) for a [player](#player).
+Contains all [callbacks](#callbacks) for a [player](#player). Only update is mandatory, the rest are optional.
 ```javascript
 {
-    async init(state){}, // optional
-    async update(state, actions){}, // REQUIRED!
-    async result(oldState, action, newState, score){}, // optional
-    async finish(state, score){}, // optional
+    init?: (state: State) => Promise<void>;
+    update: (state: State, actions: Action[]) => Promise<Action>;
+    result?: (oldState: State, action: Action, newState: State, score: number) => Promise<void>;
+    finish?: (state: State, score: number) => Promise<void>;
 }
 ```
 [[Top](#tictactoe)]
 
-### Scenario
-Contains the [state](#state) and all available [functions](#functions).
+### Player
+Player is a 2-bit number containing a bit for each of the players.
+The enum EPlayer provides easily readable defaults.
+```javascript
+enum EPlayer {
+    None     = 0,
+    Computer = 1,
+    Human    = 2,
+    Both     = Computer | Human,
+    Player1  = Computer,
+    Player2  = Human,
+}
+type Player: number;
+```
+[[Top](#tictactoe)]
+
+### Settings
+Contains the settings needed to create a new [state](#state).
 ```javascript
 {
-    getState() {},
-    getScore(player?) {},
-    getWinner() {},
-    getActions() {},
-    validateAction(action) {},
-    validAction(action) {},
-    performAction(action) {},
-    async run(agent1, agent2?) {},
+    startingPlayer: Player;
 }
 ```
 [[Top](#tictactoe)]
 
 ### State
 Contains the board and the active as well as the starting [player](#player).
-The board is a row-major 2d-array containing players (0 == Player.None).
+The state is a 20-bit number, containing the current [player](#player) in its two highest bits and the nine fields from top/left to bottom/right in the 18 rightmost bits.
+The functions getPlayer and getBoard can be used to easily get the current [player](#player) or board.
+Since it is a trivial datatype assignment always results in a copy of the state.
 ```javascript
-{
-    settings: {
-        startingPlayer: Player,
-    },
-    board: [[0, 0, 0], [0, 0, 0], [0, 0, 0]], // board of Players
-    player: Player,
-}
+type State: number;
 ```
 [[Top](#tictactoe)]
 
 
 ## Functions
 
-### createScenario(state)
-Returns a new [scenario](#scenario) object based on the given [state](#state).
-Unset fields will be automatically initialized with default values.
+### createAction(player, row, col)
+Returns the resulting [action](#action).
 ```javascript
-function createScenario(state) {
-    return Scenario;
-}
+function createAction(player: Player, row: number, col: number): Action
 ```
 [[Top](#tictactoe)]
 
-### Scenario.clone()
-Returns a clone of the current [scenario](#scenario) object.
+### createState(player, board?)
+Returns the resulting [state](#state).
+Board is an optional 2-dimensional array of [players](#player).
 ```javascript
-function clone() {
-    return Scenario;
-}
+function createState(player: Player, board?: Player[][]): State;
 ```
 [[Top](#tictactoe)]
 
-### Scenario.getActions()
-Returns a list of available [actions](#action) for the current [player](#player). 
+### actionToObject(action)
+Returns the action in a more readable object form. Mainly for debugging purposes.
 ```javascript
-function getActions() { 
-    return [ // list of actions
-        Action,
-        Action,
-        ...
-    ];
-}
+function actionToObject(action: Action): {
+    player: Player,
+    row: number,
+    col: number,
+};
 ```
 [[Top](#tictactoe)]
 
-### Scenario.getScore(?player)
-Returns the score for the given [player](#player) (1 = won, -1 = lost, 0 = draw). If no player is provided, returns the score for the current player.
+### stateToObject(state)
+Returns the state in a more readable object form. Mainly for debugging purposes.
 ```javascript
-function getScore(?player) {
-    return Number;
-}
+function stateToObject(state: State): {
+    board: Player[][],
+    player: Player,
+};
 ```
 [[Top](#tictactoe)]
 
-### Scenario.getState()
-Returns the current [state](#state), 
+### getPlayer(state)
+Returns the current [player](#player). 
 ```javascript
-
-function getState() {
-    return State;
-}
+function getPlayer(state: State): Player;
 ```
 [[Top](#tictactoe)]
 
-### Scenario.getWinner()
+### getBoard(state)
+Returns the current board in form of an 2-dimension [player](#player) array. 
+```javascript
+function getBoard(state: State): Player[][];
+```
+[[Top](#tictactoe)]
+
+### getScore(state, player)
+Returns the score for the given [player](#player) (1 = won, -1 = lost, 0 = draw or still going).
+```javascript
+function getScore(state: State, player: Player): number;
+```
+[[Top](#tictactoe)]
+
+### getWinner(state)
 Returns the winning [player](#player).
+Returns Player.None if the game is still going and Player.Both in case of a draw.  
 ```javascript
-function getWinner() {
-    return Player;
-}
+function getWinner(state: State): Player;
 ```
 [[Top](#tictactoe)]
 
-### Scenario.performAction(action)
-Updates the current [state](#state) by applying the given [action](#action).  
-Returns the winning [player](#player) after the effect of the [action](#action).  
-Throws an error when the [action](#action) is not valid.
+### validateAction(state, action)
+Throws an exception if it is not a valid action given the state. 
 ```javascript
-function performAction(action) {
-    return Player; // winner
-}
+function validateAction(state: State, action: Action): void;
 ```
 [[Top](#tictactoe)]
 
-### Scenario.run(agent1, ?agent2)
+### validAction(state, action)
+Returns true if given the state the action is valid, false otherwise.
+```javascript
+function validAction(state: State, action: Action): boolean;
+```
+[[Top](#tictactoe)]
+
+### performAction(state, action)
+Returns the new state as a result of the given [action](#action).
+Throws an error when the [action](#action) is invalid.
+```javascript
+function performAction(state: State, action: Action): State;
+```
+[[Top](#tictactoe)]
+
+### run(state, agent1, agent2?)
 Takes two [agents](#agent) and uses their update function to decide their [actions](#action). When agent2 is not provided the user acts as agent2.
 The init, result and finish functions are optional.
 Throws an error if any chosen [action](#action) is invalid.
-Returns the winning [player](#player).
+Returns a promise with the final [state](#state).
 ```javascript
-async function run(agent1, ?agent2){
-    return Player; // winner
-}
-```
-[[Top](#tictactoe)]
-
-### Scenario.validAction(action)
-Validates the given [action](#action) in relation to the current [state](#state).  
-Returns either true or false.
-```javascript
-function validAction(action) {
-    return Boolean;
-}
-```
-[[Top](#tictactoe)]
-
-### Scenario.validateAction(action)
-Validates the given [action](#action) in relation to the current [state](#state).  
-Throws an error when there is something wrong.
-```javascript
-function validateAction(action) { 
-    throw Error('error message');
-}
+async function run(state: State, agent1: Agent, agent2?: Agent): Promise<State>;
 ```
 [[Top](#tictactoe)]

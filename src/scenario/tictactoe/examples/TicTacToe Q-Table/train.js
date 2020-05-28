@@ -1,6 +1,6 @@
 import { QTable } from 'project/qtable.js';
 import { 
-    run, createState, getScore, getWinner, Player 
+    run, createState, getScore, getWinner, EPlayer 
 } from 'scenario/tictactoe.js';
 
 export async function generateQTable(){
@@ -51,12 +51,12 @@ export async function generateQTable(){
 
             const state = await run(createState(episode % 2 + 1), player1, player2);
             const winner = getWinner(state);
-            if(winner === Player.Player1)
+            if(winner === EPlayer.Player1)
                 wins++;
-            if(winner === Player.Player2)
+            if(winner === EPlayer.Player2)
                 losses++;
 
-            const score = getScore(state, Player.Player1);
+            const score = getScore(state, EPlayer.Player1);
             let lastMemory = memoryPlayer1.shift();
             qtable.set(lastMemory.state, lastMemory.action, score);
             memoryPlayer1.forEach(memory => {

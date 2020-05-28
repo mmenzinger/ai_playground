@@ -101,3 +101,9 @@ export const localStorage = {
         saveLocalStorage();
     }
 }
+
+/***********************************************************************************************
+ *  logging
+ */
+declare const __console: Console;
+export const realConsole = __console;

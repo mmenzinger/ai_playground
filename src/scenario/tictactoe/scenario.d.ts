@@ -1,42 +1,34 @@
-export declare const Player: Readonly<{
-    None: number;
-    Computer: number;
-    Human: number;
-    Both: number;
-    Player1: number;
-    Player2: number;
-}>;
-export declare type Player = number;
-export declare type Settings = {
-    startingPlayer: number;
-};
-export declare type State = {
-    board?: number[][];
-    player?: number;
-};
-export declare type Action = {
-    row: number;
-    col: number;
-    player: Player;
-};
-export declare type PlayerObject = {
-    init?: (state: number) => Promise<void>;
-    update: (state: number, actions: number[]) => Promise<number>;
-    result?: (oldState: number, action: number, newState: number, score: number) => Promise<void>;
-    finish?: (state: number, score: number) => Promise<void>;
-};
-export declare function getPlayer(state: number): number;
-export declare function getBoard(state: number): number[][];
-export declare function createAction(player: Player, row: number, col: number): number;
-export declare function createState(player: Player, board?: number[][]): number;
-export declare function stateToObject(state: number): State;
-export declare function actionToObject(action: number): Action;
-export declare function getScore(state: number, player: Player): number;
-export declare function getWinner(state: number): number;
-export declare function getActions(state: number): number[];
-export declare function validateAction(state: number, action: number): void;
-export declare function validAction(state: number, action: number): boolean;
-export declare function performAction(state: number, action: number): number;
-export declare function run(state: number, player1: PlayerObject, player2?: PlayerObject): Promise<number>;
-export declare function __run(settings: Settings): Promise<number>;
 export declare class ScenarioError extends Error {}
+export declare enum EPlayer {
+    None =     0 | 0,
+    Computer = 1 | 0,
+    Human =    2 | 0,
+    Both =     Computer | Human,
+    Player1 =  Computer,
+    Player2 =  Human,
+}
+export declare type Player = number;
+export declare type State = number;
+export declare type Action = number;
+export declare type Agent = {
+    init?: (state: State) => Promise<void>,
+    update: (state: State, actions: Action[]) => Promise<State>,
+    result?: (oldState: State, action: Action, newState: State, score: number) => Promise<void>,
+    finish?: (state: State, score: number) => Promise<void>,
+}
+export declare type Settings = {
+    startingPlayer: number,
+}
+export declare function getPlayer(state: State) : Player;
+export declare function getBoard(state: State): Player[][];
+export declare function createAction(player: Player, row: number, col: number): Action;
+export declare function createState(player: Player, board?: Player[][]): State;
+export declare function stateToObject(state: State): {board: Player[][], player: Player};
+export declare function actionToObject(action: Action): {player: Player, row: number, col: number};
+export declare function getScore(state: State, player: Player): number;
+export declare function getWinner(state: State): Player;
+export declare function getActions(state: State): Action[];
+export declare function validateAction(state: State, action: Action): void;
+export declare function validAction(state: State, action: Action): boolean;
+export declare function performAction(state: State, action: Action): State;
+export declare function run(state: State, player1: Agent, player2: Agent): Promise<State>;
