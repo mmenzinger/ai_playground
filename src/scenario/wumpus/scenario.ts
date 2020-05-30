@@ -2,12 +2,70 @@ import SeedRandom from 'seedrandom';
 import { hideImport } from '@util';
 import { call } from '@worker/types';
 
-export type PlayerObject = {
-    init?: (state: State) => Promise<void>,
-    update: (state: State, actions: Action[]) => Promise<Action>,
-    result?: (oldState: State, action: Action, newState: State, score: number) => Promise<void>,
-    finish?: (state: State, score: number) => Promise<void>,
+
+
+export enum EDirection {
+    Up = 0,
+    Down = 1,
+    Left = 2,
+    Right = 3,
 }
+
+export enum EAction {
+    Wait = 0,
+    Shoot = 4,
+    ShootUp = 4 | EDirection.Up,
+    ShootDown = 4 | EDirection.Down,
+    ShootLeft = 4 | EDirection.Left,
+    ShootRight = 4 | EDirection.Right,
+    Move = 8,
+    MoveUp = 8 | EDirection.Up,
+    MoveDown = 8 | EDirection.Down,
+    MoveLeft = 8 | EDirection.Left,
+    MoveRight = 8 | EDirection.Right,
+    MoveTo = 8 | 16,
+};
+
+export enum EPercept {
+    None = 0,
+    Bump = 1,
+    Breeze = 2,
+    Stench = 4,
+    Glitter = 8,
+    Scream = 16,
+};
+// @ts-ignore
+EPercept[EPercept.Stench | EPercept.Scream] = 'Stench,Scream';
+// @ts-ignore
+EPercept[EPercept.Stench | EPercept.Breeze] = 'Stench,Breeze';
+// @ts-ignore
+EPercept[EPercept.Stench | EPercept.Breeze | EPercept.Scream] = 'Stench,Breeze,Scream';
+// @ts-ignore
+EPercept[EPercept.Stench | EPercept.Glitter] = 'Stench,Glitter';
+// @ts-ignore
+EPercept[EPercept.Stench | EPercept.Breeze | EPercept.Glitter] = 'Stench,Breeze,Glitter';
+// @ts-ignore
+EPercept[EPercept.Breeze | EPercept.Glitter] = 'Breeze,Glitter';
+// @ts-ignore
+EPercept[EPercept.Stench | EPercept.Bump] = 'Stench,Bump';
+// @ts-ignore
+EPercept[EPercept.Stench | EPercept.Breeze | EPercept.Bump] = 'Stench,Breeze,Bump';
+// @ts-ignore
+EPercept[EPercept.Breeze | EPercept.Bump] = 'Breeze,Bump';
+
+export enum ETile {
+    Unknown = 7,
+    Empty = 0,
+    Pit = 1,
+    Wumpus = 2,
+    Gold = 4,
+};
+
+export type Action = {
+    type: number
+    x?: number,
+    y?: number,
+};
 
 export type Settings = {
     complexity: number,
@@ -28,41 +86,14 @@ export type State = {
     arrows: number;
 }
 
-export const Action = Object.freeze({
-    Wait: 0,
-    MoveUp: 1,
-    MoveDown: 2,
-    MoveLeft: 4,
-    MoveRight: 8,
-    ShootUp: 16,
-    ShootDown: 32,
-    ShootLeft: 64,
-    ShootRight: 128,
-    MoveTo: 256,
-});
+export type Agent = {
+    init?: (state: State) => Promise<void>,
+    update: (state: State, actions: Action[]) => Promise<Action>,
+    result?: (oldState: State, action: Action, newState: State, score: number) => Promise<void>,
+    finish?: (state: State, score: number) => Promise<void>,
+}
 
-export type Action = {
-    type: number
-    x?: number,
-    y?: number,
-};
 
-export const Percept = Object.freeze({
-    None: 0,
-    Bump: 1,
-    Breeze: 2,
-    Stench: 4,
-    Glitter: 8,
-    Scream: 16,
-});
-
-export const Tile = Object.freeze({
-    Unknown: 7,
-    Empty: 0,
-    Pit: 1,
-    Wumpus: 2,
-    Gold: 4,
-});
 
 function updateGUI(state: State) {
     return call('updateGUI', [state]);
@@ -88,7 +119,7 @@ export function getMap(state: State): Uint8Array {
         let x = Math.round(rng() * (size - 1));
         let y = Math.round(rng() * (size - 1));
         for (let tries = 0; tries < maxTries; tries++) {
-            if (validPos(x, y) && (map[y*size + x] >>> 5) === Tile.Empty) {
+            if (validPos(x, y) && (map[y*size + x] >>> 5) === ETile.Empty) {
                 map[y*size + x] |= type<<5;
                 for (let pos of perceptPos) {
                     addPercept(percept, x + pos[0], y + pos[1]);
@@ -103,10 +134,10 @@ export function getMap(state: State): Uint8Array {
     const spot = [[0, 0]];
     const cross = [[0,0], [-1, 0], [1, 0], [0, -1], [0, 1]];
 
-    setTile(Tile.Gold, Percept.Glitter, spot, (x, y) => x >= size / 2 || y >= size / 2);
-    setTile(Tile.Wumpus, Percept.Stench, cross, (x, y) => x > 1 || y > 1);
+    setTile(ETile.Gold, EPercept.Glitter, spot, (x, y) => x >= size / 2 || y >= size / 2);
+    setTile(ETile.Wumpus, EPercept.Stench, cross, (x, y) => x > 1 || y > 1);
     for (let pit = 0; pit < size ** 2 * pitchance - 1; pit++) {
-        setTile(Tile.Pit, Percept.Breeze, cross, (x, y) => {
+        setTile(ETile.Pit, EPercept.Breeze, cross, (x, y) => {
             if(x <= 1 && y <= 1)
                 return false;
             for(let row = y-2; row <= y+2; row++){
@@ -114,7 +145,7 @@ export function getMap(state: State): Uint8Array {
                     if(row !== y && col !== x
                         && row >= 0 && row < size
                         && col >= 0 && col < size
-                        && map[col + row*size] >>> 5 & Tile.Pit)
+                        && map[col + row*size] >>> 5 & ETile.Pit)
                         return false;
                 }
             }
@@ -163,39 +194,39 @@ export function createState(settings: Settings, map = new Uint8Array(new ArrayBu
 
 export function getTile(state: State, x: number, y: number) {
     const tile = state.map[x + y*state.size] >>> 5;
-    if (tile === Tile.Unknown)
-        return Tile.Unknown;
+    if (tile === ETile.Unknown)
+        return ETile.Unknown;
     return tile;
 }
 
 export function getPercepts(state: State, x: number, y: number) {
     const tile = state.map[x + y*state.size];
-    if (tile >>> 5 === Tile.Unknown)
+    if (tile >>> 5 === ETile.Unknown)
         return 0;
     return tile & 0b11111;
 }
 
 
 export function hasWon(state: State): boolean {
-    return (state.percepts & Percept.Glitter) > 0
+    return (state.percepts & EPercept.Glitter) > 0
 }
 
 export function getActions(state: State): Action[] {
     const actions = [];
     if (state.arrows > 0)
-        actions.push({ type: Action.ShootUp }, { type: Action.ShootDown }, { type: Action.ShootLeft }, { type: Action.ShootRight });
+        actions.push({ type: EAction.ShootUp }, { type: EAction.ShootDown }, { type: EAction.ShootLeft }, { type: EAction.ShootRight });
     if (state.complexity === 2)
-        actions.push({ type: Action.MoveUp }, { type: Action.MoveDown }, { type: Action.MoveLeft }, { type: Action.MoveRight });
+        actions.push({ type: EAction.MoveUp }, { type: EAction.MoveDown }, { type: EAction.MoveLeft }, { type: EAction.MoveRight });
     else {
         const size = state.size;
         for (let y = 0; y < size; y++) {
             for (let x = 0; x < size; x++) {
-                if (getTile(state, x, y) === Tile.Unknown && (
-                    (x > 0 && getTile(state, x - 1, y) !== Tile.Unknown) ||
-                    (x < (size - 1) && getTile(state, x + 1, y) !== Tile.Unknown) ||
-                    (y > 0 && getTile(state, x, y - 1) !== Tile.Unknown) ||
-                    (y < (size - 1) && getTile(state, x, y + 1) !== Tile.Unknown)))
-                    actions.push({ type: Action.MoveTo, x, y });
+                if (getTile(state, x, y) === ETile.Unknown && (
+                    (x > 0 && getTile(state, x - 1, y) !== ETile.Unknown) ||
+                    (x < (size - 1) && getTile(state, x + 1, y) !== ETile.Unknown) ||
+                    (y > 0 && getTile(state, x, y - 1) !== ETile.Unknown) ||
+                    (y < (size - 1) && getTile(state, x, y + 1) !== ETile.Unknown)))
+                    actions.push({ type: EAction.MoveTo, x, y });
             }
         }
     }
@@ -205,7 +236,7 @@ export function getActions(state: State): Action[] {
 export function validateAction(state: State, action: Action) {
     if (!validAction(state, action)) {
         let error = `invalid action ${action.type}`;
-        if(action.type === Action.MoveTo){
+        if(action.type === EAction.MoveTo){
             error = `invalid action ${action.type} (${action.x}, ${action.y})`;
         }
         throw Error(error);
@@ -214,22 +245,22 @@ export function validateAction(state: State, action: Action) {
 
 export function validAction(state: State, action: Action) {
     // directional move is always valid
-    if (action.type === Action.MoveUp || action.type === Action.MoveDown
-        || action.type === Action.MoveLeft || action.type === Action.MoveRight)
+    if (action.type === EAction.MoveUp || action.type === EAction.MoveDown
+        || action.type === EAction.MoveLeft || action.type === EAction.MoveRight)
         return true;
     // you can only shoot when there are arrows left
-    if (state.arrows > 0 && action.type === Action.ShootUp || action.type === Action.ShootDown
-        || action.type === Action.ShootLeft || action.type === Action.ShootRight)
+    if (state.arrows > 0 && action.type === EAction.ShootUp || action.type === EAction.ShootDown
+        || action.type === EAction.ShootLeft || action.type === EAction.ShootRight)
         return true;
     // moveto only adjacent to explored tiles
-    if (action.type === Action.MoveTo && action.x !== undefined && action.y !== undefined) {
+    if (action.type === EAction.MoveTo && action.x !== undefined && action.y !== undefined) {
         const x = action.x;
         const y = action.y;
         if (
-            (x > 0 && getTile(state, x - 1, y) !== Tile.Unknown) ||
-            (x < (state.size - 1) && getTile(state, x + 1, y) !== Tile.Unknown) ||
-            (y > 0 && getTile(state, x, y - 1) !== Tile.Unknown) ||
-            (y < (state.size - 1) && getTile(state, x, y + 1) !== Tile.Unknown)
+            (x > 0 && getTile(state, x - 1, y) !== ETile.Unknown) ||
+            (x < (state.size - 1) && getTile(state, x + 1, y) !== ETile.Unknown) ||
+            (y > 0 && getTile(state, x, y - 1) !== ETile.Unknown) ||
+            (y < (state.size - 1) && getTile(state, x, y + 1) !== ETile.Unknown)
         ) {
             return true;
         }
@@ -242,35 +273,35 @@ export function performAction(state: State, action: Action): State {
     validateAction(state, action);
     const newState: State = copyState(state);
     const size = state.size;
-    newState.percepts = Percept.None;
+    newState.percepts = EPercept.None;
 
-    if (action.type === Action.MoveUp) newState.position.y--;
-    if (action.type === Action.MoveDown) newState.position.y++;
-    if (action.type === Action.MoveLeft) newState.position.x--;
-    if (action.type === Action.MoveRight) newState.position.x++;
-    if (action.type === Action.MoveTo && action.x !== undefined && action.y !== undefined) { newState.position.x = action.x; newState.position.y = action.y };
+    if (action.type === EAction.MoveUp) newState.position.y--;
+    if (action.type === EAction.MoveDown) newState.position.y++;
+    if (action.type === EAction.MoveLeft) newState.position.x--;
+    if (action.type === EAction.MoveRight) newState.position.x++;
+    if (action.type === EAction.MoveTo && action.x !== undefined && action.y !== undefined) { newState.position.x = action.x; newState.position.y = action.y };
 
-    if (newState.position.x < 0) { newState.percepts |= Percept.Bump; newState.position.x = 0; }
-    if (newState.position.x >= size) { newState.percepts |= Percept.Bump; newState.position.x = size - 1; }
-    if (newState.position.y < 0) { newState.percepts |= Percept.Bump; newState.position.y = 0; }
-    if (newState.position.y >= size) { newState.percepts |= Percept.Bump; newState.position.y = size - 1; }
+    if (newState.position.x < 0) { newState.percepts |= EPercept.Bump; newState.position.x = 0; }
+    if (newState.position.x >= size) { newState.percepts |= EPercept.Bump; newState.position.x = size - 1; }
+    if (newState.position.y < 0) { newState.percepts |= EPercept.Bump; newState.position.y = 0; }
+    if (newState.position.y >= size) { newState.percepts |= EPercept.Bump; newState.position.y = size - 1; }
 
     const x = newState.position.x;
     const y = newState.position.y;
 
     for (const [actionType, px, py] of [
-        [Action.ShootUp, x, y - 1],
-        [Action.ShootDown, x, y + 1],
-        [Action.ShootLeft, x - 1, y],
-        [Action.ShootRight, x + 1, y],
+        [EAction.ShootUp, x, y - 1],
+        [EAction.ShootDown, x, y + 1],
+        [EAction.ShootLeft, x - 1, y],
+        [EAction.ShootRight, x + 1, y],
     ]) {
         if (action.type === actionType) {
             newState.arrows--;
-            if (px > 0 && py > 0 && px < size-1 && py < size-1 && getTile(newState, px, py) === Tile.Unknown) {
+            if (px >= 0 && py >= 0 && px < size && py < size && getTile(newState, px, py) === ETile.Unknown) {
                 const tile = realTile(newState, px, py);
-                if (tile >>> 5 & Tile.Wumpus) {
-                    map[px + py*size] ^= (Tile.Wumpus << 5);
-                    newState.percepts |= Percept.Scream;
+                if (tile >>> 5 & ETile.Wumpus) {
+                    map[px + py*size] ^= (ETile.Wumpus << 5);
+                    newState.percepts |= EPercept.Scream;
                 }
             }
         }
@@ -279,21 +310,21 @@ export function performAction(state: State, action: Action): State {
     newState.map[x + y*size] = realTile(newState, x, y);
     newState.percepts |= getPercepts(newState, x, y);
 
-    if (getTile(newState, x, y) & (Tile.Pit | Tile.Wumpus)){
+    if (getTile(newState, x, y) & (ETile.Pit | ETile.Wumpus)){
         newState.alive = false;
     }
 
     let score = -1;
     if (!newState.alive)
         score = -1000;
-    if (newState.percepts & Percept.Glitter)
+    if (newState.percepts & EPercept.Glitter)
         score = 1000;
 
     newState.score += score;
     return newState;
 }
 
-export async function run(state: State, player: PlayerObject, update = true) {
+export async function run(state: State, player: Agent, update = true) {
     if (player.init instanceof Function)
         await player.init(state);
     if (update)

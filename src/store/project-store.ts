@@ -3,7 +3,7 @@ import db from '@localdb';
 import { throttle } from 'lodash-es';
 import settingsStore from '@store/settings-store';
 
-import type { File, Project, ProjectErrors, Caller, Log, LogType, IPosition } from '@store/types';
+import type { File, Project, ProjectSettings, ProjectErrors, Caller, Log, LogType, IPosition } from '@store/types';
 
 class ProjectStore {
     @observable activeProject: Project | null = null;
@@ -66,6 +66,16 @@ class ProjectStore {
 
     async createProject(name: string, scenario: string, files: Array<File>): Promise<number> {
         return await db.createProject(name, scenario, files);
+    }
+
+    @action
+    async updateProjectSettings(id: number, settings: ProjectSettings): Promise<void> {
+        await db.saveProjectSettings(id, settings)
+        runInAction(() => {
+            if (this.activeProject?.id === id) {
+                this.activeProject.settings = settings;
+            }
+        });
     }
 
     @action

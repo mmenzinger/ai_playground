@@ -12,7 +12,7 @@ class SettingsStore{
     }
 
     get(key: string, fallback?: any){
-        if(this.data[key])
+        if(this.data[key] !== undefined)
             return this.data[key];
         else
             return fallback;

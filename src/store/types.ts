@@ -31,6 +31,10 @@ export type ProjectErrors = {
     [key:number]: FileError[],
 }
 
+export type ProjectSettings = {
+    [key:string]: any,
+}
+
 export type File = {
     id: number,
     projectId: number,
@@ -45,6 +49,7 @@ export type Project = {
     id: number,
     name: string,
     scenario: string,
+    settings?: {[key: string]: any},
     errors?: ProjectErrors,
 };
 

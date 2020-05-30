@@ -1,19 +1,21 @@
 import { html, TemplateResult } from 'lit-element';
-import { LazyElement } from '@element/lazy-element';
+import { Scenario } from '@scenario/scenario';
 
 // @ts-ignore
 import sharedStyles from '@shared-styles';
 // @ts-ignore
 import style from './scenario-tictactoe.css';
 
-import { Player, Action, getPlayer, getBoard, createAction } from '@scenario/tictactoe/scenario';
+import { EPlayer, Action, getPlayer, getBoard, createAction, Settings } from '@scenario/tictactoe/scenario';
 
-import { IScenario } from '@scenario/types';
-
-export class ScenarioTicTacToe extends LazyElement implements IScenario {
+export class ScenarioTicTacToe extends Scenario {
     #state: number = 0;
-    #playerWon: number = Player.None;
+    #playerWon: number = EPlayer.None;
     #update_resolve: any;
+
+    settings: Settings = {
+        startingPlayer: 1,
+    }
 
     static get styles() {
         return [
@@ -47,19 +49,21 @@ export class ScenarioTicTacToe extends LazyElement implements IScenario {
         });
         let winner = html``;
         switch(this.#playerWon){
-            case Player.Human:
+            case EPlayer.Human:
                 winner = html`<p>You have won!</p>`;
                 break;
-            case Player.Computer:
+            case EPlayer.Computer:
                 winner = html`<p>You have lost!</p>`;
                 break;
-            case Player.Both:
+            case EPlayer.Both:
                 winner = html`<p>Draw!</p>`;
                 break;
         }
         return html`
             <h1>Tic-Tac-Toe</h1>
-            Starting player: <select id="player"><option value="1" selected>1 (Computer)</option><option value="2">2 (Human)</option></select>
+            Starting player: <select id="player" @change=${(_:any)=>{this.updateSettings()}}>
+                <option value="1" ?selected=${this.settings.startingPlayer === 1}>1 (Computer)</option>
+                <option value="2" ?selected=${this.settings.startingPlayer === 2}>2 (Human)</option></select>
             <table>${rows}</table>
             ${winner}
         `;
@@ -82,11 +86,11 @@ export class ScenarioTicTacToe extends LazyElement implements IScenario {
                 console.warn('invalid move: ', error.message);
             }
         }
-        else if(getPlayer(this.#state) === Player.None){
+        else if(getPlayer(this.#state) === EPlayer.None){
             console.log("game not started...");
         }
         else {
-            if(this.#playerWon === Player.None)
+            if(this.#playerWon === EPlayer.None)
                 console.log("its the computers turn, give it some time...");
         }
     }
@@ -98,9 +102,15 @@ export class ScenarioTicTacToe extends LazyElement implements IScenario {
         };
     }
 
+    updateSettings(){
+        const player = this.shadowRoot?.getElementById('player') as HTMLSelectElement;
+        this.settings.startingPlayer = player ? Number(player.value) : 1;
+        this.saveSettings();
+    }
+
     async onInit(state: number){
         this.#state = state;
-        this.#playerWon = Player.None;
+        this.#playerWon = EPlayer.None;
         this.requestUpdate();
     }
 
@@ -128,4 +138,11 @@ export class ScenarioTicTacToe extends LazyElement implements IScenario {
         return (this as any)[functionName](...args);
     }
 }
+
 window.customElements.define('scenario-tictactoe', ScenarioTicTacToe);
+export function getHtmlElement(active?: boolean, settings?: Settings){
+    if(settings){
+        return html`<scenario-tictactoe ?active=${active} .settings=${settings}></scenario-tictactoe>`;
+    }
+    return html`<scenario-tictactoe ?active=${active}></scenario-tictactoe>`;
+}

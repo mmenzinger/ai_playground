@@ -2,21 +2,32 @@ import { html, TemplateResult } from 'lit-element';
 import appStore from '@store/app-store';
 import { LazyElement } from '@element/lazy-element';
 import { ModalAbort } from '@element/c4f-modal';
-import { ModalTemplate } from '@modal/templates';
 
 // @ts-ignore
 import sharedStyles from '@shared-styles';
 // @ts-ignore
-import style from './modal-generic.css';
+import style from './modal.css';
 
-class ModalGeneric extends LazyElement {
+export type ModalTemplate = {
+    title: string,
+    submit: string,
+    abort: string,
+    content: TemplateResult,
+    init?: (root: ShadowRoot) => Promise<void>,
+    check?: (fields: {[key:string]: any}) => Promise<Error | true>,
+    change?: {[key:string]: (e: Event, shadowRoot: ShadowRoot) => void},
+}
+
+
+
+export class ModalGeneric extends LazyElement {
     data: ModalTemplate;
     _error: TemplateResult | null;
 
     static get properties() {
         return {
             ...super.properties,
-            template: { type: Object, hasChanged: () => true },
+            data: {type: Object },
             _error: {type: String },
         }
     }
@@ -52,21 +63,21 @@ class ModalGeneric extends LazyElement {
     }
 
     updated(){
-        if(this.shadowRoot){
+        const root = this.shadowRoot;
+        if(root){
             if(this.data && this.data.init){
-                this.data.init(this.shadowRoot);
+                this.data.init(root);
             }
-            const firstElement = this.shadowRoot.querySelector('input,select') as HTMLElement;
+            const firstElement = root.querySelector('input,select') as HTMLElement;
             if(firstElement)
                 firstElement.focus();
             if(this.data && this.data.change){
                 for(let [field, callback] of Object.entries(this.data.change)){
-                    const element = this.shadowRoot.getElementById(field);
-                    element?.addEventListener('change', e => callback(e, this.shadowRoot));
+                    const element = root.getElementById(field);
+                    element?.addEventListener('change', e => callback(e, root));
                 }
             }
         }
-        
     }
 
     async onSubmit(){

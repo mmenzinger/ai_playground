@@ -90,9 +90,10 @@ export function getExamples() {
 }
 
 export function getComponents() {
-    const components = [];
+    const components: {[key:string]: any} = {};
     for (let scenario of Object.values(getScenarios())) {
-        components.push(scenario.component);
+        const exports = require(`@scenario/${scenario.name}/${scenario.component}`);
+        components[scenario.component] = exports;
     }
     return components;
 }

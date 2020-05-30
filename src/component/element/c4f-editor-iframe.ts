@@ -29,19 +29,29 @@ class C4fEditorIframe extends LitElement {
     render() {
         this._firstErrorUpdate = true;
         const theme = settingsStore.get('editor-theme', 'vs');
+        const wrap = settingsStore.get('editor-wordwrap', true);
         return html`
             <iframe id="editor" src="monaco.html"></iframe>
-            <select id="theme">
-                <option value="vs" ?selected="${theme === 'vs'}">Light</option>
-                <option value="vs-dark" ?selected="${theme === 'vs-dark'}">Dark</option>
-                <option value="hc-black" ?selected="${theme === 'hc-black'}">High Contrast</option>
-            </select>
+            <ul id="menu">
+                <li>
+                    <input type="checkbox" id="wordwrap" ?checked=${wrap}>
+                    <label for="wordwrap">word wrap</label>
+                </li>
+                <li>
+                    <select id="theme">
+                        <option value="vs" ?selected="${theme === 'vs'}">Light</option>
+                        <option value="vs-dark" ?selected="${theme === 'vs-dark'}">Dark</option>
+                        <option value="hc-black" ?selected="${theme === 'hc-black'}">High Contrast</option>
+                    </select>
+                </li>
+            </ul>
         `;
     }
 
     async firstUpdated() {
         const iframe = this.shadowRoot?.getElementById('editor') as HTMLIFrameElement;
         const theme = this.shadowRoot?.getElementById('theme') as HTMLSelectElement;
+        const wordwrap = this.shadowRoot?.getElementById('wordwrap') as HTMLInputElement;
 
         iframe.onload = () => {
             const monaco = iframe.contentWindow as MonacoWindow;
@@ -72,6 +82,7 @@ class C4fEditorIframe extends LitElement {
             }
             
             monaco.setTheme(theme.options[theme.selectedIndex].value);
+            monaco.setWordWrap(wordwrap.checked);
 
             dispatchIframeEvents(iframe);
         }
@@ -81,6 +92,12 @@ class C4fEditorIframe extends LitElement {
             const selectedTheme = theme.options[theme.selectedIndex].value;
             settingsStore.set('editor-theme', selectedTheme);
             monaco.setTheme(selectedTheme);
+        }
+
+        wordwrap.onchange = async (_) => {
+            const monaco = await this._monaco.promise;
+            settingsStore.set('editor-wordwrap', wordwrap.checked);
+            monaco.setWordWrap(wordwrap.checked);
         }
 
         autorun(async _ => {

@@ -1,13 +1,13 @@
 import { html } from 'lit-element';
-import { unsafeHTML } from 'lit-html/directives/unsafe-html';
 import { MobxLitElement } from '@adobe/lit-mobx';
+import { toJS } from 'mobx';
 import projectStore from '@store/project-store';
 
 import '@element/c4f-console';
 import { getComponents } from '@src/webpack-utils';
 import { Sandbox } from '@sandbox';
-import { Defer, thisShouldNotHappen } from '@util';
-import { IScenario } from '@scenario/types';
+import { Defer } from '@util';
+import { Scenario } from '@scenario/scenario';
 import { LogType } from '@store/types';
 
 // @ts-ignore
@@ -19,7 +19,7 @@ import style from './ai-simulator.css';
 class AiSimulator extends MobxLitElement {
     #sandbox = new Defer<Sandbox>();
     #scenarioLoaded = new Defer<boolean>();
-    #scenario = new Defer<IScenario>();
+    #scenario = new Defer<Scenario>();
 
     static get styles() {
         return [
@@ -33,15 +33,20 @@ class AiSimulator extends MobxLitElement {
         if(this.#sandbox.resolved)
             this.#sandbox.value?.terminate();
         this.#sandbox = new Defer<Sandbox>();
-        this.#scenario = new Defer<IScenario>();
+        this.#scenario = new Defer<Scenario>();
         if(project){
             const type = project.scenario;
             import(`@scenario/${type}/scenario-${type}`).then(_ => {
                 this.#scenarioLoaded.resolve(true);
             });
-            const components = getComponents().map(name => {
-                const active = name.substr(9) === type ? ' active' : '';
-                return unsafeHTML(`<${name}${active}></${name}>`);
+            const components = Object.entries(getComponents()).map(([name, exports]) => {
+                const active = name.substr(9) === type;
+                if(active){
+                    console.log(toJS(project.settings));
+                    return exports.getHtmlElement(active, toJS(project.settings));
+                }
+                return exports.getHtmlElement();
+                
             });
             return html`
                 <div id="wrapper">
@@ -73,18 +78,6 @@ class AiSimulator extends MobxLitElement {
     }
 
     async simTrain() {
-        /*projectStore.flushFile();
-        projectStore.clearLog();
-        if(projectStore.activeErrors){
-            projectStore.activeErrors.forEach(error => {
-                projectStore.addLog(error.type, error.args, error.caller);
-            });
-        }
-        else{
-            const sandbox = await this.#sandbox;
-            //sandbox.scenario = this._scenario;
-            sandbox.call('/project/index.js', 'train');
-        }*/
         projectStore.flushFile();
         projectStore.clearLog();
         for(const errors of Object.values(projectStore.activeProject?.errors || {})){
@@ -108,8 +101,12 @@ class AiSimulator extends MobxLitElement {
     async updated(){
         await this.#scenarioLoaded;
         await navigator.serviceWorker.ready; // make sure sw is ready
-        const scenario = this.shadowRoot?.querySelector('[active]') as IScenario;
+        const scenario = this.shadowRoot?.querySelector('[active]') as Scenario;
         if(scenario){
+            /*const settings = projectStore.activeProject?.settings;
+            if(settings){
+                scenario.init(settings);
+            }*/
             this.#scenario.resolve(scenario);
             this.#sandbox.resolve(new Sandbox(scenario));
             if(scenario.getAutorun()){   

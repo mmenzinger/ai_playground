@@ -361,6 +361,10 @@ window.setTheme = (theme: string) => {
     monaco.editor.setTheme(theme);
 }
 
+window.setWordWrap = (wrap: boolean) => {
+    editor.updateOptions({ wordWrap: wrap ? 'on' : 'off' });
+}
+
 window.focus = () => {
     editor.focus();
 }
@@ -453,5 +457,6 @@ export type MonacoWindow = Window & {
     openFile: (file: File) => void,
     resize: () => void,
     setTheme: (theme: string) => void,
+    setWordWrap: (wrap: boolean) => void,
     focus: () => void,
 };

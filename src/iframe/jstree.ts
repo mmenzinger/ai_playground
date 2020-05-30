@@ -49,18 +49,22 @@ onload = () => {
     });
 
     let lastSelected: Node | undefined = undefined;
-    $('#jstree').on('select_node.jstree', (_, data: NodeData) => {
+    $('#jstree').on('select_node.jstree', (event, data: NodeData) => {
+        const evt: any =  window.event || event;
+        const button = evt?.which || evt?.button;
         if(data.node.parent === '#'){
-            data.instance.deselect_node(data.node);
-            if(data.node.state.opened){
-                $('#jstree').jstree('close_node', data.node);
+            if(button === 1){
+                data.instance.deselect_node(data.node);
+                if(data.node.state.opened){
+                    $('#jstree').jstree('close_node', data.node);
+                }
+                else{
+                    $('#jstree').jstree('open_node', data.node);
+                }
+                preventSelectNodeEvent = true;
+                data.instance.select_node(lastSelected);
+                preventSelectNodeEvent = false;
             }
-            else{
-                $('#jstree').jstree('open_node', data.node);
-            }
-            preventSelectNodeEvent = true;
-            data.instance.select_node(lastSelected);
-            preventSelectNodeEvent = false;
         }
         else{
             if(window.onFile && !preventSelectNodeEvent && lastSelected?.id !== data.node.id){
@@ -70,6 +74,8 @@ onload = () => {
         }
         
     });
+
+
 }
 
 function contextMenu(node: Node){
@@ -77,14 +83,14 @@ function contextMenu(node: Node){
     let remove = undefined;
     
     let parent = node.parent;
-    if(parent === 'global'){
+    if(parent === 'global' || node.text === 'global'){
         create = {
             label: 'create global file',
             icon: '../assets/interface/add.svg',
             action: () => window.onAddFileGlobal(),
         };
     }
-    else if(parent === 'project'){
+    else if(parent === 'project' || node.text === 'project'){
         create = {
             label: 'create project file',
             icon: '../assets/interface/add.svg',

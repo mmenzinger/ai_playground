@@ -1,25 +1,24 @@
-import { html, TemplateResult } from 'lit-element';
+import { html } from 'lit-element';
 import db from '@localdb';
-import { ScenarioTemplate } from '@src/webpack-utils';
+import { ScenarioTemplates, ScenarioTemplate } from '@src/webpack-utils';
 import { Project, File } from '@store/types';
-
-export type ModalTemplate = {
-    title: string,
-    submit: string,
-    abort: string,
-    content: TemplateResult,
-    init: (root: ShadowRoot) => Promise<void>;
-    change: () => Promise<void>;
-    check: (fields: {[key:string]: any}) => Promise<Error | true>;
-};
+import { ModalTemplate } from '@modal/modal-generic';
 
 //------------------------------------------------------------------------------
 // New Project
 //------------------------------------------------------------------------------
-export function newProjectTemplate(templates: ScenarioTemplate[]) {
-    const options = [];
-    for(let i = 0; i < templates.length; i++){
-        options.push(html`<option value="${i}">${templates[i].name}</option>`);
+export function newProjectTemplate(scenarioTemplates: {[key:string]: ScenarioTemplates}): ModalTemplate {
+    const scenarios = Object.values(scenarioTemplates).map(scenario => html`<option value="${scenario.name}">${Object.values(scenario.templates)[0].name}</option>`);
+    const firstScenario = Object.values(scenarioTemplates)[0];
+    const firstTemplate = Object.values(firstScenario.templates)[0];
+
+    let selectedScenarioIndex = 0;
+    let selectedTemplateIndex = 0;
+
+    function updateTemplates(templateSelect: HTMLSelectElement, scenario: string){
+         const templates = Object.entries(scenarioTemplates[scenario].templates).map(([key, template]) => `<option value="${key}">Default</option>`).join('');
+         const examples = Object.entries(scenarioTemplates[scenario].examples).map(([key, example]) => `<option value="${key}">Example: ${example.name}</option>`).join('');
+         templateSelect.innerHTML = templates + examples;
     }
 
     return {
@@ -29,20 +28,27 @@ export function newProjectTemplate(templates: ScenarioTemplate[]) {
     
         content: html`
             <li>
-                <label for="template">Scenario</label>
-                <select id="template">${options}</select>
+                <label for="scenario">Scenario</label>
+                <select id="scenario">${scenarios}</select>
+            </li>
+            <li>
+                <label for="template">Template</label>
+                <select id="template"></select>
             </li>
             <li>
                 <label for="name">Name</label>
-                <input id="name" type="text" placeholder="My Project" value="${templates[0].name}">
+                <input id="name" type="text" placeholder="My Project" value="${firstTemplate.name}">
             </li>
         `,
         
         init: async (shadowRoot: ShadowRoot) => {
+            const scenario = shadowRoot.getElementById('scenario') as HTMLSelectElement;
             const template = shadowRoot.getElementById('template') as HTMLSelectElement;
             const name = shadowRoot.getElementById('name') as HTMLInputElement;
-            template.selectedIndex = 0;
-            name.value = template.options[0].innerHTML.replace(/<!---->/g, '').trim();
+            scenario.selectedIndex = selectedScenarioIndex;
+            updateTemplates(template, scenario.options[selectedScenarioIndex].value);
+            template.selectedIndex = selectedTemplateIndex;
+            name.value = template.options[selectedTemplateIndex].value;
         },
     
         check: async (fields: {[key:string]: any}) => {
@@ -54,71 +60,31 @@ export function newProjectTemplate(templates: ScenarioTemplate[]) {
         },
     
         change: {
+            scenario: (e: Event, shadowRoot: ShadowRoot) => {
+                const target = e.target as HTMLSelectElement;
+                const template = shadowRoot.getElementById('template') as HTMLSelectElement;
+                const name = shadowRoot.getElementById('name') as HTMLInputElement;
+                const text = target.options[target.selectedIndex].value;
+                updateTemplates(template, text);
+                selectedScenarioIndex = target.selectedIndex;
+                selectedTemplateIndex = 0;
+                name.value = template.options[selectedTemplateIndex].value;
+            },
             template: (e: Event, shadowRoot: ShadowRoot) => {
                 const target = e.target as HTMLSelectElement; 
-                const text = target.options[target.selectedIndex].innerHTML.replace(/<!---->/g, '').trim();
+                const text = target.options[target.selectedIndex].value;
                 const name = shadowRoot.getElementById('name') as HTMLInputElement;
                 name.value = text;
+                selectedTemplateIndex = target.selectedIndex;
             }
         },
     };
 }
 
 //------------------------------------------------------------------------------
-// New Example
-//------------------------------------------------------------------------------
-export function newExampleTemplate(examples: ScenarioTemplate[]) {
-    const options = [];
-    for(let i = 0; i < examples.length; i++){
-        options.push(html`<option value="${i}">${examples[i].name}</option>`);
-    }
-    
-    return{
-        title: 'Load Example',
-        submit: 'Create',
-        abort: 'Cancel',
-
-        content: html`
-            <li>
-                <label for="example">Example</label>
-                <select id="example">${options}</select>
-            </li>
-            <li>
-                <label for="name">Name</label>
-                <input id="name" type="text" placeholder="My Project" value="${examples[0].name}">
-            </li>
-        `,
-        
-        init: async (shadowRoot: ShadowRoot) => {
-            const template = shadowRoot.getElementById('example') as HTMLSelectElement;
-            template.selectedIndex = 0;
-            const name = shadowRoot.getElementById('name') as HTMLInputElement;
-            name.value = template.options[0].innerHTML.replace(/<!---->/g, '').trim();
-        },
-        
-        check: async (fields: {[key:string]: any}) => {
-            if(fields.name.length === 0)
-                return Error('Empty project name! Every project must have a name.');
-            if(await db.projectExists(fields.name))
-                return Error('Duplicate name! A project with that name already exists!');
-            return true;
-        },
-
-        change: {
-            example: (e: Event, shadowRoot: ShadowRoot) => {
-                const target = e.target as HTMLSelectElement; 
-                const text = target.options[target.selectedIndex].innerHTML.replace(/<!---->/g, '').trim();
-                const name = shadowRoot.getElementById('name') as HTMLInputElement;
-                name.value = text;
-            }
-        },
-    }
-}
-
-//------------------------------------------------------------------------------
 // Delete Project
 //------------------------------------------------------------------------------
-export function deleteProjectTemplate(project: Project) {
+export function deleteProjectTemplate(project: Project): ModalTemplate {
     return {
         title: 'Permanently Delete Project',
         submit: 'Delete',
@@ -134,7 +100,7 @@ export function deleteProjectTemplate(project: Project) {
 //------------------------------------------------------------------------------
 // Create File
 //------------------------------------------------------------------------------
-export function createFileTemplate(projectId: number){
+export function createFileTemplate(projectId: number): ModalTemplate {
     return {
         title: 'Create File',
         submit: 'Create File',
@@ -175,7 +141,7 @@ export function createFileTemplate(projectId: number){
 //------------------------------------------------------------------------------
 // Delete File
 //------------------------------------------------------------------------------
-export function deleteFileTemplate(file: File){
+export function deleteFileTemplate(file: File): ModalTemplate {
     const type = file.projectId === 0 ? 'global' : 'project';
     return {
         title: 'Delete File',
@@ -190,7 +156,7 @@ export function deleteFileTemplate(file: File){
 //------------------------------------------------------------------------------
 // Download Project
 //------------------------------------------------------------------------------
-export function downloadProjectTemplate(project: Project) {
+export function downloadProjectTemplate(project: Project): ModalTemplate {
     return{
         title: 'Download Project',
         submit: 'Download',

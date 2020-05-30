@@ -8,7 +8,7 @@ import { ModalAbort } from '@element/c4f-modal';
 import JSZip from 'jszip';
 
 import sharedStyles from '@shared-styles';
-import style from './modal-generic.css';
+import style from './modal.css';
 
 class ModalUploadProject extends LazyElement {
     static get properties() {

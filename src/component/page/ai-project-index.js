@@ -5,7 +5,7 @@ import projectStore from '@store/project-store';
 
 import db from '@localdb';
 
-import { getTemplates, getExamples } from '@src/webpack-utils';
+import { getScenarios, getTemplates, getExamples } from '@src/webpack-utils';
 
 import { Modals, ModalAbort } from '@element/c4f-modal';
 import { newProjectTemplate, newExampleTemplate, deleteProjectTemplate, downloadProjectTemplate } from '@modal/templates';
@@ -62,7 +62,6 @@ class AiProjectIndex extends LazyElement {
                     </a>
                 </header>
                 <footer>
-                    <a title="load example" @click=${this.onNewExample}><img src="assets/interface/file.svg"></a>
                     <a title="upload" @click=${this.onUploadProject}><img src="assets/interface/upload.svg"></a>
                 </footer>
         `);
@@ -74,24 +73,14 @@ class AiProjectIndex extends LazyElement {
 
     async onNewProject() {
         try {
-            const templates = getTemplates();
-            const modal = await appStore.showModal(Modals.GENERIC, newProjectTemplate(templates));
-            const template = templates[modal.template];
+            const scenarios = getScenarios();
+            const modal = await appStore.showModal(Modals.GENERIC, newProjectTemplate(scenarios));
+            const scenario = scenarios[modal.scenario];
+            let template = scenario.templates[modal.template];
+            if(!template)
+                template = scenario.examples[modal.template];
+            template.files.push(scenario.description);
             await projectStore.createProject(modal.name, template.scenario, template.files);
-            this._projects = await db.getProjects();
-        }
-        catch (error) {
-            if( ! (error instanceof ModalAbort) )
-                console.error(error);
-        }
-    }
-
-    async onNewExample() {
-        try {
-            const examples = getExamples();
-            const modal = await appStore.showModal(Modals.GENERIC, newExampleTemplate(examples));
-            const example = examples[modal.example];
-            await projectStore.createProject(modal.name, example.scenario, example.files);
             this._projects = await db.getProjects();
         }
         catch (error) {
