@@ -7,7 +7,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Coding4Fun Educational Artificial Intelligence Platform">
     <!--<link rel="manifest" href="manifest.json">-->
-    <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://widget.cereo.io" crossorigin>
     <script>
         // Load and register pre-caching Service Worker
         if ('serviceWorker' in navigator) {
@@ -18,10 +19,6 @@
         else {
             throw Error("This page can't work without service workers!");
         }
-
-        // Redux assumes `process.env.NODE_ENV` exists in the ES module build.
-        // https://github.com/reactjs/redux/issues/2907
-        window.process = { env: { NODE_ENV: 'production' } };
     </script>
     <style>
         @font-face {
@@ -81,6 +78,13 @@
     <noscript>
         Please enable JavaScript to view this website.
     </noscript>
+    <!--<script type="text/javascript">
+        var script = document.createElement("script");
+        script.type = "text/javascript";
+        script.src = "https://widget.cereo.io";
+        document.getElementsByTagName("body")[0]
+          .appendChild(script);
+    </script>-->
 </body>
 
 </html>

@@ -50,7 +50,7 @@ class C4fModal extends MobxLitElement {
 
     firstUpdated() {
         window.onkeydown = (e) => {
-            if(appStore.modal && ['Escape', 'Enter'].includes(e.key)){
+            if(appStore.modal && ['Escape'/*, 'Enter'*/].includes(e.key)){
                 const modal = this.shadowRoot.getElementById(appStore.modal.template);
                 if(modal && modal.onKeyDown)
                     modal.onKeyDown(e.key);

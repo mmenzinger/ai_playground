@@ -90,7 +90,7 @@ class ScenarioWumpus extends Scenario {
         return html`
             <h1>Wumpus World</h1>
             Complexity: <select id="complexity" @change=${(_:any)=>{this.resetWorld()}}>
-                <option value="1" ?selected=${this.settings.complexity === 1}>Easy</option>
+                <option value="1" ?selected=${this.settings.complexity === 1}>Simple</option>
                 <option value="2" ?selected=${this.settings.complexity === 2}>Advanced</option>
             </select>
             <br>
@@ -119,7 +119,6 @@ class ScenarioWumpus extends Scenario {
         this._state = createState(this.settings);
         this.#map = getMap(this._state);
         this.#killedWumpus = false;
-        console.log(this.settings, this._state);
     }
 
     updateSettings(){

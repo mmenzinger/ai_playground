@@ -1,4 +1,4 @@
-import { Action, Percept } from 'scenario/wumpus.js';
+import { EAction, EPercept } from 'scenario/wumpus.js';
 // import tau-prolog
 import { pl } from 'lib/prolog.js';
 
@@ -31,31 +31,31 @@ export async function update(state, actions){
     const y = state.position.y;
 
     // update knowledge base with percepts
-    if(state.percepts & Percept.Breeze){
+    if(state.percepts & EPercept.Breeze){
         await kb.run(`asserta(breeze(${x},${y})).`);
     }
-    if(state.percepts & Percept.Stench){
+    if(state.percepts & EPercept.Stench){
         await kb.run(`asserta(stench(${x},${y})).`);
     }
-    if(state.percepts & Percept.Scream){
+    if(state.percepts & EPercept.Scream){
         await kb.run(`asserta(scream).`);
     }
 
     // shoot wumpus if possible
-    if(state.arrows > 0 && state.percepts & Percept.Stench){
+    if(state.arrows > 0 && state.percepts & EPercept.Stench){
         if(await kb.isTrue(`certainWumpus(${x-1}, ${y}).`))
-            return {type: Action.ShootLeft};
+            return {type: EAction.ShootLeft};
         if(await kb.isTrue(`certainWumpus(${x+1}, ${y}).`))
-            return {type: Action.ShootRight};
+            return {type: EAction.ShootRight};
         if(await kb.isTrue(`certainWumpus(${x}, ${y-1}).`))
-            return {type: Action.ShootUp};
+            return {type: EAction.ShootUp};
         if(await kb.isTrue(`certainWumpus(${x}, ${y+1}).`))
-            return {type: Action.ShootDown};
+            return {type: EAction.ShootDown};
     }
     
     // make a save move whenever possible
     for(const action of shuffle(actions)){
-        if(action.type === Action.MoveTo){
+        if(action.type === EAction.MoveTo){
             if(await kb.isTrue(`saveMove(${action.x}, ${action.y}).`)){
                 return action;
             }

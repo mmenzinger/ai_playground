@@ -16,6 +16,7 @@ import style from './ai-app.css';
 
 import('@element/ai-header');
 import('@element/c4f-modal');
+import('@element/c4f-bug-tracker');
 
 
 
@@ -30,6 +31,7 @@ class AiApp extends MobxLitElement {
     render() {
         return html`
             <c4f-modal></c4f-modal>
+            <c4f-bug-tracker></c4f-bug-tracker>
             <header>
                 <ai-header title="AI Playground"></ai-header>
             </header>

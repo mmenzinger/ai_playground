@@ -42,7 +42,6 @@ class AiSimulator extends MobxLitElement {
             const components = Object.entries(getComponents()).map(([name, exports]) => {
                 const active = name.substr(9) === type;
                 if(active){
-                    console.log(toJS(project.settings));
                     return exports.getHtmlElement(active, toJS(project.settings));
                 }
                 return exports.getHtmlElement();
