@@ -39,6 +39,10 @@ class AppStore{
                 import('@page/ai-welcome');
                 await projectStore.closeProject();
                 break;
+            case 'impressum':
+                import('@page/ai-impressum');
+                await projectStore.closeProject();
+                break;
             case 'index':
             default:
                 if(settingsStore.get('skip_welcome')){

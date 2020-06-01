@@ -1,0 +1,21 @@
+:host{
+    padding: 0.5rem;
+    text-align: center;
+}
+
+section{
+    display: inline-block;
+    max-width: 40rem;
+}
+
+footer{
+    border-top: 1px solid var(--color-border);
+}
+
+a{
+    text-decoration: underline dotted;
+}
+
+h1{
+    margin: 1rem;
+}

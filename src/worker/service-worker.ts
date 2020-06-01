@@ -29,7 +29,6 @@ registerRoute(
 );
 
 if(PRODUCTION){
-    console.warn(' --- PRODUCTION ---')
     registerRoute(
         /\.(js|html)$/,
         new CacheFirst({

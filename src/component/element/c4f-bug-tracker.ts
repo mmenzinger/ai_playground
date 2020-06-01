@@ -7,6 +7,7 @@ import { MobxLitElement } from '@adobe/lit-mobx';
 import { toJS } from 'mobx';
 import { until } from 'lit-html/directives/until';
 import { Defer } from '@util';
+import lzstring from 'lz-string';
 
 // @ts-ignore
 import sharedStyles from '@shared-styles';
@@ -14,10 +15,10 @@ import sharedStyles from '@shared-styles';
 import style from './c4f-bug-tracker.css';
 
 
-async function sendReport(json: string){
+async function sendReport(data: string){
     return fetch('https://api.subset42.com?token=eAg4FPusH8uyvzEFzF9DByA5Gh89Fz', {
         method: 'post',
-        body: json,
+        body: data,
     })
     .then(response => response.json());
 }
@@ -97,8 +98,8 @@ class C4fBugTracker extends MobxLitElement {
                         ${projectFiles}
                     </ul>
                     <footer>
-                        <button id="no" class="error" @click=${this.onAbort}>Cancel</button>
-                        <button id="yes" class="ok" @click=${this.onSubmit}>Report</button>
+                        <button id="no" class="error" type="button" @click=${this.onAbort}>Cancel</button>
+                        <button id="yes" class="ok" type="button" @click=${this.onSubmit}>Report</button>
                     </footer>
                 `)}
             </form>
@@ -180,13 +181,13 @@ class C4fBugTracker extends MobxLitElement {
             files.push(...await db.getProjectFiles(projectStore.activeProject?.id));
         }
 
-        const data = JSON.stringify({
+        const data = lzstring.compressToUTF16(JSON.stringify({
             description,
             appStore: appStoreData,
             projectStore: projectStoreData,
             settingsStore: settingsStoreData,
             files,
-        });
+        }));
 
         this.#result = new Defer<TemplateResult>();
         sendReport(data).then(response => {
@@ -195,7 +196,7 @@ class C4fBugTracker extends MobxLitElement {
                 <p>The report was successfully sent.</p>
                 <p>Thanks for helping to improve this project!</p>
                 <footer>
-                    <button id="yes" class="ok" @click=${this.close}>Close</button>
+                    <button id="yes" class="ok" type="button" @click=${this.close}>Close</button>
                 </footer>
             `);
             }
@@ -211,7 +212,7 @@ class C4fBugTracker extends MobxLitElement {
                     <p>There was an error, the report will be stored and sent at a later time.</p>
                     <p>Thanks for helping to improve this project!</p>
                     <footer>
-                        <button id="yes" class="warning" @click=${this.close}>Close</button>
+                        <button id="yes" class="warning" type="button" @click=${this.close}>Close</button>
                     </footer>
                 `);
             }

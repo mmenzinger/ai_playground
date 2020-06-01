@@ -3,6 +3,7 @@ const webpack = require('webpack');
 const CopyPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const PreloadWebpackPlugin = require('preload-webpack-plugin');
+const FaviconsWebpackPlugin = require('favicons-webpack-plugin')
 
 const staticFiles = [
     { from: './src/iframe/*.html', to: '[name].[ext]' },
@@ -102,6 +103,26 @@ module.exports = {
         new PreloadWebpackPlugin({
             rel: 'prefetch',
             include: 'allAssets',
+        }),
+        new FaviconsWebpackPlugin({
+            logo: './assets/logo.png',
+            cache: true,
+            //publicPath: '/',
+            inject: true,
+            favicons: {
+                appName: 'AI Coding4Fun',
+                appDescription: 'AI programming framework',
+                developerURL: null, // prevent retrieving from the nearest package.json
+                background: '#fff',
+                theme_color: '#f83',
+                icons: {
+                    android: false,
+                    appleIcon: false,
+                    appleStartup: false,
+                    coast: false,
+                    yandex: false
+                },
+            },
         }),
     ],
 

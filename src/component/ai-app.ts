@@ -1,16 +1,18 @@
-import { LitElement, html, unsafeCSS } from 'lit-element';
+import { html } from 'lit-element';
 import { installRouter } from 'pwa-helpers/router.js';
 import { installOfflineWatcher } from 'pwa-helpers/network.js';
 import appStore from '@store/app-store';
 import { MobxLitElement } from '@adobe/lit-mobx';
 
+// @ts-ignore
 import sharedStyles from '@shared-styles';
+// @ts-ignore
 import style from './ai-app.css';
 
-//import { debugProjectStore } from '@store/project-store';
+// import { debugProjectStore } from '@store/project-store';
 // import { debugAppStore } from '@store/app-store';
 // import { debugSettingsStore } from '@store/settings-store';
-//debugProjectStore();
+// debugProjectStore();
 // debugAppStore();
 // debugSettingsStore();
 
@@ -37,6 +39,7 @@ class AiApp extends MobxLitElement {
             </header>
             <main>
                 <ai-welcome class="page" ?active="${appStore.page === 'welcome'}"></ai-welcome>
+                <ai-impressum class="page" ?active="${appStore.page === 'impressum'}"></ai-impressum>
                 <ai-project class="page" ?active="${appStore.page === 'project'}"></ai-project>
                 <ai-project-index class="page" ?active="${appStore.page === 'projects'}"></ai-project-index>
             </main>
