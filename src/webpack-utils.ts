@@ -1,7 +1,4 @@
-type File = {
-    name: string,
-    content: string,
-}
+import { File } from '@store/types';
 
 export type ScenarioTemplate = {
     name: string,
@@ -14,10 +11,7 @@ export type ScenarioTemplates = {
     component: string,
     templates: {[key:string]: ScenarioTemplate},
     examples: {[key:string]: ScenarioTemplate},
-    description: {
-        name: string,
-        content: string,
-    }
+    description: File,
 }
 
 export function getScenarios(): {[key:string]: ScenarioTemplates} {

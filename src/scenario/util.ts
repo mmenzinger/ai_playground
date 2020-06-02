@@ -106,4 +106,4 @@ export const localStorage = {
  *  logging
  */
 declare const __console: Console;
-export const realConsole = __console;
+export const _console = __console;

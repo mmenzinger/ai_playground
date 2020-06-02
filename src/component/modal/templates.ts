@@ -1,13 +1,14 @@
 import { html } from 'lit-element';
 import db from '@localdb';
-import { ScenarioTemplates, ScenarioTemplate } from '@src/webpack-utils';
+import { ScenarioTemplates } from '@src/webpack-utils';
 import { Project, File } from '@store/types';
 import { ModalTemplate } from '@modal/modal-generic';
+import JSZip from 'jszip';
 
 //------------------------------------------------------------------------------
 // New Project
 //------------------------------------------------------------------------------
-export function newProjectTemplate(scenarioTemplates: {[key:string]: ScenarioTemplates}): ModalTemplate {
+export function newProjectTemplate(scenarioTemplates: { [key: string]: ScenarioTemplates }): ModalTemplate {
     const scenarios = Object.values(scenarioTemplates).map(scenario => html`<option value="${scenario.name}">${Object.values(scenario.templates)[0].name}</option>`);
     const firstScenario = Object.values(scenarioTemplates)[0];
     const firstTemplate = Object.values(firstScenario.templates)[0];
@@ -15,17 +16,17 @@ export function newProjectTemplate(scenarioTemplates: {[key:string]: ScenarioTem
     let selectedScenarioIndex = 0;
     let selectedTemplateIndex = 0;
 
-    function updateTemplates(templateSelect: HTMLSelectElement, scenario: string){
-         const templates = Object.entries(scenarioTemplates[scenario].templates).map(([key, template]) => `<option value="${key}">Default</option>`).join('');
-         const examples = Object.entries(scenarioTemplates[scenario].examples).map(([key, example]) => `<option value="${key}">Example: ${example.name}</option>`).join('');
-         templateSelect.innerHTML = templates + examples;
+    function updateTemplates(templateSelect: HTMLSelectElement, scenario: string) {
+        const templates = Object.entries(scenarioTemplates[scenario].templates).map(([key, _]) => `<option value="${key}">Default</option>`).join('');
+        const examples = Object.entries(scenarioTemplates[scenario].examples).map(([key, example]) => `<option value="${key}">Example: ${example.name}</option>`).join('');
+        templateSelect.innerHTML = templates + examples;
     }
 
     return {
         title: 'New Project',
         submit: 'Create',
         abort: 'Cancel',
-    
+
         content: html`
             <li>
                 <label for="scenario">Scenario</label>
@@ -40,7 +41,7 @@ export function newProjectTemplate(scenarioTemplates: {[key:string]: ScenarioTem
                 <input id="name" type="text" placeholder="My Project" value="${firstTemplate.name}">
             </li>
         `,
-        
+
         init: async (shadowRoot: ShadowRoot) => {
             const scenario = shadowRoot.getElementById('scenario') as HTMLSelectElement;
             const template = shadowRoot.getElementById('template') as HTMLSelectElement;
@@ -50,15 +51,15 @@ export function newProjectTemplate(scenarioTemplates: {[key:string]: ScenarioTem
             template.selectedIndex = selectedTemplateIndex;
             name.value = template.options[selectedTemplateIndex].value;
         },
-    
-        check: async (fields: {[key:string]: any}) => {
-            if(fields.name.length === 0)
+
+        check: async (fields: { [key: string]: any }) => {
+            if (fields.name.length === 0)
                 return Error('Empty project name! Every project must have a name.');
-            if(await db.projectExists(fields.name))
+            if (await db.projectExists(fields.name))
                 return Error('Duplicate name! A project with that name already exists!');
             return true;
         },
-    
+
         change: {
             scenario: (e: Event, shadowRoot: ShadowRoot) => {
                 const target = e.target as HTMLSelectElement;
@@ -71,11 +72,161 @@ export function newProjectTemplate(scenarioTemplates: {[key:string]: ScenarioTem
                 name.value = template.options[selectedTemplateIndex].value;
             },
             template: (e: Event, shadowRoot: ShadowRoot) => {
-                const target = e.target as HTMLSelectElement; 
+                const target = e.target as HTMLSelectElement;
                 const text = target.options[target.selectedIndex].value;
                 const name = shadowRoot.getElementById('name') as HTMLInputElement;
                 name.value = text;
                 selectedTemplateIndex = target.selectedIndex;
+            }
+        },
+    };
+}
+
+//------------------------------------------------------------------------------
+// Upload Project
+//------------------------------------------------------------------------------
+export function uploadProjectTemplate(): ModalTemplate {
+    let zip: JSZip;
+    let settings: Project;
+    let projectFiles: File[];
+    let globalFiles: File[];
+
+    async function onSelectFile(fileSelectElement: HTMLInputElement, nameElement: HTMLInputElement) {
+        const zipFile: string = await new Promise((resolve, _) => {
+            const reader = new FileReader();
+            // @ts-ignore - it will throw an exception if null
+            reader.onload = () => resolve(reader.result);
+            // @ts-ignore - it will throw an exception if null
+            reader.readAsArrayBuffer((fileSelectElement.files)[0]);
+        });
+        zip = await JSZip.loadAsync(zipFile);
+        settings = JSON.parse(await zip.file('settings.json').async('text'));
+        nameElement.value = settings.name;
+    }
+
+    return {
+        title: 'Upload Project',
+        submit: 'Upload',
+        abort: 'Cancel',
+
+        content: html`
+            <li>
+                <label for="file">File</label>
+                <input id="file" type="file">
+            </li>
+            <li>
+                <label for="name">Name</label>
+                <input id="name" type="text" placeholder="My Project">
+            </li>
+            <li>
+                <label>Options</label>
+                <ul class="options">
+                    <li>
+                        <label for="globals">Include global files</label>
+                        <input id="globals" type="checkbox">
+                    </li>
+                    <li id="collision" style="display:none">
+                        <ul class="options">
+                            <li>
+                                <label for="prefer_old">Skip existing files</label>
+                                <input id="prefer_old" type="radio" name="collision" value="old" checked>
+                            </li>
+                            <li>
+                                <label for="prefer_new">Overwrite existing files</label>
+                                <input id="prefer_new" type="radio" name="collision" value="new">
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </li>
+        `,
+
+        init: async (shadowRoot: ShadowRoot) => {
+            const prefer_old = shadowRoot.getElementById('prefer_old') as HTMLInputElement;
+            const prefer_new = shadowRoot.getElementById('prefer_new') as HTMLInputElement;
+            const collision = shadowRoot.getElementById('collision') as HTMLLIElement;
+            const globals = shadowRoot.getElementById('globals') as HTMLInputElement;
+            const name = shadowRoot.getElementById('name') as HTMLInputElement;
+            const file = shadowRoot.getElementById('file') as HTMLInputElement;
+            prefer_new.checked = false;
+            prefer_old.checked = true;
+            collision.style.display = 'none';
+            globals.checked = false;
+            name.value = '';
+            file.value = '';
+        },
+
+        check: async (fields: { [key: string]: any }) => {
+            try {
+                const globals = fields.globals as boolean;
+                const name = fields.name as string;
+
+                const projectFilesPromises: Promise<File>[] = [];
+                zip.folder('project').forEach((filename, file) => {
+                    projectFilesPromises.push(new Promise((resolve, _) => {
+                        file.async('text').then(content => {
+                            resolve({
+                                id: 0,
+                                projectId: 0,
+                                name: filename,
+                                content,
+                            });
+                        });
+                    }));
+                });
+
+                const globalFilesPromises: Promise<File>[] = [];
+                if (globals) {
+                    zip.folder('global').forEach((filename, file) => {
+                        globalFilesPromises.push(new Promise((resolve, _) => {
+                            file.async('text').then(content => {
+                                resolve({
+                                    id: 0,
+                                    projectId: 0,
+                                    name: filename,
+                                    content,
+                                });
+                            });
+                        }));
+                    });
+                }
+                if (name.length === 0)
+                    throw Error('Empty project name! Every project must have a name.');
+                if (await db.projectExists(name))
+                    throw Error('Duplicate name! A project with that name already exists!');
+
+                projectFiles = await Promise.all(projectFilesPromises);
+                globalFiles = await Promise.all(globalFilesPromises);
+            }
+            catch (error) {
+                return error;
+            }
+            return true;
+        },
+
+        async result(shadowRoot: ShadowRoot) {
+            const prefer_new = shadowRoot.getElementById('prefer_new') as HTMLInputElement;
+            const prefer_old = shadowRoot.getElementById('prefer_old') as HTMLInputElement;
+            const collision = (prefer_new.checked ? prefer_new.value : prefer_old.value);
+            const name = shadowRoot.getElementById('name') as HTMLInputElement;
+            return {
+                projectFiles,
+                globalFiles,
+                name: name.value,
+                collision: collision,
+                settings,
+            }
+        },
+
+        change: {
+            file: (event: Event, shadowRoot: ShadowRoot) => {
+                const name = shadowRoot.getElementById('name') as HTMLInputElement;
+                onSelectFile(event.target as HTMLInputElement, name);
+            },
+            globals: (event: Event, shadowRoot: ShadowRoot) => {
+                const collision = shadowRoot.getElementById('collision') as HTMLLIElement;
+                const display = (event.target as HTMLInputElement).checked ? 'block' : 'none';
+                collision.style.display = display;
             }
         },
     };
@@ -126,7 +277,7 @@ export function createFileTemplate(projectId: number): ModalTemplate {
             type.selectedIndex = 0;
         },
 
-        check: async (fields: {[key:string]: any}) => {
+        check: async (fields: { [key: string]: any }) => {
             if (fields.name.length === 0)
                 return Error('Empty filename! Every file must have a name.');
             if (!fields.name.match(/[a-zA-Z0-9_-]/))
@@ -157,7 +308,7 @@ export function deleteFileTemplate(file: File): ModalTemplate {
 // Download Project
 //------------------------------------------------------------------------------
 export function downloadProjectTemplate(project: Project): ModalTemplate {
-    return{
+    return {
         title: 'Download Project',
         submit: 'Download',
         abort: 'Cancel',

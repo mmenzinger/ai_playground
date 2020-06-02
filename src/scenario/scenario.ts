@@ -1,6 +1,5 @@
 import { LazyElement } from '@element/lazy-element';
 import { ProjectSettings } from '@store/types';
-import { html, TemplateResult } from 'lit-element';
 import projectStore from '@store/project-store';
 import db from '@localdb';
 

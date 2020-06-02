@@ -2,7 +2,8 @@ import { observable, action, autorun, toJS, runInAction } from 'mobx';
 import settingsStore from '@store/settings-store';
 import projectStore from '@store/project-store';
 import { Defer } from '@util';
-
+import { Modals } from '@element/c4f-modal';
+import { ModalTemplate } from '@modal/modal-generic';
 import { Modal } from '@store/types';
 
 type Params = {[key: string]: string};
@@ -68,7 +69,7 @@ class AppStore{
     }
 
     @action
-    async showModal(template: string, data: object): Promise<any>{
+    async showModal(template: Modals, data: ModalTemplate): Promise<any>{
         // lazy load modal ${template}
         await import(`@modal/modal-${template}`);
 

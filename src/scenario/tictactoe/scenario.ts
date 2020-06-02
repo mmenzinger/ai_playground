@@ -10,9 +10,9 @@ export enum EPlayer {
     None =     0 | 0,
     Computer = 1 | 0,
     Human =    2 | 0,
-    Both =     Computer | Human,
-    Player1 =  Computer,
-    Player2 =  Human,
+    Both =     3 | 0,
+    Player1 =  1 | 0,
+    Player2 =  2 | 0,
 }
 
 export type Settings = {

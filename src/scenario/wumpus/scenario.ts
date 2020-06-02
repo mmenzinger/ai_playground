@@ -5,20 +5,20 @@ import { call } from '@worker/types';
 
 
 export enum EDirection {
-    Up = 0,
-    Down = 1,
-    Left = 2,
-    Right = 3,
-}
+    Up = 0 | 0,
+    Down = 1 | 0,
+    Left = 2 | 0,
+    Right = 3 | 0,
+};
 
 export enum EAction {
-    Wait = 0,
-    Shoot = 4,
+    Wait = 0 | 0,
+    Shoot = 4 | 0,
     ShootUp = 4 | EDirection.Up,
     ShootDown = 4 | EDirection.Down,
     ShootLeft = 4 | EDirection.Left,
     ShootRight = 4 | EDirection.Right,
-    Move = 8,
+    Move = 8 | 0,
     MoveUp = 8 | EDirection.Up,
     MoveDown = 8 | EDirection.Down,
     MoveLeft = 8 | EDirection.Left,
@@ -27,12 +27,12 @@ export enum EAction {
 };
 
 export enum EPercept {
-    None = 0,
-    Bump = 1,
-    Breeze = 2,
-    Stench = 4,
-    Glitter = 8,
-    Scream = 16,
+    None = 0 | 0,
+    Bump = 1 | 0,
+    Breeze = 2 | 0,
+    Stench = 4 | 0,
+    Glitter = 8 | 0,
+    Scream = 16 | 0,
 };
 // @ts-ignore
 EPercept[EPercept.Stench | EPercept.Scream] = 'Stench,Scream';
@@ -54,11 +54,11 @@ EPercept[EPercept.Stench | EPercept.Breeze | EPercept.Bump] = 'Stench,Breeze,Bum
 EPercept[EPercept.Breeze | EPercept.Bump] = 'Breeze,Bump';
 
 export enum ETile {
-    Unknown = 7,
-    Empty = 0,
-    Pit = 1,
-    Wumpus = 2,
-    Gold = 4,
+    Unknown = 7 | 0,
+    Empty = 0 | 0,
+    Pit = 1 | 0,
+    Wumpus = 2 | 0,
+    Gold = 4 | 0,
 };
 
 export type Action = {
@@ -324,7 +324,7 @@ export function performAction(state: State, action: Action): State {
     return newState;
 }
 
-export async function run(state: State, player: Agent, update = true) {
+export async function run(state: State, player: Agent, update = true): Promise<State> {
     if (player.init instanceof Function)
         await player.init(state);
     if (update)
@@ -335,16 +335,6 @@ export async function run(state: State, player: Agent, update = true) {
         const actions = getActions(state);
         const action = await player.update(state, actions);
         newState = performAction(state, action);
-
-        /*let event = action.type;
-        if (event === Action.MoveTo)
-            event += ` ${action.x},${action.y}`;
-        const events = [event];
-        events.push(`Percepts: [${[...state.percepts].join(',')}]`);
-        if (state.alive === false)
-            events.push('You died!');
-        if (this.hasWon())
-            events.push('You found the gold!');*/
         if (player.result instanceof Function)
             await player.result(state, action, newState, newState.score);
         if (update)
@@ -355,6 +345,7 @@ export async function run(state: State, player: Agent, update = true) {
     if (player.finish instanceof Function) {
         await player.finish(newState, newState.score);
     }
+    return state;
 }
 
 export async function __run(settings: Settings) {

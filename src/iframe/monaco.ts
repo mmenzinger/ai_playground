@@ -268,13 +268,13 @@ function markersUpdated() {
             }
         }
         //console.log(errorsChanged, projectErrors);
-        if (errorsChanged){
+        if (errorsChanged) {
             window.onErrorChange(projectErrors);
         }
     }
 }
 
-function createModel(file: File, uri: monaco.Uri){
+function createModel(file: File, uri: monaco.Uri) {
     let language = 'javascript';
     const ending = file.name.match(/\.([a-z]+)$/);
     if (ending) {
@@ -296,14 +296,14 @@ window.openProject = (project: Project, files: File[], initialFile?: File) => {
     projectErrors = {};
     // preload files
     const modelsValidated = [];
-    for(const file of files){
+    for (const file of files) {
         const path = (file.projectId ? '/project/' : '/global/') + file.name;
         const uri = monaco.Uri.parse(path)
         let model = monaco.editor.getModel(uri);
         if (!model) {
             model = createModel(file, uri);
         }
-        else{
+        else {
             model.setValue(file.content || '');
         }
         //monaco.languages.typescript.javascriptDefaults.addExtraLib(file.content || '', path);
@@ -315,8 +315,8 @@ window.openProject = (project: Project, files: File[], initialFile?: File) => {
     });
 
     activeProject = project;
-    if(initialFile){
-        window.openFile(initialFile);window.openFile(initialFile);
+    if (initialFile) {
+        window.openFile(initialFile); window.openFile(initialFile);
     }
 }
 
@@ -325,15 +325,15 @@ window.openFile = (file: File) => {
         activeFile.state = editor.saveViewState() || undefined;
     }
     let path;
-    if(file.id){
+    if (file.id) {
         path = (file.projectId ? '/project/' : '/global/') + file.name;
     }
-    else{
+    else {
         path = file.name;
     }
     const uri = monaco.Uri.parse(path)
     let model = monaco.editor.getModel(uri);
-    if(!model){
+    if (!model) {
         model = createModel(file, uri);
     }
     editor.setModel(model);
@@ -343,10 +343,10 @@ window.openFile = (file: File) => {
     }
     activeFile = file;
 
-    if(file.id){
+    if (file.id) {
         editor.updateOptions({ readOnly: false });
     }
-    else{
+    else {
         editor.updateOptions({ readOnly: true });
     }
 

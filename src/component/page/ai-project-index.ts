@@ -2,23 +2,27 @@ import { html } from 'lit-element';
 import { LazyElement } from '@element/lazy-element';
 import appStore from '@store/app-store';
 import projectStore from '@store/project-store';
+import { Project } from '@store/types';
 
 import db from '@localdb';
 
-import { getScenarios, getTemplates, getExamples } from '@src/webpack-utils';
+import { getScenarios } from '@src/webpack-utils';
 
 import { Modals, ModalAbort } from '@element/c4f-modal';
-import { newProjectTemplate, newExampleTemplate, deleteProjectTemplate, downloadProjectTemplate } from '@modal/templates';
+import { newProjectTemplate, deleteProjectTemplate, downloadProjectTemplate, uploadProjectTemplate } from '@modal/templates';
 
 import JSZip from "jszip";
 import { saveAs } from 'file-saver';
 
+// @ts-ignore
 import sharedStyles from '@shared-styles';
+// @ts-ignore
 import style from './ai-project-index.css';
 
 class AiProjectIndex extends LazyElement {
     static get properties() {
         return {
+            ...super.properties,
             _projects: { type: Array },
         };
     }
@@ -30,10 +34,7 @@ class AiProjectIndex extends LazyElement {
         ];
     }
 
-    constructor() {
-        super();
-        this._projects = [];
-    }
+    _projects: Project[] = [];
 
     render() {
         const elements = [];
@@ -89,9 +90,9 @@ class AiProjectIndex extends LazyElement {
         }
     }
 
-    async onDeleteProject(project) {
+    async onDeleteProject(project: Project) {
         try {
-            const modal = await appStore.showModal(Modals.GENERIC, deleteProjectTemplate(project));
+            await appStore.showModal(Modals.GENERIC, deleteProjectTemplate(project));
             await projectStore.deleteProject(project.id);
             this._projects = await db.getProjects();
         }
@@ -101,20 +102,20 @@ class AiProjectIndex extends LazyElement {
         }
     }
 
-    async onDownloadProject(project) {
+    async onDownloadProject(project: Project) {
         try{
             const modal = await appStore.showModal(Modals.GENERIC, downloadProjectTemplate(project));
             const zip = new JSZip();
             const projectFolder = zip.folder('project');
             const projectFiles = await db.getProjectFiles(project.id);
             for(const file of projectFiles){
-                projectFolder.file(file.name, file.content);
+                projectFolder.file(file.name, file.content || '');
             }
             if(modal.globals){
                 const globalFolder = zip.folder('global');
                 const globalFiles = await db.getProjectFiles(0);
                 for(const file of globalFiles){
-                    globalFolder.file(file.name, file.content);
+                    globalFolder.file(file.name, file.content || '');
                 }
             }
             zip.file('settings.json', JSON.stringify(project));
@@ -129,7 +130,8 @@ class AiProjectIndex extends LazyElement {
 
     async onUploadProject() {
         try{
-            const modal = await appStore.showModal(Modals.UPLOAD_PROJECT);
+            const modal = await appStore.showModal(Modals.GENERIC, uploadProjectTemplate());
+            console.log(modal);
             await projectStore.importProject(
                 modal.name,
                 modal.settings.scenario,

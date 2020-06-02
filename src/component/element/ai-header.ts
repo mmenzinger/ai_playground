@@ -2,6 +2,7 @@ import { html } from 'lit-element';
 
 import { MobxLitElement } from '@adobe/lit-mobx';
 import appStore from '@store/app-store';
+import projectStore from '@store/project-store';
 
 // @ts-ignore
 import sharedStyles from '@shared-styles';
@@ -24,7 +25,12 @@ class AiHeader extends MobxLitElement {
 
     render() {
         const breadcrumbs = [html`<li><a href="./">Home</a></li>`];
-        for(const [key, value] of Object.entries(appStore.params)){
+        for(const [key, value] of Object.entries(appStore.params).map(([key, value]) => {
+            if(key === 'project'){
+                return [projectStore.activeProject?.name || key, projectStore.activeProject?.id || value];
+            }
+            return [key, value];
+        })){
             breadcrumbs.push(html`<li>></li><li><a href="?${key}${value ? '=' + value : ''}">${key}</a></li>`);
         }
         return html`

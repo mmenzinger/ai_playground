@@ -14,8 +14,9 @@ export type ModalTemplate = {
     abort: string,
     content: TemplateResult,
     init?: (root: ShadowRoot) => Promise<void>,
-    check?: (fields: {[key:string]: any}) => Promise<Error | true>,
-    change?: {[key:string]: (e: Event, shadowRoot: ShadowRoot) => void},
+    check?: (fields: { [key: string]: any }) => Promise<Error | true>,
+    result?: (root: ShadowRoot) => Promise<any>,
+    change?: { [key: string]: (e: Event, shadowRoot: ShadowRoot) => void },
 }
 
 
@@ -27,8 +28,8 @@ export class ModalGeneric extends LazyElement {
     static get properties() {
         return {
             ...super.properties,
-            data: {type: Object },
-            _error: {type: String },
+            data: { type: Object },
+            _error: { type: String },
         }
     }
 
@@ -40,7 +41,7 @@ export class ModalGeneric extends LazyElement {
     }
 
     render() {
-        if(this.data){
+        if (this.data) {
             return html`
                 <form autocomplete="off" action="javascript:void(0);">
                     <header>
@@ -57,22 +58,22 @@ export class ModalGeneric extends LazyElement {
                 </form>
             `;
         }
-        else{
+        else {
             return html``;
         }
     }
 
-    updated(){
+    updated() {
         const root = this.shadowRoot;
-        if(root){
-            if(this.data && this.data.init){
+        if (root) {
+            if (this.data && this.data.init) {
                 this.data.init(root);
             }
             const firstElement = root.querySelector('input,select') as HTMLElement;
-            if(firstElement)
+            if (firstElement)
                 firstElement.focus();
-            if(this.data && this.data.change){
-                for(let [field, callback] of Object.entries(this.data.change)){
+            if (this.data && this.data.change) {
+                for (let [field, callback] of Object.entries(this.data.change)) {
                     const element = root.getElementById(field);
                     element?.addEventListener('change', e => callback(e, root));
                 }
@@ -80,14 +81,15 @@ export class ModalGeneric extends LazyElement {
         }
     }
 
-    async onSubmit(){
-        try{
-            const fields: {[key:string]: any} = {};
+    async onSubmit() {
+        try {
+            let result;
+            const fields: { [key: string]: any } = {};
             const elements = this.shadowRoot?.querySelectorAll('input,select');
-            if(elements){
+            if (elements) {
                 elements.forEach(element => {
                     const input = element as HTMLInputElement;
-                    switch(input.type){
+                    switch (input.type) {
                         case 'checkbox':
                             fields[input.id] = input.checked;
                             break;
@@ -98,28 +100,37 @@ export class ModalGeneric extends LazyElement {
                             fields[input.id] = input.value;
                     }
                 })
-                if(this.data.check){
-                    const error = await this.data.check(fields);
-                    if(error instanceof Error)
-                        throw error;
-                }
-
-                this._error = null;
-                appStore.resolveModal(fields);
             }
+            if (this.data.check) {
+                const error = await this.data.check(fields);
+                if (error instanceof Error)
+                    throw error;
+            }
+
+            if (this.data.result && this.shadowRoot) {
+                result = this.data.result(this.shadowRoot);
+            }
+            else {
+                result = fields;
+            }
+
+            this._error = null;
+            appStore.resolveModal(result);
         }
-        catch(error){
+        catch (error) {
             this._error = html`<li class="error"><p>${error}</p></li>`;
         }
     }
 
-    onAbort(){
+
+
+    onAbort() {
         this._error = null;
         appStore.rejectModal(new ModalAbort());
     }
 
-    onKeyDown(key: string){
-        switch(key){
+    onKeyDown(key: string) {
+        switch (key) {
             case 'Escape': this.onAbort(); break;
             case 'Enter': this.onSubmit(); break;
         }

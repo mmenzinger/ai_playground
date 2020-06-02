@@ -1,7 +1,8 @@
-import { html, unsafeCSS, css, LitElement } from 'lit-element';
+import { html, LitElement } from 'lit-element';
 
-
+// @ts-ignore
 import sharedStyles from '@shared-styles';
+// @ts-ignore
 import style from './dynamic-split.css';
 
 const LOCALSTORE_KEY = 'dynamic-split-state';
@@ -23,43 +24,40 @@ class DynamicSplit extends LitElement {
         ];
     }
 
-    constructor() {
-        super();
-        this._drag = undefined;
-        this._throttle = 0;
-        this.direction = 'horizontal';
-        this.minSize = '10px';
-        this.defaultRatio = '0.5';
-        this.saveId = undefined;
-    }
+    _drag: HTMLDivElement | undefined = undefined;
+    _throttle = 0;
+    direction = 'horizontal';
+    minSize = '10px';
+    defaultRatio = 0.5;
+    saveId: number;
 
     render() {
         return html`<div id="wrapper"><div id="start"><slot name="start"></slot></div><div id="handle"></div><div id="end"><slot name="end"></slot></div></div>`;
     }
 
     firstUpdated() {
-        const wrapper = this.shadowRoot.getElementById('wrapper');
-        const handle = this.shadowRoot.getElementById('handle');
-        const start = this.shadowRoot.getElementById('start');
-        const end = this.shadowRoot.getElementById('end');
+        const wrapper = this.shadowRoot?.getElementById('wrapper') as HTMLDivElement;
+        const handle = this.shadowRoot?.getElementById('handle') as HTMLDivElement;
+        const start = this.shadowRoot?.getElementById('start') as HTMLDivElement;
+        const end = this.shadowRoot?.getElementById('end') as HTMLDivElement;
 
-        const updateHandle = (ratio) => {
+        const updateHandle = (ratio: number) => {
             start.style.flex = `${ratio}`;
             end.style.flex = `${1-ratio}`;
             if(this.saveId){
-                const data = JSON.parse(localStorage.getItem(LOCALSTORE_KEY)) || {};
+                const data = JSON.parse(localStorage.getItem(LOCALSTORE_KEY) || '{}');
                 data[this.saveId] = ratio;
                 localStorage.setItem(LOCALSTORE_KEY, JSON.stringify(data));
             }
         }
 
-        const updateHandleEvent = (event) => {
+        const updateHandleEvent = (event: MouseEvent) => {
             const rect = wrapper.getBoundingClientRect();
             let ratio = (event.offsetX - rect.x) / rect.width;
             if(this.direction === 'vertical'){
                 ratio = (event.offsetY - rect.y) / rect.height;
             }
-            updateHandle(ratio, 1-ratio);
+            updateHandle(ratio);
         }
 
         start.style.minWidth = this.minSize;
@@ -74,7 +72,7 @@ class DynamicSplit extends LitElement {
             handle.style.width = '4px';
         }
         if(this.saveId){
-            const data = JSON.parse(localStorage.getItem(LOCALSTORE_KEY)) || {};
+            const data = JSON.parse(localStorage.getItem(LOCALSTORE_KEY) || '{}');
             const ratio = data[this.saveId] || this.defaultRatio;
             updateHandle(ratio);
         }

@@ -8,7 +8,7 @@
     - [result(oldState, action, newState, score)](#resultoldstate-action-newstate-score)
     - [finish(state, score)](#finishstate-score)
     - [train()](#train)
-3. [Objects and Types](#objectsandtypes)
+3. [Objects and Types](#objects-and-types)
     - [Action](#action)
     - [Agent](#agent)
     - [Player](#player)
@@ -18,11 +18,11 @@
     - [createAction(player, row, col)](#createactionplayer-row-col)
     - [createState(player, board?)](#createstateplayer-board)
     - [actionToObject(action)](#actiontoobjectaction)
-    - [stateToObject(state)](#statetoobject)
+    - [stateToObject(state)](#statetoobjectstate)
     - [getPlayer(state)](#getplayerstate)
     - [getBoard(state)](#getboardstate)
-    - [getScore(state, player)](getscorestate-player)
-    - [getWinner(state)](#getwinnerstate])
+    - [getScore(state, player)](#getscorestate-player)
+    - [getWinner(state)](#getwinnerstate)
     - [validateAction(state, action)](#validateactionstate-action)
     - [validAction(state, action)](#validactionstate-action)
     - [performAction(state, action)](#performactionstate-action)
@@ -158,7 +158,7 @@ type State: number;
 ### createAction(player, row, col)
 Returns the resulting [action](#action).
 ```javascript
-function createAction(player: Player, row: number, col: number): Action
+function createAction(player: Player, row: number, col: number): Action;
 ```
 [[Top](#tictactoe)]
 

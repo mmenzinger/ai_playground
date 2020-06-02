@@ -7,11 +7,11 @@ import { ... } from 'scenario/util.js';
 ## Table of Contents
 1. [Introduction](#introduction)
 2. [Exports](#exports)
-    - [init(state)](#initstate)
-    - [update(state, actions)](#updatestate-actions)
-    - [result(oldState, action, newState, score)](#resultoldstate-action-newstate-score)
-    - [finish(state, score)](#finishstate-score)
-    - [train()](#train)
+    - [storeJson(path, data)](#storejsonpath-data)
+    - [loadJson(path)](#loadjsonpath)
+    - [localStorage](#localstorage)
+    - [_console](#_console)
+
 
 ## Introduction
 The util.js library provides a mixture of useful functions.
@@ -47,19 +47,6 @@ const data = await loadJson('project/myFile.json');
 [[Top](#util)]
 
 
-### getFileContent(path)
-Returns the content of a file as a promise resolving into a string.
-```javascript
-export declare function getFileContent(path: string): Promise<string>;
-```
-Example:
-```javascript
-const content = await getFileContent('project/index.js');
-console.log(content);
-```
-[[Top](#util)]
-
-
 ### localStorage
 Simulates the [window.localStorage](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage) to provide simple access to a key-value-store.
 It creates the file localstorage.json to persist its data.
@@ -82,13 +69,13 @@ console.log(value);
 [[Top](#util)]
 
 
-### realConsole
-Provides access to the normal window.console. Useful to debug in blocking code.
+### _console
+Provides access to the normal window.console. Useful for debugging in blocking code or when logging big/many objects.
 ```javascript
-export declare const realConsole: Console;
+export declare const _console: Console;
 ```
 Example:
 ```javascript
-realConsole.warn('something went wrong...');
+_console.warn('something went wrong...');
 ```
 [[Top](#util)]
