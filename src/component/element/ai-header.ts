@@ -43,7 +43,6 @@ class AiHeader extends MobxLitElement {
                 <div id="menu">
                     <ul id="breadcrumbs">${breadcrumbs}</ul>
                     <ul id="additional">
-                        <li><a href="https://gitlab.c4f.wtf/c4f.wtf/ai">Code</a></li>
                         <li><a href="https://docs.google.com/forms/d/e/1FAIpQLSfrFYo0PnULmqOhQY4bxE_uWwe21m-RtxmboGFRlJW9Or5r4w/viewform?usp=sf_link">Feedback</a></li>
                         <li><a href="?impressum">Impressum</a></li>
                     </ul>

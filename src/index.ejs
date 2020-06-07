@@ -8,7 +8,6 @@
     <meta name="description" content="Coding4Fun Educational Artificial Intelligence Platform">
     <!--<link rel="manifest" href="manifest.json">-->
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preconnect" href="https://widget.cereo.io" crossorigin>
     <script>
         // Load and register pre-caching Service Worker
         if ('serviceWorker' in navigator) {
@@ -16,8 +15,23 @@
                 navigator.serviceWorker.register('service-worker.js');
             });
         }
-        else {
-            throw Error("This page can't work without service workers!");
+        onload = () => {
+            try{
+                if ('serviceWorker' in navigator) {
+                    navigator.serviceWorker.register('service-worker.js');
+                }
+                else{
+                    throw Error(`could not create service worker`);
+                }
+            }
+            catch(error){
+                document.getElementById('app').style.display = 'none';
+                document.getElementById('notSupported').style.display = 'block';
+                const ul = document.getElementById('missing');
+                const li = document.createElement('li');
+                li.innerText = error.message;
+                ul.appendChild(li);
+            }
         }
     </script>
     <style>
@@ -63,29 +77,24 @@
             --font-code: 'Source Code Pro', monospace;
         }
 
+        html, body, #app{ height: 100%;}
         body {
             margin: 0;
             min-width: 33rem;
-        }
-
-        #app {
-            height: 100vh;
         }
     </style>
 </head>
 
 <body>
-    <ai-app id='app'></ai-app>
+    <ai-app id="app"></ai-app>
+    <div id="notSupported" style="display:none">
+        Your browser does not provide the following required features:
+        <ul id="missing"></ul>
+        Currently only modern versions of Chromium-based browsers like <a href="https://www.google.com/chrome">Google Chrome</a> and <a href="https://www.microsoft.com/en-us/edge">Microsoft Edge</a> provide all necessary features.
+    </div>
     <noscript>
-        Please enable JavaScript to view this website.
+        This as a website about programming JavaScript. It can not function with JavaScript disabled... To continue enable JavaScript and reload.
     </noscript>
-    <!--<script type="text/javascript">
-        var script = document.createElement("script");
-        script.type = "text/javascript";
-        script.src = "https://widget.cereo.io";
-        document.getElementsByTagName("body")[0]
-          .appendChild(script);
-    </script>-->
 </body>
 
 </html>

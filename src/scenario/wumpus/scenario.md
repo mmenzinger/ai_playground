@@ -9,24 +9,24 @@
     - [finish(state, score)](#finishstate-score)
     - [train()](#train)
 3. [Objects and Types](#objects-and-types)
+    - [Direction](#direction)
     - [Action](#action)
     - [Agent](#agent)
-    - [Player](#player)
+    - [Percept](#percept)
+    - [Tile](#tile)
     - [Settings](#settings)
     - [State](#state)
 4. [Functions](#functions)
-    - [createAction(player, row, col)](#createactionplayer-row-col)
-    - [createState(player, board?)](#createstateplayer-board)
-    - [actionToObject(action)](#actiontoobjectaction)
-    - [stateToObject(state)](#statetoobjectstate)
-    - [getPlayer(state)](#getplayerstate)
-    - [getBoard(state)](#getboardstate)
-    - [getScore(state, player)](#getscorestate-player)
-    - [getWinner(state)](#getwinnerstate)
+    - [copyState(state)](#copystatestate)
+    - [createState(settings)](#createstatesettings)
+    - [getTile(state, x, y)](#gettilestate-x-y)
+    - [getPercepts(state, x, y)](#getperceptsstate-x-y)
+    - [hasWon(state)](#haswonstate)
+    - [getActions(state)](#getactionsstate)
     - [validateAction(state, action)](#validateactionstate-action)
     - [validAction(state, action)](#validactionstate-action)
     - [performAction(state, action)](#performactionstate-action)
-    - [run(state, agent1, agent2?)](#runstate-agent1-agent2)
+    - [run(state, player, update?)](#runstate-player-update)
 
 
 ## Introduction
@@ -34,9 +34,13 @@
 With this information the explorer has to manoeuver through the cave and optionally use his single arrow to kill the Wumpus, so he can pass over its tile.  
 If the player has not found the treasure after 1000 moves, the game is also lost.
 
-While the game is a good example for a [knowledge-based agent](https://www.tutorialandexample.com/knowledge-based-agents-in-ai), the world generation can lead to 
+While the game is a good example for a [knowledge-based agent](https://www.tutorialandexample.com/knowledge-based-agents-in-ai), there might not be a perfect solution. The situation can be ambiguous and the explorer might have to choose between multiple possibly risky next steps.
 
-[[Top](#tictactoe)]
+The game has two complexity settings Simple and Advanced. On Simple possible moves are limited to unexplored tiles next to already explored ones. This means the agent can jump all over the map (the assumption is he can move freely around the already explored cave). On Advanced the explorer can only move to one adjacent tile at a time.
+
+Additionally the map size can vary between 4x4 und 10x10 und a seed can be used to get a specific map layout.
+
+[[Top](#wumpus-world)]
 
 
 ## Callbacks
@@ -51,7 +55,7 @@ export async function init(state){
     ...
 }
 ```
-[[Top](#tictactoe)]
+[[Top](#wumpus-world)]
 
 ### update(state, actions)
 Called every time at the beginning of the computers turn. State is the current state [state](#scenariogetstate) and actions is a list of available [actions](#scenariogetactions).  
@@ -62,7 +66,7 @@ export async function update(state, actions){
     return Action;
 }
 ```
-[[Top](#tictactoe)]
+[[Top](#wumpus-world)]
 
 ### result(oldState, action, newState, score)
 Called every time at the end of the computers turn. OldState and newState are the [states](#scenariogetstate) before and after the action. Action is the used [action](#scenariogetactions) and score is the resulting [score](#scenariogetscoreplayer).  
@@ -72,7 +76,7 @@ export function result(oldState, action, newState, score){
     ...
 }
 ```
-[[Top](#tictactoe)]
+[[Top](#wumpus-world)]
 
 ### finish(state, score)
 Called once when the game has concluded. State is the final [state](#scenariogetstate) and score is the final [score](#scenariogetscoreplayer).  
@@ -81,7 +85,7 @@ export async function finish(state, score){
     ...
 }
 ```
-[[Top](#tictactoe)]
+[[Top](#wumpus-world)]
 
 ### train()
 Called when the train-button is pressed. Can be used to do anything, for example train a neural network.  
@@ -90,25 +94,51 @@ export async function train(){
     ...
 }
 ```
-[[Top](#tictactoe)]
-
-
-## Globals
+[[Top](#wumpus-world)]
 
 
 ## Objects and Types
 
-### Action
-Contains a position and the current [player](#player).
-Action is a 6-bit number containing the row in the 2 upper bits, col in the 2 middle bits and the [player](#player) in the 2 lower bits.
-Can be created using the [createAction]() function.
-```javascript
-type Action: number;
+### Direction
+Enum for the four main directions. Mainly used inside [actions](#action) to provide a direction.
+```typescript
+export declare enum EDirection {
+    Up = 0,
+    Down = 1,
+    Left = 2,
+    Right = 3,
+}
+export declare type Direction = number;
 ```
-[[Top](#tictactoe)]
+[[Top](#wumpus-world)]
+
+### Action
+Object containing the action and optionally x and y coordinates. Inside the type the direction is stored in the lower 2 bits.
+```javascript
+export declare enum EAction {
+    Wait = 0,
+    Shoot = 4,
+    ShootUp = 4 | EDirection.Up,
+    ShootDown = 4 | EDirection.Down,
+    ShootLeft = 4 | EDirection.Left,
+    ShootRight = 4 | EDirection.Right,
+    Move = 8,
+    MoveUp = 8 | EDirection.Up,
+    MoveDown = 8 | EDirection.Down,
+    MoveLeft = 8 | EDirection.Left,
+    MoveRight = 8 | EDirection.Right,
+    MoveTo = 8 | 16,
+}
+export declare type Action = {
+    type: EAction,
+    x?: number,
+    y?: number,
+}
+```
+[[Top](#wumpus-world)]
 
 ### Agent
-Contains all [callbacks](#callbacks) for a [player](#player). Only update is mandatory, the rest are optional.
+Contains all [callbacks](#callbacks) for the explorer. Only update is mandatory, the rest are optional.
 ```javascript
 {
     init?: (state: State) => Promise<void>;
@@ -117,124 +147,131 @@ Contains all [callbacks](#callbacks) for a [player](#player). Only update is man
     finish?: (state: State, score: number) => Promise<void>;
 }
 ```
-[[Top](#tictactoe)]
+[[Top](#wumpus-world)]
 
-### Player
-Player is a 2-bit number containing a bit for each of the players.
-The enum EPlayer provides easily readable defaults.
+### Percept
+Percept is a 5-bit number containing a bit for each of the possible perceptions.
 ```javascript
-enum EPlayer {
-    None     = 0,
-    Computer = 1,
-    Human    = 2,
-    Both     = Computer | Human,
-    Player1  = Computer,
-    Player2  = Human,
+export declare enum EPercept {
+    None = 0,
+    Bump = 1,
+    Breeze = 2,
+    Stench = 4,
+    Glitter = 8,
+    Scream = 16,
 }
-type Player: number;
+export declare type Percept = number;
 ```
-[[Top](#tictactoe)]
+[[Top](#wumpus-world)]
+
+### Tile
+Tile is a 8-bit number containing percepts in its 5 lower bits and the tile-type in its 3 upper bits. Generally a tile can only have one type, but when all tile-bits are set the tile is considered as unknown.
+```javascript
+export declare enum ETile {
+    Unknown = 7,
+    Empty = 0,
+    Pit = 1,
+    Wumpus = 2,
+    Gold = 4,
+}
+export declare type Tile = number;
+```
+[[Top](#wumpus-world)]
 
 ### Settings
-Contains the settings needed to create a new [state](#state).
+Contains the settings needed to create a new [state](#state).  
+Complexity is either 1 (Simple) or 2 (Advanced), size can be 4, 6, 8 or 10 and
+the seed can be any string.
 ```javascript
-{
-    startingPlayer: Player;
+export declare type Settings = {
+    complexity: number,
+    size: number,
+    seed: string,
 }
 ```
-[[Top](#tictactoe)]
+[[Top](#wumpus-world)]
 
 ### State
-Contains the board and the active as well as the starting [player](#player).
-The state is a 20-bit number, containing the current [player](#player) in its two highest bits and the nine fields from top/left to bottom/right in the 18 rightmost bits.
-The functions getPlayer and getBoard can be used to easily get the current [player](#player) or board.
-Since it is a trivial datatype assignment always results in a copy of the state.
+Object containing all information to describe the current state. For a deep copy the state the [copystate](#copystatestate) function has to be used.  
+Size, complexity, seed correspond to [settings](#settings). Map is an uint8 array, each entry containing a [tile](#tile) (row-wise). In the beginning most [tiles](#tile) will be unknown, they get revealed whenever the explorer moves to that [tile](#tile).  
+Position describes the player position starting in the top left corner and percepts the perceptions on the current tile.  
+Score starts at 0 and gets decreased for every action the player takes. Finding the gold adds 1000 score, whenever the score reaches -1000, the player has lost.  
+Alive signals if the explorer is still alive and arrow his number of arrows (1 in the beginning).
 ```javascript
-type State: number;
+export declare type State = {
+    size: number;
+    complexity: number;
+    seed: string;
+    map: Uint8Array;
+    position: { x: number, y: number };
+    percepts: Percept;
+    score: number;
+    alive: boolean;
+    arrows: number;
+}
 ```
-[[Top](#tictactoe)]
+[[Top](#wumpus-world)]
 
 
 ## Functions
 
-### createAction(player, row, col)
-Returns the resulting [action](#action).
-```javascript
-function createAction(player: Player, row: number, col: number): Action
-```
-[[Top](#tictactoe)]
 
-### createState(player, board?)
-Returns the resulting [state](#state).
-Board is an optional 2-dimensional array of [players](#player).
+### copyState(state)
+Returns a deep copy of the [state](#state).
 ```javascript
-function createState(player: Player, board?: Player[][]): State;
+function copyState(state: State): State;
 ```
-[[Top](#tictactoe)]
+[[Top](#wumpus-world)]
 
-### actionToObject(action)
-Returns the action in a more readable object form. Mainly for debugging purposes.
+### createState(settings)
+Returns the resulting [state](#state).  
+Only one map can be used at the same time since every call to createState modifies the internal real map.
 ```javascript
-function actionToObject(action: Action): {
-    player: Player,
-    row: number,
-    col: number,
-};
+function createState(settings: Settings): State;
 ```
-[[Top](#tictactoe)]
+[[Top](#wumpus-world)]
 
-### stateToObject(state)
-Returns the state in a more readable object form. Mainly for debugging purposes.
+### getTile(state, x, y)
+Returns the [tile](#tile) with position x, y (starting in the upper left corner).  
 ```javascript
-function stateToObject(state: State): {
-    board: Player[][],
-    player: Player,
-};
+function getTile(state: State, x: number, y: number): Tile;
 ```
-[[Top](#tictactoe)]
+[[Top](#wumpus-world)]
 
-### getPlayer(state)
-Returns the current [player](#player). 
+### getPercepts(state, x, y)
+Returns the [percepts](#percept) on position x, y (starting in the upper left corner).
 ```javascript
-function getPlayer(state: State): Player;
+function getPercepts(state: State, x: number, y: number): Percept;
 ```
-[[Top](#tictactoe)]
+[[Top](#wumpus-world)]
 
-### getBoard(state)
-Returns the current board in form of an 2-dimension [player](#player) array. 
+### hasWon(state)
+Returns true when the player has won.
 ```javascript
-function getBoard(state: State): Player[][];
+function hasWon(state: State): boolean;
 ```
-[[Top](#tictactoe)]
+[[Top](#wumpus-world)]
 
-### getScore(state, player)
-Returns the score for the given [player](#player) (1 = won, -1 = lost, 0 = draw or still going).
+### getActions(state)
+Returns a list of currently available actions.
 ```javascript
-function getScore(state: State, player: Player): number;
+function getActions(state: State): Action[];
 ```
-[[Top](#tictactoe)]
-
-### getWinner(state)
-Returns the winning [player](#player).
-Returns Player.None if the game is still going and Player.Both in case of a draw.  
-```javascript
-function getWinner(state: State): Player;
-```
-[[Top](#tictactoe)]
+[[Top](#wumpus-world)]
 
 ### validateAction(state, action)
 Throws an exception if it is not a valid action given the state. 
 ```javascript
 function validateAction(state: State, action: Action): void;
 ```
-[[Top](#tictactoe)]
+[[Top](#wumpus-world)]
 
 ### validAction(state, action)
 Returns true if given the state the action is valid, false otherwise.
 ```javascript
 function validAction(state: State, action: Action): boolean;
 ```
-[[Top](#tictactoe)]
+[[Top](#wumpus-world)]
 
 ### performAction(state, action)
 Returns the new state as a result of the given [action](#action).
@@ -242,14 +279,15 @@ Throws an error when the [action](#action) is invalid.
 ```javascript
 function performAction(state: State, action: Action): State;
 ```
-[[Top](#tictactoe)]
+[[Top](#wumpus-world)]
 
-### run(state, agent1, agent2?)
-Takes two [agents](#agent) and uses their update function to decide their [actions](#action). When agent2 is not provided the user acts as agent2.
+### run(state, player, update?)
+Takes an [agent](#agent) and uses its update function to decide its [action](#action).
+When update is true, the state will update inside the user interface.
 The init, result and finish functions are optional.
 Throws an error if any chosen [action](#action) is invalid.
 Returns a promise with the final [state](#state).
 ```javascript
-async function run(state: State, agent1: Agent, agent2?: Agent): Promise<State>;
+async function run(state: State, player: Agent, update?: boolean): Promise<State>;
 ```
-[[Top](#tictactoe)]
+[[Top](#wumpus-world)]

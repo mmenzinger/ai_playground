@@ -1,14 +1,14 @@
 import projectStore from '@store/project-store';
 import db from '@localdb';
 import { messageWithResult } from '@util';
-import { IScenario } from '@scenario/types';
+import { Scenario } from '@scenario/scenario';
 import { Message, LogMessage, MessageType, CallMessage, JSONMessage } from '@worker/types';
 
 export class Sandbox{
     #worker?: Worker;
-    #scenario: IScenario;
+    #scenario: Scenario;
 
-    constructor(scenario: IScenario){
+    constructor(scenario: Scenario){
         this.#scenario = scenario;
         this.#worker;
     }
@@ -20,7 +20,7 @@ export class Sandbox{
         if (this.#worker) {
             this.#worker.terminate();
         }
-        this.#worker = new Worker(`scenario-worker.js?project=${projectStore.activeProject.id}`, { type: "module" });
+        this.#worker = new Worker(`scenario-worker.js`, { type: "module" });
     
         this.#worker.onmessage = async (m) => {
             const msg: Message = m.data;
