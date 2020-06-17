@@ -13,7 +13,7 @@ p{
     white-space: pre-wrap;
     font-family: monospace; /*var(--font-monospace);*/
     margin: 0;
-    padding: 0 0.5rem;
+    padding: 0 0.5em;
     border-top: 1px solid var(--color-background-secondary);
     border-bottom: 1px solid var(--color-border-secondary);
     margin-top: -1px;
@@ -41,7 +41,7 @@ a.file{
     font-family: monospace;
     float: right;
     color: var(--color-text-weak);
-    font-size: 0.7rem;
+    font-size: 0.7em;
 }
 
 a.file:hover{

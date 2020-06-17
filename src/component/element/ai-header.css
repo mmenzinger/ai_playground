@@ -2,44 +2,39 @@ header{
   position: relative;
   display: flex;
   align-items: center;
-  padding: 0.5rem 0.5rem 1.8rem 0.5rem;
-  height: 60px;
+  padding: 0.25em 0.5em;
   box-sizing: border-box;
   background: var(--color-background-secondary);
   border-bottom: 1px solid var(--color-border);
-  box-shadow: 0 0 1px 1px var(--color-shadow);
+}
+
+nav{
+  display: flex;
+  justify-content: space-between;
+  padding: 0.1em;
+  background: var(--color-background-secondary);
+  border-bottom: 1px solid var(--color-border);
 }
 
 img.logo{
-  margin-right: 1rem;
-  width: 3rem;
-  height: 3rem;
+  margin: -0.5em 1em -0.5em 0;
+  width: 3em;
 }
 
-#offline_status{
+#offline{
   display: none;
-  position: fixed;
-  top: 0;
-  right: 7rem;
-  background: var(--color-background-secondary);
-  border-bottom: 1px solid var(--color-border);
-  border-left: 1px solid var(--color-border);
-  border-right: 1px solid var(--color-border);
-  padding: 0.1rem 0.2rem;
-  font-size: 0.8rem;
-}
-
-#offline_status[active]{
-  display: block;
-}
-
-#menu{
   position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 0.1rem;
-  border-top: 1px solid var(--color-border);
+  top: 0.2em;
+  right: 6.5em;
+  width: 1em;
+  padding: 0.5em;
+  background-color: var(--color-warning);
+  border-radius: 2em;
+  border: 1px solid var(--color-border);
+}
+
+#offline[active]{
+  display: block;
 }
 
 #breadcrumbs, #additional{
@@ -48,15 +43,11 @@ img.logo{
 }
 #breadcrumbs{
   padding-left: 0.5;
-  float: left;
-}
-#additional{
-  float: right;
 }
 li{
-  padding: 0 0.25rem;
+  padding: 0 0.25em;
   text-transform: capitalize;
 }
 #additional li{
-  padding: 0 0.5rem;
+  padding: 0 0.5em;
 }

@@ -5,5 +5,5 @@ ul.options > li > *{
     max-width: 100%;
 }
 ul.options > li > input:last-child{
-    max-width: 1rem;
+    max-width: 1em;
 }

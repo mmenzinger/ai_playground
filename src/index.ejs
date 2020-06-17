@@ -6,7 +6,6 @@
     <title>AI - Coding4Fun</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Coding4Fun Educational Artificial Intelligence Platform">
-    <!--<link rel="manifest" href="manifest.json">-->
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <script>
         // Load and register pre-caching Service Worker
@@ -35,29 +34,7 @@
         }
     </script>
     <style>
-        @font-face {
-            font-family: 'Roboto';
-            font-style: normal;
-            font-weight: 400;
-            font-display: swap;
-            src: local('Roboto'), local('Roboto-Regular'), url(https://fonts.gstatic.com/s/roboto/v20/KFOmCnqEu92Fr1Mu4mxK.woff2) format('woff2');
-        }
-
-        @font-face {
-            font-family: 'Roboto Slab';
-            font-style: normal;
-            font-weight: 400;
-            font-display: swap;
-            src: local('Roboto Slab Regular'), local('RobotoSlab-Regular'), url(https://fonts.gstatic.com/s/robotoslab/v9/BngMUXZYTXPIvIBgJJSb6ufN5qU.woff2) format('woff2');
-        }
-
-        @font-face {
-            font-family: 'Source Code Pro';
-            font-style: normal;
-            font-weight: 400;
-            font-display: swap;
-            src: local('Source Code Pro Regular'), local('SourceCodePro-Regular'), url(https://fonts.gstatic.com/s/sourcecodepro/v11/HI_SiYsKILxRpg3hIP6sJ7fM7PqlPevW.woff2) format('woff2');
-        }
+        @import url('https://fonts.googleapis.com/css2?family=Roboto&family=Roboto+Mono&family=Roboto+Slab&display=swap');
 
         :root {
             --color-background-primary: #fff;
@@ -73,14 +50,13 @@
 
             --font-serif: 'Roboto Slab', serif;
             --font-sans-serif: 'Roboto', sans-serif;
-            --font-monospace: monospace;
-            --font-code: 'Source Code Pro', monospace;
+            --font-monospace: 'Roboto Mono', monospace;
         }
 
         html, body, #app{ height: 100%;}
         body {
             margin: 0;
-            min-width: 33rem;
+            min-width: 33em;
         }
     </style>
 </head>

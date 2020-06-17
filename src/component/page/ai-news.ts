@@ -36,7 +36,8 @@ class AiNews extends LazyElement {
         const old_version = settingsStore.get('news_version') || 0;
         const active_news = [];
         for(const [version, content] of Object.entries(NEWS)){
-            if(Number(version) > old_version && Number(version) <= NEWS_VERSION){
+            if((Number(version) > old_version && Number(version) <= NEWS_VERSION)
+            || Number(version) === old_version && old_version === NEWS_VERSION){
                 active_news.push(content);
             }
         }

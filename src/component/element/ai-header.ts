@@ -39,15 +39,15 @@ class AiHeader extends MobxLitElement {
                 <a href="/">
                     <h1>${this.title}</h1>
                 </a>
-                <div id="offline_status" ?active="${appStore.offline}">You are currently offline!</div>
-                <div id="menu">
-                    <ul id="breadcrumbs">${breadcrumbs}</ul>
-                    <ul id="additional">
-                        <li><a href="https://docs.google.com/forms/d/e/1FAIpQLSfrFYo0PnULmqOhQY4bxE_uWwe21m-RtxmboGFRlJW9Or5r4w/viewform?usp=sf_link">Feedback</a></li>
-                        <li><a href="#impressum">Impressum</a></li>
-                    </ul>
-                </div>
             </header>
+            <nav>
+                <ul id="breadcrumbs">${breadcrumbs}</ul>
+                <ul id="additional">
+                    <li><a href="https://docs.google.com/forms/d/e/1FAIpQLSfrFYo0PnULmqOhQY4bxE_uWwe21m-RtxmboGFRlJW9Or5r4w/viewform?usp=sf_link">Feedback</a></li>
+                    <li><a href="#impressum">Impressum</a></li>
+                </ul>
+            </nav>
+            <img id="offline" ?active="${appStore.offline}" src="assets/interface/connect.svg" title="you are currently offline">
         `;
     }
 }

@@ -1,12 +1,12 @@
 :host{
-    padding: 0.5rem;
+    padding: 0.5em;
 }
 
 ul{
     display: flex;
     align-content: flex-start;
     flex-wrap: wrap;
-    font-size: 1rem;
+    font-size: 1em;
 }
 
 li{
@@ -40,7 +40,7 @@ header a{
 }
 
 header h1{
-    font-size: 0.75rem;
+    font-size: 0.75em;
 }
 
 div.logo{
@@ -68,8 +68,8 @@ footer{
 }
 
 footer img{
-    max-width: 1rem;
-    max-height: 1rem;
+    max-width: 1em;
+    max-height: 1em;
     opacity: 0.5;
 }
 

@@ -12,7 +12,11 @@ Alternatively the handle _console from util.js can be used to log directly to th
 
 
 ## Debugger
-For more in depth debugging the breakpoint statement ```debugger;``` can be used to trigger the debugger as long as the development-tools are open. The debugger itself can be used without limitations.
+For more in depth debugging the breakpoint statement 
+```javascript
+debugger;
+```
+can be used to trigger the debugger as long as the development-tools are open. The debugger itself can be used without limitations.
 
 
 ## Errors

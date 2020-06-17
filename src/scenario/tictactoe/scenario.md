@@ -91,9 +91,6 @@ export async function train(){
 [[Top](#tictactoe)]
 
 
-## Globals
-
-
 ## Objects and Types
 
 ### Action

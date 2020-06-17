@@ -61,7 +61,7 @@ export class ScenarioTicTacToe extends Scenario {
         }
         return html`
             <h1>Tic-Tac-Toe</h1>
-            Starting player: <select id="player" @change=${(_:any)=>{this.updateSettings()}}>
+            <label for="player">Starting player:</label> <select id="player" @change=${(_:any)=>{this.updateSettings()}}>
                 <option value="1" ?selected=${this.settings.startingPlayer === 1}>1 (Computer)</option>
                 <option value="2" ?selected=${this.settings.startingPlayer === 2}>2 (Human)</option></select>
             <table>${rows}</table>

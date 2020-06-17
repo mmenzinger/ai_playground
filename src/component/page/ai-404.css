@@ -1,11 +1,11 @@
 :host{
-    padding: 0.5rem;
+    padding: 0.5em;
     text-align: center;
 }
 
 section{
     display: inline-block;
-    max-width: 40rem;
+    max-width: 40em;
 }
 
 footer{
@@ -13,9 +13,9 @@ footer{
 }
 
 a{
-    text-decoration: underline dotted;
+    text-decoration: underline;
 }
 
 h1{
-    margin: 1rem;
+    margin: 1em;
 }

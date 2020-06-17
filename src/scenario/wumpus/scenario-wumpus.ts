@@ -89,27 +89,30 @@ class ScenarioWumpus extends Scenario {
 
         return html`
             <h1>Wumpus World</h1>
-            Complexity: <select id="complexity" @change=${(_:any)=>{this.resetWorld()}}>
+            <label for="complexity">Complexity:</label> <select id="complexity" @change=${(_:any)=>{this.resetWorld()}}>
                 <option value="1" ?selected=${this.settings.complexity === 1}>Simple</option>
                 <option value="2" ?selected=${this.settings.complexity === 2}>Advanced</option>
             </select>
             <br>
-            Map Size: <select id="size" @change=${(_:any)=>{this.resetWorld()}}>
+            <label for="size">Map Size:<label> <select id="size" @change=${(_:any)=>{this.resetWorld()}}>
                 <option value="4" ?selected=${this.settings.size === 4}>4x4 (Small)</option>
                 <option value="6" ?selected=${this.settings.size === 6}>6x6 (Medium)</option>
                 <option value="8" ?selected=${this.settings.size === 8}>8x8 (Big)</option>
                 <option value="10" ?selected=${this.settings.size === 10}>10x10 (Huge)</option>
             </select>
             <br>
-            Seed: <input id="seed" type="number" value=${this.settings.seed} min="0" max="4294967295" @keyup=${(_:any)=>{this.resetWorld()}} @change=${(_:any)=>{this.resetWorld()}}>
-            Delay: <select id="delay" @change=${(_:any)=>{this.updateSettings()}}>
+            <label for="seed">Seed:</label> <input id="seed" type="number" value=${this.settings.seed} min="0" max="4294967295" @keyup=${(_:any)=>{this.resetWorld()}} @change=${(_:any)=>{this.resetWorld()}}>
+            <br>
+            <label for="delay">Delay:</label> <select id="delay" @change=${(_:any)=>{this.updateSettings()}}>
                 <option value="0" ?selected=${this.settings.delay === 0}>None</option>
                 <option value="100" ?selected=${this.settings.delay === 100}>100ms</option>
                 <option value="500" ?selected=${this.settings.delay === 500}>500ms</option>
                 <option value="1000" ?selected=${this.settings.delay === 1000}>1s</option>
                 <option value="Infinity" ?selected=${this.settings.delay === Infinity}>Manual</option>
             </select>
-            <button @click=${this.onNextStep}>next</button>
+            <button @click=${this.onNextStep} id="next" style="display:${
+                this.settings.delay === Infinity ? 'inline-block' : 'none'
+            }">next</button>
             <table id="map">${rows}</table>
         `;
     }
@@ -126,6 +129,7 @@ class ScenarioWumpus extends Scenario {
         const size = this.shadowRoot?.getElementById('size') as HTMLInputElement;
         const seed = this.shadowRoot?.getElementById('seed') as HTMLInputElement;
         const delay = this.shadowRoot?.getElementById('delay') as HTMLSelectElement;
+        const next = this.shadowRoot?.getElementById('next') as HTMLButtonElement;
         if(complexity && size && seed && delay){
             this.settings = {
                 complexity: Number(complexity.value),
@@ -134,6 +138,13 @@ class ScenarioWumpus extends Scenario {
                 delay: Number(delay.value),
             };
             this.saveSettings();
+
+            if(this.settings.delay === Infinity){
+                next.style.display = 'inline-block';
+            }
+            else{
+                next.style.display = 'none';
+            }
         }
     }
 

@@ -6,7 +6,7 @@
 #wrapper{
     display: flex;
     flex-direction: column;
-    padding: 0.5rem;
+    padding: 0.5em;
 }
 
 header{
@@ -14,5 +14,5 @@ header{
 }
 
 button{
-    margin: 0 0.25rem;
+    margin: 0 0.25em;
 }

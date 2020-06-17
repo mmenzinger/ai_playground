@@ -17,3 +17,10 @@ main{
     display: block;
     height:100%;
 }
+
+#report{
+    position: absolute;
+    z-index: 101;
+    right: 0.5em;
+    top: 0.5em;
+}

@@ -50,8 +50,8 @@ class AiSimulator extends MobxLitElement {
             return html`
                 <div id="wrapper">
                 <header>
-                    <button class="ok" @click=${this.simRun}>run</button>
-                    <button class="warning" @click=${this.simTrain}>train</button>
+                    <button class="ok" @click=${this.simRun}>start&nbsp;/&nbsp;restart</button>
+                    <button class="warning" @click=${this.simTrain}>call&nbsp;train</button>
                     <button class="error" @click=${this.simTerminate}>terminate</button>
                 </header>
                 ${components}
