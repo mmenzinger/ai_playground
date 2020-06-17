@@ -2,8 +2,26 @@ const path = require('path');
 const webpack = require('webpack');
 const CopyPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const PreloadWebpackPlugin = require('preload-webpack-plugin');
+// const PreloadWebpackPlugin = require('preload-webpack-plugin');
 const FaviconsWebpackPlugin = require('favicons-webpack-plugin')
+const {InjectManifest} = require('workbox-webpack-plugin');
+const glob = require('glob');
+
+function addScenarioPrecacheEntries(entries = []) {
+    let files = glob.sync(path.join(__dirname, 'src/scenario/*/scenario.{js,ts}'));
+    for(const file of files){
+        const path = file.replace(__dirname, '.');
+        const name = path.replace(/(\.\/src\/|\/scenario\.(t|j)s)/g, '');
+        entries.push({url: `${name}.js`, revision: null});
+    }
+    files = glob.sync(path.join(__dirname, 'src/scenario/*/assets/*'));
+    for(const file of files){
+        const path = file.replace(__dirname, '.');
+        const name = path.replace(/(\.\/src\/scenario\/|\/assets)/g, '');
+        entries.push({url: `assets/${name}`, revision: null});
+    }
+    return entries;
+}
 
 const staticFiles = [
     { from: './src/iframe/*.html', to: '[name].[ext]' },
@@ -20,7 +38,7 @@ const alias = require('./webpack.alias.js');
 module.exports = {
     entry: {
         'app': './src/component/ai-app',
-        'service-worker': './src/worker/service-worker',
+        // 'service-worker': './src/worker/service-worker',
         'scenario-worker': './src/worker/scenario-worker',
         'monaco': './src/iframe/monaco',
         'jstree': './src/iframe/jstree',
@@ -100,9 +118,18 @@ module.exports = {
             template: 'src/index.ejs',
             chunks: ['app'],
         }),
-        new PreloadWebpackPlugin({
-            rel: 'prefetch',
-            include: 'allAssets',
+        // new PreloadWebpackPlugin({
+        //     rel: 'prefetch',
+        //     include: 'allAssets',
+        // }),
+        new InjectManifest({
+            swSrc: './src/worker/service-worker.ts',
+            additionalManifestEntries: addScenarioPrecacheEntries([
+                {url: 'scenario/util.js', revision: null},
+                {url: 'lib/prolog.js', revision: null},
+                {url: 'lib/tensorflow.js', revision: null},
+            ]),
+            maximumFileSizeToCacheInBytes: 50 * 1024 * 1024, // monaco has huge file sizes uncompressed...
         }),
         new FaviconsWebpackPlugin({
             logo: './assets/logo.png',

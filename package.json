@@ -88,6 +88,7 @@
     "webpack-cli": "^3.3.10",
     "webpack-dev-server": "^3.10.1",
     "webpack-merge": "^4.2.2",
+    "workbox-webpack-plugin": "^5.1.3",
     "worker-loader": "^2.0.0",
     "worker-plugin": "^3.2.0"
   },
@@ -99,7 +100,7 @@
     "build:dev": "rm -fr ./build/dev && webpack --config webpack.dev.js",
     "build:prod": "rm -fr ./build/prod && webpack --config webpack.prod.js",
     "deploy": "firebase deploy",
-    "license-checker": "license-checker --direct | sed -r '/(path|email|licenseFile):/d' > library_licenses" 
+    "license-checker": "license-checker --direct | sed -r '/(path|email|licenseFile):/d' > library_licenses"
   },
   "browser": {
     "child_process": false

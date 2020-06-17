@@ -24,8 +24,8 @@ class DynamicSplit extends LitElement {
         ];
     }
 
-    _drag: HTMLDivElement | undefined = undefined;
-    _throttle = 0;
+    #drag: HTMLDivElement | undefined = undefined;
+    #throttle = 0;
     direction = 'horizontal';
     minSize = '10px';
     defaultRatio = 0.5;
@@ -81,27 +81,27 @@ class DynamicSplit extends LitElement {
         }
 
         handle.onmousedown = (event) => {
-            if(this._drag){
+            if(this.#drag){
                 updateHandleEvent(event);
-                this._drag = undefined;
+                this.#drag = undefined;
             }
             else{
-                this._drag = handle;
-                this._throttle = performance.now();
+                this.#drag = handle;
+                this.#throttle = performance.now();
             }
         }
         window.addEventListener('mouseup', (event) => {
-            if(this._drag){
+            if(this.#drag){
                 updateHandleEvent(event);
-                this._drag = undefined;
+                this.#drag = undefined;
             }
         });
         window.addEventListener('mousemove', (event) => {
-            if(this._drag){
+            if(this.#drag){
                 const now = performance.now();
-                const dt = now - this._throttle;
+                const dt = now - this.#throttle;
                 if(dt > 20){
-                    this._throttle = now;
+                    this.#throttle = now;
                     updateHandleEvent(event);
                 }
                 event.preventDefault();

@@ -38,7 +38,8 @@ class AiApp extends MobxLitElement {
                 <ai-header title="AI Playground"></ai-header>
             </header>
             <main>
-                <ai-welcome class="page" ?active="${appStore.page === 'welcome'}"></ai-welcome>
+                <ai-404 class="page" ?active="${appStore.page === '404'}"></ai-404>
+                <ai-news class="page" ?active="${appStore.page === 'news'}"></ai-news>
                 <ai-impressum class="page" ?active="${appStore.page === 'impressum'}"></ai-impressum>
                 <ai-project class="page" ?active="${appStore.page === 'project'}"></ai-project>
                 <ai-project-index class="page" ?active="${appStore.page === 'projects'}"></ai-project-index>

@@ -1,4 +1,5 @@
 import { registerRoute, RouteHandlerCallbackContext } from 'workbox-routing';
+import { precacheAndRoute } from 'workbox-precaching';
 import { CacheFirst } from 'workbox-strategies';
 import { Plugin as ExpirationPlugin } from 'workbox-expiration';
 import { Project } from '@store/types';
@@ -29,6 +30,8 @@ registerRoute(
 );
 
 if(PRODUCTION){
+    precacheAndRoute(self.__WB_MANIFEST);
+
     registerRoute(
         /\.(js|html)$/,
         new CacheFirst({
@@ -40,6 +43,7 @@ if(PRODUCTION){
             ],
         }),
     );
+    
     registerRoute(
         /\.(svg|png)$/,
         new CacheFirst({
@@ -51,6 +55,9 @@ if(PRODUCTION){
             ],
         }),
     );
+}
+else{
+    // console.log(self.__WB_MANIFEST);
 }
 
 async function userFile(arg: RouteHandlerCallbackContext): Promise<Response>{

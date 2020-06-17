@@ -18,16 +18,16 @@ td.w10{ width: 10%; }
 td.h10{ padding-top: 10%; }
 
 
-td.Empty{ background: rgb(206, 206, 206); }
-td.Pit{ background: url('assets/wumpus/pit.svg') center center/cover no-repeat rgb(224, 107, 107); }
-td.Wumpus{ background: url('assets/wumpus/wumpus.svg') center center/cover no-repeat rgb(224, 107, 107); }
-td.Gold{ background: url('assets/wumpus/gold.svg') center center/cover no-repeat rgb(206, 206, 206); }
+td.Empty{ background: rgb(206, 206, 206) padding-box; }
+td.Pit{ background: url('assets/wumpus/pit.svg') center center/cover no-repeat rgb(224, 107, 107) padding-box; }
+td.Wumpus{ background: url('assets/wumpus/wumpus.svg') center center/cover no-repeat rgb(224, 107, 107) padding-box; }
+td.Gold{ background: url('assets/wumpus/gold.svg') center center/cover no-repeat rgb(206, 206, 206) padding-box; }
 td.u{ filter: brightness(50%); }
 
-td.t0{ background: rgb(206, 206, 206); }
-td.t1{ background: url('assets/wumpus/pit.svg') center center/cover no-repeat rgb(224, 107, 107); }
-td.t2{ background: url('assets/wumpus/wumpus.svg') center center/cover no-repeat rgb(224, 107, 107); }
-td.t4{ background: url('assets/wumpus/gold.svg') center center/cover no-repeat rgb(206, 206, 206); }
+td.t0{ background: rgb(206, 206, 206) padding-box; }
+td.t1{ background: url('assets/wumpus/pit.svg') center center/cover no-repeat rgb(224, 107, 107) padding-box; }
+td.t2{ background: url('assets/wumpus/wumpus.svg') center center/cover no-repeat rgb(224, 107, 107) padding-box; }
+td.t4{ background: url('assets/wumpus/gold.svg') center center/cover no-repeat rgb(206, 206, 206) padding-box; }
 
 td > img{
     position: absolute;

@@ -250,21 +250,26 @@ function markersUpdated() {
         const models = monaco.editor.getModels();
         for (const model of models) {
             const fileErrors = errorMarkers.filter(marker => marker.resource.path === (model as any)._associatedResource.path);
-            const file = modelFiles.get(model.id) as File;
-            const errors: FileError[] = fileErrors.map((marker): FileError => ({
-                caller: {
-                    fileId: file.id,
-                    fileName: file.name,
-                    projectId: file.projectId,
-                    line: marker.startLineNumber,
-                    column: marker.startColumn,
-                    functionNames: [],
-                },
-                args: [marker.message],
-            }));
-            if (!sameErrors(projectErrors[file.id] || [], errors)) {
-                projectErrors[file.id] = errors;
-                errorsChanged = true;
+            const file = modelFiles.get(model.id);
+            if(file){
+                const errors: FileError[] = fileErrors.map((marker): FileError => ({
+                    caller: {
+                        fileId: file.id,
+                        fileName: file.name,
+                        projectId: file.projectId,
+                        line: marker.startLineNumber,
+                        column: marker.startColumn,
+                        functionNames: [],
+                    },
+                    args: [marker.message],
+                }));
+                if (!sameErrors(projectErrors[file.id] || [], errors)) {
+                    projectErrors[file.id] = errors;
+                    errorsChanged = true;
+                }
+            }
+            else{
+                console.warn('marker without loaded file');
             }
         }
         //console.log(errorsChanged, projectErrors);
@@ -321,6 +326,11 @@ window.openProject = (project: Project, files: File[], initialFile?: File) => {
 }
 
 window.openFile = (file: File) => {
+    if(!file){
+        console.warn('tried to open non existing file');
+        return;
+    }
+
     if (activeFile) {
         activeFile.state = editor.saveViewState() || undefined;
     }
@@ -354,7 +364,12 @@ window.openFile = (file: File) => {
 }
 
 window.resize = () => {
-    editor.layout();
+    try{
+        editor.layout();
+    }
+    catch(error){
+        console.warn(error);
+    }
 }
 
 window.setTheme = (theme: string) => {

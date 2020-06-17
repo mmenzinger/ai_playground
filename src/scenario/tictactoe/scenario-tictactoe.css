@@ -12,11 +12,11 @@ td{
 }
 
 td.empty:hover{
-    background: rgb(177, 177, 177);
+    background: rgb(177, 177, 177) padding-box;
 }
 
 td.empty{ 
-    background: rgb(206, 206, 206);
+    background: rgb(206, 206, 206) padding-box;
 }
 
 td > img{

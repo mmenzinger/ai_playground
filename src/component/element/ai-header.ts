@@ -25,7 +25,7 @@ class AiHeader extends MobxLitElement {
 
     render() {
         const breadcrumbs = [html`<li><a href="./">Home</a></li>`];
-        for(const [key, value] of Object.entries(appStore.params).map(([key, value]) => {
+        for(const [key, value] of appStore.params.map(([key, value]) => {
             if(key === 'project'){
                 return [projectStore.activeProject?.name || key, projectStore.activeProject?.id || value];
             }
@@ -44,7 +44,7 @@ class AiHeader extends MobxLitElement {
                     <ul id="breadcrumbs">${breadcrumbs}</ul>
                     <ul id="additional">
                         <li><a href="https://docs.google.com/forms/d/e/1FAIpQLSfrFYo0PnULmqOhQY4bxE_uWwe21m-RtxmboGFRlJW9Or5r4w/viewform?usp=sf_link">Feedback</a></li>
-                        <li><a href="?impressum">Impressum</a></li>
+                        <li><a href="#impressum">Impressum</a></li>
                     </ul>
                 </div>
             </header>

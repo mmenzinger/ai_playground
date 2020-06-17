@@ -42,7 +42,7 @@ class AiProjectIndex extends LazyElement {
             elements.push(html`
                 <li>
                     <header>
-                        <a href="?project=${project.id}">
+                        <a href="#project=${project.id}">
                             <h1>${project.name}</h1>
                             <div class="logo" ><embed src="assets/${project.scenario}/logo.svg"></div>
                         </a>

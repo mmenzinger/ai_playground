@@ -1,13 +1,12 @@
 :host{
     display: flex;
     flex-direction: column;
-    overflow:hidden;
+    overflow:auto;
 }
 
 main{
-    /* hack to solve the tab-group-markdown-height problem */
-    height: calc(100% - 60px);
-    flex: 1;
+    flex: 1 1;
+    min-height: 20em;
 }
 
 .page {

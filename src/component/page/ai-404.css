@@ -1,5 +1,5 @@
 :host{
-    padding: 2rem 0.5rem 0.5rem 0.5rem;
+    padding: 0.5rem;
     text-align: center;
 }
 
@@ -14,4 +14,8 @@ footer{
 
 a{
     text-decoration: underline dotted;
+}
+
+h1{
+    margin: 1rem;
 }
