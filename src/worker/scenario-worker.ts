@@ -116,11 +116,11 @@ onmessage = async m => {
                     import(/* webpackIgnore: true */ data.file),
                 ]);
                 await util.initLocalStorage();
-                try{
+                if(index[data.functionName] instanceof Function){
                     await index[data.functionName](...data.args);
                 }
-                catch(_){
-                    console.error(Error(`index does not have an exported function '${data.functionName}'`));
+                else{
+                    throw Error(`index.js does not have an exported function '${data.functionName}'`);
                 }
                 
                 m.ports[0].postMessage({ result: true });
