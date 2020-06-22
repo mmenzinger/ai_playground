@@ -1,33 +1,18 @@
-import { hideImport } from '@util';
-import { call } from '@worker/types';
-import { ScenarioError } from '@scenario/types';
+import { getCanvas } from 'lib/utils.js';
 
-export { ScenarioError } from '@scenario/types';
+export class ScenarioError extends Error {}
 
-export type Player = number;
-
-export enum EPlayer {
-    None =     0 | 0,
-    Computer = 1 | 0,
-    Human =    2 | 0,
-    Both =     3 | 0,
-    Player1 =  1 | 0,
-    Player2 =  2 | 0,
-}
-
-export type Settings = {
-    startingPlayer: number,
-}
-
-export type State = number;
-
-export type Action = number;
-
-export type Agent = {
-    init?: (state: State) => Promise<void>,
-    update: (state: State, actions: Action[]) => Promise<State>,
-    result?: (oldState: State, action: Action, newState: State, score: number) => Promise<void>,
-    finish?: (state: State, score: number) => Promise<void>,
+export const EPlayer = {
+    None:     0 | 0,
+    Computer: 1 | 0,
+    Human:    2 | 0,
+    Both:     3 | 0,
+    Player1:  1 | 0,
+    Player2:  2 | 0,
+    0: 'None',
+    1: 'Player1',
+    2: 'Player2',
+    3: 'Both'
 }
 
 const bState  = 0b11111111111111111111; // 2:player 18:board
@@ -41,11 +26,11 @@ const bCol = 0b11;
 const sRow = 4;
 const sCol = 2;
 
-export function getPlayer(state: State) : Player{
+export function getPlayer(state){
     return state >>> sPlayer & bPlayer; 
 }
 
-export function getBoard(state: State): Player[][]{
+export function getBoard(state){
     const b = state & bBoard;
     return [
         [(b       ) & bPlayer, (b >>>  2) & bPlayer, (b >>>  4) & bPlayer],
@@ -54,12 +39,12 @@ export function getBoard(state: State): Player[][]{
     ];
 }
 
-export function createAction(player: Player, row: number, col: number): Action{
+export function createAction(player, row, col){
     return (row & bRow) << sRow | (col & bCol) << sCol | (player & bPlayer);
 }
 
-export function createState(player: Player, board?: Player[][]): State{
-    let state = (player & bPlayer) << sPlayer;
+export function createState(settings, board){
+    let state = (settings.startingPlayer & bPlayer) << sPlayer;
     if(board){
         state |= 
         (board[0][0] << 16 |
@@ -77,14 +62,14 @@ export function createState(player: Player, board?: Player[][]): State{
     return state;
 }
 
-export function stateToObject(state: State): {board: Player[][], player: Player}{
+export function stateToObject(state){
     return  {
         board: getBoard(state),
         player: getPlayer(state),
     }
 }
 
-export function actionToObject(action: Action): {player: Player, row: number, col: number}{
+export function actionToObject(action){
     return {
         player: (action & bPlayer),
         row: (action >>> sRow) & bRow,
@@ -92,7 +77,7 @@ export function actionToObject(action: Action): {player: Player, row: number, co
     }
 }
 
-export function getScore(state: State, player: Player): number {
+export function getScore(state, player) {
     const winner = getWinner(state);
     if (winner === player)
         return 1 | 0;
@@ -101,7 +86,7 @@ export function getScore(state: State, player: Player): number {
     return -1 | 0;
 }
 
-export function getWinner(state: State): Player {
+export function getWinner(state) {
     const b = state & bBoard;
 
     // check rows
@@ -127,8 +112,8 @@ export function getWinner(state: State): Player {
     return EPlayer.Both;
 }
 
-export function getActions(state: State): Action[] {
-    const actions: Action[] = [];
+export function getActions(state) {
+    const actions = [];
     const b = state & bBoard;
     for(let i = 0; i < 9; i++){
         if(((b >>> (i*2)) & bPlayer) === 0){
@@ -142,7 +127,7 @@ export function getActions(state: State): Action[] {
     return actions;
 }
 
-export function validateAction(state: State, action: Action): void {
+export function validateAction(state, action) {
     const player = action & bPlayer;
     const board = state & bBoard;
     const row = (action >>> sRow) & bRow;
@@ -157,7 +142,7 @@ export function validateAction(state: State, action: Action): void {
     if (player !== ((state >>> sPlayer) & bPlayer)) throw new ScenarioError(`invalid player ${player}`);
 }
 
-export function validAction(state: State, action: Action): boolean{
+export function validAction(state, action){
     try {
         validateAction(state, action);
         return true;
@@ -167,7 +152,7 @@ export function validAction(state: State, action: Action): boolean{
     }
 }
 
-export function performAction(state: State, action: Action): State {
+export function performAction(state, action) {
     validateAction(state, action);
 
     const row = (action >>> sRow) & bRow;
@@ -180,16 +165,12 @@ export function performAction(state: State, action: Action): State {
     return newState;
 }
 
-export async function run(state: State, player1: Agent, player2: Agent = {
-    init: (state: number) => 
-        call('onInit', [state]),
-    update: (state: number, actions: number[]) => 
-        call('onUpdate', [state, actions]),
-    result: (oldState: number, action: number, state: number, score: number) => 
-        call('onResult', [oldState, action, state, score]),
-    finish: (state: number, score: number) => 
-        call('onFinish', [state, score]),
-}): Promise<State> {
+export async function run(state, player1, player2 = {
+    update: getUserUpdate
+}, updateGUI = true) {
+    if(updateGUI){
+        drawState(state);
+    }
     const players = [player1, player2];
     if (player1.init instanceof Function)
         await player1.init(state);
@@ -203,6 +184,9 @@ export async function run(state: State, player1: Agent, player2: Agent = {
         const actions = getActions(oldState);
         const action = await currentPlayer.update(oldState, actions);
         state = performAction(oldState, action);
+        if(updateGUI){
+            drawState(state);
+        }
         winner = getWinner(state);
         if (currentPlayer.result instanceof Function){
             await currentPlayer.result(oldState, action, state, getScore(state, getPlayer(state)));
@@ -221,9 +205,102 @@ export async function run(state: State, player1: Agent, player2: Agent = {
     return state;
 }
 
-export async function __run(settings: Settings) {
-    const state = createState(settings.startingPlayer);
-    const player1 = await hideImport('/project/index.js') as Agent;
-    return await run(state, player1);
+export function drawState(state, hover = undefined){
+    const canvas = getCanvas();
+    const size = Math.min(canvas.width, canvas.height);
+    var ctx = canvas.getContext("2d");
+    ctx.shadowOffsetX = size / 90;
+    ctx.shadowOffsetY = size / 90;
+    ctx.shadowColor = 'rgba(0,0,0,0.5)';
+    ctx.shadowBlur = 5;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawGrid(ctx, size);
+    for(let row = 0; row < 3; row++){
+        for(let col = 0; col < 3; col++){
+            const player = (state >>> ((row*3 + col)*2)) & 0b11;
+            if(player === EPlayer.Human){
+                drawX(ctx, size/3, row, col);
+            }
+            else if(player === EPlayer.Computer){
+                drawO(ctx, size/3, row, col);
+            }
+            else if(hover && hover.row === row && hover.col === col && player === 0){
+                drawX(ctx, size/3, row, col, 'rgba(0, 0, 255, 0.5)');
+            }
+        }
+    }
 }
 
+function drawGrid(ctx, size){
+    const margin = size / 30;
+    ctx.save();
+    ctx.lineWidth = size / 40;
+    ctx.strokeStyle = '#aaa';
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(size/3, margin);
+    ctx.lineTo(size/3, size - margin);
+    ctx.moveTo(2*size/3, margin);
+    ctx.lineTo(2*size/3, size - margin);
+    ctx.moveTo(margin, size/3);
+    ctx.lineTo(size - margin, size/3);
+    ctx.moveTo(margin, 2*size/3);
+    ctx.lineTo(size - margin, 2*size/3);
+    ctx.stroke();
+    ctx.restore();
+}
+
+function drawX(ctx, size, row, col, style = '#00f'){
+    const margin = size / 7;
+    ctx.save();
+    ctx.lineWidth = size / 10;
+    ctx.strokeStyle = style;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(col*size + margin*2, row*size + margin);
+    ctx.lineTo(col*size + size - margin*2, row*size + size - margin);
+    ctx.moveTo(col*size + size - margin*2, row*size + margin);
+    ctx.lineTo(col*size + margin*2, row*size + size - margin);
+    ctx.stroke();
+    ctx.restore();
+}
+
+function drawO(ctx, size, row, col, style = '#f00'){
+    const margin = size / 7;
+    ctx.save();
+    ctx.lineWidth = size / 10;
+    ctx.strokeStyle = style;
+    ctx.lineCap = 'round';
+    ctx.save();
+    ctx.scale(0.75, 1);
+    ctx.beginPath();
+    ctx.arc((col*size + size/2) / 0.75, row*size + size/2, (size/2) - margin, 0, Math.PI*2, false);
+    ctx.restore();
+    ctx.stroke();
+    ctx.closePath();
+    ctx.restore();
+}
+
+async function getUserUpdate(state, actions){
+    return new Promise((resolve, reject) => {
+        self.onmousemove = (data) => {
+            const size = Math.min(data.width, data.height);
+            const row = Math.floor(data.y * 3 / size);
+            const col = Math.floor(data.x * 3 / size);
+            drawState(state, {row, col});
+        }
+
+        self.onmousedown = (data) => {
+            const size = Math.min(data.width, data.height);
+            const row = Math.floor(data.y * 3 / size);
+            const col = Math.floor(data.x * 3 / size);
+            const player = (state >>> ((row*3 + col)*2)) & 0b11;
+            if(player === EPlayer.None){
+                self.onmousemove = undefined;
+                self.onmousedown = undefined;
+                const action = createAction(EPlayer.Human, row, col);
+                resolve(action);
+            }
+        }
+    });
+}

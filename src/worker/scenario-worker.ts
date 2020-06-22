@@ -1,7 +1,7 @@
 import { serialize } from '@util';
 import StackTrace from 'stacktrace-js';
 import { Caller, LogType } from '@store/types';
-import { Message, MessageType, CallMessage, LogMessage } from '@worker/types';
+import { Message, MessageType, CallMessage, EventMessage, LogMessage } from '@worker/types';
 
 interface Scope extends WorkerGlobalScope{
     __console: Console,
@@ -110,25 +110,39 @@ onmessage = async m => {
                 if(!data.file){
                     data.file = '/project/index.js';
                 }
+                (self as any).__canvas = data.canvas;
                 const [util, index] = await Promise.all([
                     // @ts-ignore
-                    import(/* webpackIgnore: true */ '/scenario/util.js'),
+                    import(/* webpackIgnore: true */ '/lib/utils.js'),
                     import(/* webpackIgnore: true */ data.file),
                 ]);
                 await util.initLocalStorage();
+                
                 if(index[data.functionName] instanceof Function){
-                    await index[data.functionName](...data.args);
+                    await index[data.functionName]();
                 }
                 else{
                     throw Error(`index.js does not have an exported function '${data.functionName}'`);
                 }
                 
                 m.ports[0].postMessage({ result: true });
-                break;
             }
             catch (error) {
                 console.error(error);
             }
+            break;
+        }
+        case MessageType.EVENT: {
+            try{
+                const data = (msg as EventMessage);
+                if((self as any)[data.callbackName] instanceof Function){
+                    (self as any)[data.callbackName](data.data);
+                }
+            }
+            catch(error){
+                console.error(error);
+            }
+            break;
         }
     }
 }

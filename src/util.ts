@@ -5,7 +5,7 @@ import deepCopy from 'deepcopy';
 export { deepCopy };
 
 
-export async function messageWithResult(msg: object, timeout: number | null = null, target: any = self): Promise<any>{
+export async function messageWithResult(msg: object, timeout: number | null = null, target: any = self, transfer: any[] = []): Promise<any>{
     return new Promise((resolve, reject) => {
         let to: any;
         if(timeout){
@@ -21,7 +21,7 @@ export async function messageWithResult(msg: object, timeout: number | null = nu
             else
                 resolve(undefined);
         }
-        target.postMessage(msg, [channel.port2]);
+        target.postMessage(msg, [channel.port2, ...transfer]);
     });
 }
 

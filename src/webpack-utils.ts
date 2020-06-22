@@ -8,18 +8,17 @@ export type ScenarioTemplate = {
 
 export type ScenarioTemplates = {
     name: string,
-    component: string,
     templates: {[key:string]: ScenarioTemplate},
     examples: {[key:string]: ScenarioTemplate},
-    description: File,
+    files: File[],
 }
 
 export function getScenarios(): {[key:string]: ScenarioTemplates} {
     const rc = require.context('@src/scenario', true, /\.[a-z]+$/i);
-    const paths = rc.keys().filter(path => new RegExp(`/(templates|examples)/[^/]+/[^/]+$`).test(path));
+    const paths = rc.keys().filter(path => new RegExp(`/[^/]+/`).test(path));
     const scenarios: {[key:string]: ScenarioTemplates} = {};
     paths.forEach(path => {
-        const match = path.match(new RegExp(`^\./([^/]+)/(templates|examples)/([^/]+)/([^/]+)$`));
+        const match = path.match(new RegExp(`^\./([^/]+)/?(templates|examples|assets)?/?([^/]+)?/([^/]+)$`));
         if(match){
             const type = match[1];
             const folder = match[2];
@@ -30,33 +29,41 @@ export function getScenarios(): {[key:string]: ScenarioTemplates} {
                 name: type,
                 templates: {},
                 examples: {},
-                description: {
-                    name: 'scenario.md',
-                    content: require(`@src/scenario/${type}/scenario.md`).default,
-                }
-            }
-            // @ts-ignore
-            scenarios[type][folder][name] = scenarios[type][folder][name] || {
-                name,
-                scenario: type,
                 files: [],
             }
-            // @ts-ignore
-            scenarios[type][folder][name].files.push({
-                name: filename,
-                content: require(`@src/scenario/${path.substring(2)}`).default,
-            });
+            if(!folder){
+                // @ts-ignore
+                scenarios[type].files.push({
+                    name: filename,
+                    content: require(`@src/scenario/${type}/${filename}`).default,
+                })
+            }
+            if(folder === 'assets'){
+                const raw = require(`@src/scenario/${type}/${folder}/${filename}`).default;
+                const [match, contentType, base64] = raw.match(/^data:(.+);base64,(.*)$/);
+                // @ts-ignore
+                scenarios[type].files.push({
+                    name: filename,
+                    content: base64toBlob(base64),
+                })
+            }
+
+            if(folder && folder !== 'assets'){
+                // @ts-ignore
+                scenarios[type][folder][name] = scenarios[type][folder][name] || {
+                    name,
+                    scenario: type,
+                    files: [],
+                }
+                // @ts-ignore
+                scenarios[type][folder][name].files.push({
+                    name: filename,
+                    content: require(`@src/scenario/${path.substring(2)}`).default,
+                });
+            }
         }
     });
-    const components = rc.keys().filter(path => new RegExp(`/scenario-[^/]+\.(js|ts)$`).test(path));
-    components.forEach(component => {
-        const match = component.match(new RegExp(`^\./([^/]+)/([^/]+)\.(js|ts)$`));
-        if(match){
-            const type = match[1];
-            const name = match[2];
-            scenarios[type].component = name;
-        }
-    });
+    console.log(scenarios);
 
     return scenarios;
 }
@@ -65,7 +72,7 @@ export function getTemplates() {
     const templates = [];
     for (let scenario of Object.values(getScenarios())) {
         for (let template of Object.values(scenario.templates)) {
-            template.files.push(scenario.description);
+            template.files.push(...scenario.files);
             templates.push(template);
         }
     }
@@ -76,18 +83,32 @@ export function getExamples() {
     const examples = [];
     for (let scenario of Object.values(getScenarios())) {
         for (let example of Object.values(scenario.examples)) {
-            example.files.push(scenario.description);
+            example.files.push(...scenario.files);
             examples.push(example);
         }
     }
     return examples;
 }
 
-export function getComponents() {
-    const components: {[key:string]: any} = {};
-    for (let scenario of Object.values(getScenarios())) {
-        const exports = require(`@scenario/${scenario.name}/${scenario.component}`);
-        components[scenario.component] = exports;
+// Convert the base64 to a Blob
+// Souce: https://stackoverflow.com/a/20151856/626911
+function base64toBlob(base64Data: string, contentType?: string) {
+    contentType = contentType || '';
+    var sliceSize = 1024;
+    var byteCharacters = atob(base64Data);
+    var bytesLength = byteCharacters.length;
+    var slicesCount = Math.ceil(bytesLength / sliceSize);
+    var byteArrays = new Array(slicesCount);
+
+    for (var sliceIndex = 0; sliceIndex < slicesCount; ++sliceIndex) {
+        var begin = sliceIndex * sliceSize;
+        var end = Math.min(begin + sliceSize, bytesLength);
+
+        var bytes = new Array(end - begin);
+        for (var offset = begin, i = 0; offset < end; ++i, ++offset) {
+            bytes[i] = byteCharacters[offset].charCodeAt(0);
+        }
+        byteArrays[sliceIndex] = new Uint8Array(bytes);
     }
-    return components;
+    return new Blob(byteArrays, { type: contentType });
 }

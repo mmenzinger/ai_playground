@@ -12,7 +12,7 @@ import 'monaco-editor/esm/vs/editor/contrib/bracketMatching/bracketMatching.js';
 // import 'monaco-editor/esm/vs/editor/contrib/clipboard/clipboard.js';
 // import 'monaco-editor/esm/vs/editor/contrib/codelens/codelensController.js';
 // import 'monaco-editor/esm/vs/editor/contrib/colorPicker/colorDetector.js';
-// import 'monaco-editor/esm/vs/editor/contrib/comment/comment.js';
+import 'monaco-editor/esm/vs/editor/contrib/comment/comment.js';
 // import 'monaco-editor/esm/vs/editor/contrib/contextmenu/contextmenu.js';
 // import 'monaco-editor/esm/vs/editor/contrib/cursorUndo/cursorUndo.js';
 // import 'monaco-editor/esm/vs/editor/contrib/dnd/dnd.js';
@@ -35,14 +35,14 @@ import 'monaco-editor/esm/vs/editor/contrib/smartSelect/smartSelect.js';
 // import 'monaco-editor/esm/vs/editor/contrib/snippet/snippetController2.js';
 import 'monaco-editor/esm/vs/editor/contrib/suggest/suggestController.js';
 // import 'monaco-editor/esm/vs/editor/contrib/toggleTabFocusMode/toggleTabFocusMode.js';
-// import 'monaco-editor/esm/vs/editor/contrib/wordHighlighter/wordHighlighter.js';
+import 'monaco-editor/esm/vs/editor/contrib/wordHighlighter/wordHighlighter.js';
 import 'monaco-editor/esm/vs/editor/contrib/wordOperations/wordOperations.js';
 // import 'monaco-editor/esm/vs/editor/standalone/browser/accessibilityHelp/accessibilityHelp.js';
 // import 'monaco-editor/esm/vs/editor/standalone/browser/inspectTokens/inspectTokens.js';
 // import 'monaco-editor/esm/vs/editor/standalone/browser/iPadShowKeyboard/iPadShowKeyboard.js';
 import 'monaco-editor/esm/vs/editor/standalone/browser/quickOpen/quickOutline.js';
 // import 'monaco-editor/esm/vs/editor/standalone/browser/quickOpen/gotoLine.js';
-// import 'monaco-editor/esm/vs/editor/standalone/browser/quickOpen/quickCommand.js';
+import 'monaco-editor/esm/vs/editor/standalone/browser/quickOpen/quickCommand.js';
 // import 'monaco-editor/esm/vs/editor/standalone/browser/toggleHighContrast/toggleHighContrast.js';
 
 // (2) Desired languages:
@@ -96,11 +96,7 @@ import type { File, FileError, ProjectErrors, Project } from '@store/types';
 import { isString } from 'lodash-es';
 
 // @ts-ignore
-import tUtil from '!!raw-loader!@scenario/util.d.ts';
-// @ts-ignore
-import tTicTacToe from '!!raw-loader!@scenario/tictactoe/scenario.d.ts';
-// @ts-ignore
-import tWumpus from '!!raw-loader!@scenario/wumpus/scenario.d.ts';
+import tUtil from '!!raw-loader!@lib/utils.d.ts';
 // @ts-ignore
 import tProlog from '!!raw-loader!@lib/prolog.d.ts';
 // @ts-ignore
@@ -130,11 +126,9 @@ self.MonacoEnvironment = {
     }
 };
 
-//const models: Map<number, Model> = new Map();
 const modelFiles: Map<string, File> = new Map(); // model.id => File
 let activeFile: File | null = null;
 let activeProject: Project | null = null;
-//let activeEditor: monaco.editor.IStandaloneCodeEditor | null = null;
 let lastMarkers: monaco.editor.IMarker[] | null = null;
 let projectErrors: ProjectErrors = {};
 
@@ -170,9 +164,7 @@ monaco.languages.typescript.javascriptDefaults.setCompilerOptions({
 });
 
 monaco.languages.typescript.javascriptDefaults.setExtraLibs([
-    { filePath: 'scenario/util.js', content: tUtil },
-    { filePath: 'scenario/tictactoe.js', content: tTicTacToe },
-    { filePath: 'scenario/wumpus.js', content: tWumpus },
+    { filePath: 'lib/utils.js', content: tUtil },
     { filePath: 'lib/prolog.js', content: tProlog },
     { filePath: 'lib/tensorflow.js', content: tTensorflow },
 ]);
@@ -290,6 +282,8 @@ function createModel(file: File, uri: monaco.Uri) {
             case 'md': language = 'markdown'; break;
         }
     }
+    if(file.content instanceof Blob)
+        return null;
     return monaco.editor.createModel(
         file.content || '',
         language,
@@ -309,11 +303,14 @@ window.openProject = (project: Project, files: File[], initialFile?: File) => {
             model = createModel(file, uri);
         }
         else {
-            model.setValue(file.content || '');
+            if(! (file.content instanceof Blob)){
+                model.setValue(file.content || '');
+            }
         }
-        //monaco.languages.typescript.javascriptDefaults.addExtraLib(file.content || '', path);
-        modelsValidated.push(validateModel(model));
-        modelFiles.set(model.id, file);
+        if(model){
+            modelsValidated.push(validateModel(model));
+            modelFiles.set(model.id, file);
+        }
     }
     Promise.all(modelsValidated).then(_ => {
         markersUpdated();
@@ -326,6 +323,9 @@ window.openProject = (project: Project, files: File[], initialFile?: File) => {
 }
 
 window.openFile = (file: File) => {
+    if(file.content instanceof Blob)
+        return;
+
     if(!file){
         console.warn('tried to open non existing file');
         return;
@@ -334,6 +334,8 @@ window.openFile = (file: File) => {
     if (activeFile) {
         activeFile.state = editor.saveViewState() || undefined;
     }
+    activeFile = file;
+
     let path;
     if (file.id) {
         path = (file.projectId ? '/project/' : '/global/') + file.name;
@@ -347,11 +349,13 @@ window.openFile = (file: File) => {
         model = createModel(file, uri);
     }
     editor.setModel(model);
+    if(model){
+        validateModel(model);
+    }
 
     if (file.state) {
         editor.restoreViewState(file.state);
     }
-    activeFile = file;
 
     if (file.id) {
         editor.updateOptions({ readOnly: false });
@@ -388,6 +392,15 @@ window.onContentChange = (_: number, _1: string) => { };
 window.onStateChange = (_: number, _1: Object) => { };
 window.onErrorChange = (_: ProjectErrors) => { };
 //});
+
+window.revalidateFile = (file: File) => {
+    const path = (file.projectId ? '/project/' : '/global/') + file.name;
+    const uri = monaco.Uri.parse(path);
+    let model = monaco.editor.getModel(uri);
+    if(model){
+        validateModel(model);
+    }
+}
 
 async function validateModel(model: monaco.editor.ITextModel, getWorker?: (...uris: monaco.Uri[]) => Promise<monaco.languages.typescript.TypeScriptWorker>) {
     const owner = model.getModeId();
@@ -470,6 +483,7 @@ export type MonacoWindow = Window & {
     onErrorChange: (errors: ProjectErrors) => void,
     openProject: (project: Project, files: File[], initialFile?: File) => void,
     openFile: (file: File) => void,
+    revalidateFile: (file: File) => void,
     resize: () => void,
     setTheme: (theme: string) => void,
     setWordWrap: (wrap: boolean) => void,

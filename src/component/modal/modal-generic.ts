@@ -29,7 +29,6 @@ export class ModalGeneric extends LazyElement {
         return {
             ...super.properties,
             data: { type: Object },
-            _error: { type: String },
         }
     }
 
@@ -49,7 +48,7 @@ export class ModalGeneric extends LazyElement {
                     </header>
                     <ul>
                         ${this.data.content}
-                        ${this._error}
+                        <li id="error" style="display:none"></li>
                     </ul>
                     <footer>
                         <button id="no" class="error" @click=${this.onAbort}>${this.data.abort}</button>
@@ -78,10 +77,14 @@ export class ModalGeneric extends LazyElement {
                     element?.addEventListener('change', e => callback(e, root));
                 }
             }
+            const error = root.getElementById('error') as HTMLLIElement;
+            error.innerHTML = '';
+            error.style.display = 'none';
         }
     }
 
     async onSubmit() {
+        const error = this.shadowRoot?.getElementById('error') as HTMLLIElement;
         try {
             let result;
             const fields: { [key: string]: any } = {};
@@ -102,9 +105,9 @@ export class ModalGeneric extends LazyElement {
                 })
             }
             if (this.data.check) {
-                const error = await this.data.check(fields);
-                if (error instanceof Error)
-                    throw error;
+                const err = await this.data.check(fields);
+                if (err instanceof Error)
+                    throw err;
             }
 
             if (this.data.result && this.shadowRoot) {
@@ -114,11 +117,13 @@ export class ModalGeneric extends LazyElement {
                 result = fields;
             }
 
-            this._error = null;
+            error.style.display = 'none';
+            error.innerHTML = '';
             appStore.resolveModal(result);
         }
-        catch (error) {
-            this._error = html`<li class="error"><p>${error}</p></li>`;
+        catch (err) {
+            error.style.display = 'block';
+            error.innerHTML = `<p>${err}</p>`;
         }
     }
 

@@ -10,3 +10,6 @@ export declare const localStorage: {
     clear(): void,
 }
 export declare const _console: Console;
+export declare function getCanvas(): OffscreenCanvas;
+export declare const SeedRandom: seedrandom.seedrandom_prng;
+export declare function sleep(ms: number): Promise<void>

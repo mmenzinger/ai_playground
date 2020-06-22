@@ -43,7 +43,7 @@ export type File = {
     projectId: number,
     name: string,
     state?: editor.ICodeEditorViewState,
-    content?: string,
+    content?: string | Blob,
     lastChange?: number,
     virtual?: boolean,
 };

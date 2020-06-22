@@ -1,16 +1,29 @@
-//import * as scenario from 'scenario/tictactoe.js';
+import { createState, run, EPlayer } from 'project/scenario.js';
 
-export async function init(state){
-    console.log('initial state: ', state);
+const SETTINGS = {
+    startingPlayer: EPlayer.Computer,
+};
+
+export async function start(){
+    const state = createState(SETTINGS);
+    const computer = { init, update, finish };
+    return await run(state, computer);
 }
 
-export async function update(state, actions){
+async function init(state){
+    console.log('Let the game beginn...');
+}
+
+async function update(state, actions){
     // take a random action
     const action = Math.round(Math.random()*(actions.length-1));
     return actions[action];
 }
 
-export async function finish(state, score){
-    console.log('final state: ', state);
-    console.log('score: ', score);
+async function finish(state, score){
+    switch(score){
+        case 1: console.log('The computer has won!'); break;
+        case 0: console.log('Draw!'); break;
+        case -1: console.log('The player has won!'); break;
+    }
 }

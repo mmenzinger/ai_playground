@@ -63,9 +63,6 @@ else{
 async function userFile(arg: RouteHandlerCallbackContext): Promise<Response>{
     let response: Response;
     try{
-        if(!project)
-            throw Error('no project loaded')
-
         const init = {
             status: 200,
             statusText: 'OK',
@@ -74,14 +71,23 @@ async function userFile(arg: RouteHandlerCallbackContext): Promise<Response>{
         const path = arg.url.pathname.split('/');
         let id;
         switch(path[1]){
-            case 'project': id = project.id; break;
+            case 'project': {
+                if(!project)
+                    throw Error('no project loaded');
+                id = project.id; break;
+            }
             case 'global': id = 0; break;
             default: id = Number(path[1]);
         }
 
-        let filename = path[2];
+        let filename = path[path.length-1];
         const file = await db.loadFileByName(id, filename);
-        file.content = file.content?.replace(/(from\s*['"`])(project|global|scenario|lib)\//g, '$1/$2/');
+        if(! (file.content instanceof Blob) && file.name.endsWith('.js')){
+            file.content = file.content?.replace(/(from\s*['"`])(project|global|scenario|lib)\//g, '$1/$2/');
+        }
+        else if(file.name.endsWith('.png')){
+            init.headers = {'Content-Type': 'image/png'};
+        }
         response = new Response(file.content, init);
     }
     catch(error){

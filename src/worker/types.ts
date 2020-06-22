@@ -1,11 +1,11 @@
 import { messageWithResult } from '@util';
 import { Log } from '@store/types';
 
-export function call(functionName: string, args: any[]){
+export function call(functionName: string, canvas: OffscreenCanvas){
     const msg: CallMessage = {
         type: MessageType.CALL,
         functionName,
-        args,
+        canvas,
     };
     return messageWithResult(msg);
 }
@@ -14,6 +14,7 @@ export enum MessageType {
     LOG,
     JSON_STORE,
     CALL,
+    EVENT,
 }
 
 export enum Functions {
@@ -41,5 +42,11 @@ export interface CallMessage {
     type: MessageType.CALL,
     file?: string,
     functionName: string,
-    args: any[],
+    canvas: OffscreenCanvas,
+}
+
+export interface EventMessage {
+    type: MessageType.EVENT,
+    callbackName: string,
+    data: any,
 }

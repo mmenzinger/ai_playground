@@ -4,7 +4,7 @@ import js from 'tau-prolog/modules/js';
 import random from 'tau-prolog/modules/random';
 import statistics from 'tau-prolog/modules/statistics';
 
-import { fixPath, getFileContent } from '@scenario/util';
+import { fixPath, getFileContent } from '@lib/utils';
 
 export const pl = prolog;
 

@@ -1,15 +1,12 @@
 import projectStore from '@store/project-store';
 import db from '@localdb';
 import { messageWithResult } from '@util';
-import { Scenario } from '@scenario/scenario';
 import { Message, LogMessage, MessageType, CallMessage, JSONMessage } from '@worker/types';
 
 export class Sandbox{
     #worker?: Worker;
-    #scenario: Scenario;
 
-    constructor(scenario: Scenario){
-        this.#scenario = scenario;
+    constructor(){
         this.#worker;
     }
 
@@ -24,7 +21,7 @@ export class Sandbox{
     
         this.#worker.onmessage = async (m) => {
             const msg: Message = m.data;
-            let result = undefined;
+            let result: any = undefined;
             switch (msg.type) {
                 case MessageType.LOG:{
                     const log = (msg as LogMessage).log;
@@ -55,13 +52,14 @@ export class Sandbox{
                     }
                 }
                 case MessageType.CALL:{
-                    const data = (msg as CallMessage);
-                    result = await this.#scenario.onCall(data.functionName, data.args);
+                    //const data = (msg as CallMessage);
+                    //result = await this.#scenario.onCall(data.functionName, data.args);
                     break;
                 }
             }
             if(m.ports.length > 0){
-                m.ports[0].postMessage({ result });
+                console.log(result);
+                m.ports[0].postMessage(result.data || result || {}, result.transfer || []);
             }
         }
     
@@ -79,15 +77,19 @@ export class Sandbox{
         }, null, registration.active);
     }
     
-    async call (file: string, functionName: string, args: any[] = []) {
+    async call (file: string, functionName: string, canvas: OffscreenCanvas) {
         await this.simSetup();
         const msg: CallMessage = {
             type: MessageType.CALL,
             file: file,
             functionName,
-            args,
+            canvas,
         }
-        await messageWithResult(msg, null, this.#worker);
+        await messageWithResult(msg, null, this.#worker, [canvas]);
+    }
+
+    async sendMessage(msg: any, transfer: any[] = []){
+        return messageWithResult(msg, null, this.#worker, transfer);
     }
     
     terminate() {

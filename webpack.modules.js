@@ -6,22 +6,12 @@ const glob = require('glob');
 
 const alias = require('./webpack.alias.js');
 
-function addScenarioModules(entry = {}) {
-    const files = glob.sync(path.join(__dirname, 'src/scenario/*/scenario.{js,ts}'));
-    for(const file of files){
-        const path = file.replace(__dirname, '.');
-        const name = path.replace(/(\.\/src\/|\/scenario\.(t|j)s)/g, '');
-        entry[name] = path;
-    }
-    return entry;
-}
-
 module.exports = {
-    entry: addScenarioModules({
-        'scenario/util': './src/scenario/util',
+    entry: {
+        'lib/utils': './src/lib/utils',
         'lib/prolog': './src/lib/prolog',
         'lib/tensorflow': './src/lib/tensorflow',
-    }),
+    },
 
     output: {
         filename: '[name].js',
@@ -51,13 +41,6 @@ module.exports = {
     },
 
     plugins: [
-        new CopyPlugin([
-            {
-                from: './src/scenario/*/assets/*',
-                to: 'assets/[1]/[name].[ext]',
-                test: /([^/]+)\/assets\/[^/]+$/,
-            }
-        ]),
         new EsmWebpackPlugin(),
     ],
 };

@@ -7,7 +7,7 @@ export interface IFiles {
     id?: number,
     projectId: number,
     name: string,
-    content: string,
+    content: string | Blob,
     lastChange: number,
     state?: editor.ICodeEditorViewState,
     exports?: string,
@@ -38,7 +38,7 @@ class LocalDB {
     //------------------------------------------------------------------------------------------
     // F i l e s
     //------------------------------------------------------------------------------------------
-    async createFile(projectId: number, name: string, content: string = '', lastChange:number = Date.now()): Promise<number>{
+    async createFile(projectId: number, name: string, content: string | Blob = '', lastChange:number = Date.now()): Promise<number>{
         return this.#files.add({ projectId, name, content, lastChange });
     }
 
@@ -66,7 +66,7 @@ class LocalDB {
             throw new LocalDBError(`could not save file ${file.id}`);
     }
 
-    async saveFileContent(id: number, content: string, lastChange: number = Date.now()): Promise<void> {
+    async saveFileContent(id: number, content: string | Blob, lastChange: number = Date.now()): Promise<void> {
         const records: number = await this.#files.update(id, {content, lastChange});
         if(records === 0)
             throw new LocalDBError(`could not save file ${id}`);

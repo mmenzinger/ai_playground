@@ -161,7 +161,7 @@ class ProjectStore {
     }
 
     @action
-    async createFile(name: string, projectId: number = 0, content: string = ''): Promise<number> {
+    async createFile(name: string, projectId: number = 0, content: string | Blob = ''): Promise<number> {
         const id: number = await db.createFile(projectId, name, content);
 
         runInAction(() => {

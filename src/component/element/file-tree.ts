@@ -5,9 +5,10 @@ import appStore from '@store/app-store';
 import { Defer, dispatchIframeEvents, thisShouldNotHappen } from '@util';
 
 import { Modals, ModalAbort } from '@element/c4f-modal';
-import { createFileTemplate, deleteFileTemplate } from '@modal/templates';
+import { createFileTemplate, deleteFileTemplate, uploadFileTemplate } from '@modal/templates';
 import { JSTreeWindow } from '@iframe/jstree';
-import { File, Project } from '@store/types';
+import { File } from '@store/types';
+import { saveAs } from 'file-saver';
 
 import db from '@localdb';
 
@@ -61,20 +62,40 @@ class FileTree extends LitElement {
             
     }
 
-    onAddFileGlobal() {
+    onAddFile() {
         if(projectStore.activeProject)
-            this.addFile(0);
+            this.addFile();
     }
 
-    onAddFileProject() {
-        if(projectStore.activeProject)
-            this.addFile(projectStore.activeProject.id);
-    }
-
-    async addFile(projectId: number) {
+    async onUploadFile() {
         try {
-            const modal = await appStore.showModal(Modals.GENERIC, createFileTemplate(projectId));
-            const id = await projectStore.createFile(`${modal.name}.${modal.type}`, projectId, '');
+            const modal = await appStore.showModal(Modals.GENERIC, uploadFileTemplate(projectStore.activeProject?.id || 0));
+            const id = await projectStore.createFile(modal.name, modal.projectId, modal.content);
+            projectStore.openFile(id);
+        }
+        catch (error) {
+            if( ! (error instanceof ModalAbort) )
+                console.error(error);
+        }
+    }
+
+    onDownloadFile(file: File) {
+        if(file.content instanceof Blob){
+            saveAs(file.content, file.name);
+        }
+        else{
+            const content = new Blob([file.content || ''], {
+                type: 'text/plain'
+            });
+            saveAs(content, file.name);
+        }
+    }
+
+    async addFile() {
+        try {
+            const modal = await appStore.showModal(Modals.GENERIC, createFileTemplate(projectStore.activeProject?.id || 0));
+            console.log(modal);
+            const id = await projectStore.createFile(`${modal.name}.${modal.type}`, Number(modal.projectId), '');
             projectStore.openFile(id);
         }
         catch (error) {
@@ -91,8 +112,9 @@ class FileTree extends LitElement {
                     this.#fileTree.resolve(iframe.contentWindow as JSTreeWindow)
                     const fileTree = await this.#fileTree.promise;
                     fileTree.onFile = this.onFile.bind(this);
-                    fileTree.onAddFileGlobal = this.onAddFileGlobal.bind(this);
-                    fileTree.onAddFileProject = this.onAddFileProject.bind(this);
+                    fileTree.onAddFile = this.onAddFile.bind(this);
+                    fileTree.onDownloadFile = this.onDownloadFile.bind(this);
+                    fileTree.onUploadFile = this.onUploadFile.bind(this);
                     fileTree.onDelete = this.onDelete.bind(this);
                     dispatchIframeEvents(iframe);
         
@@ -135,6 +157,7 @@ class FileTree extends LitElement {
         ]);
         projectFiles = projectFiles.sort(this.sort);
         globalFiles = globalFiles.sort(this.sort);
+
         const errors = projectStore.activeProject?.errors || {};
         if(!projectStore.activeFile){
             thisShouldNotHappen();

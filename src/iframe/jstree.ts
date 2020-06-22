@@ -52,7 +52,7 @@ onload = () => {
     $('#jstree').on('select_node.jstree', (event, data: NodeData) => {
         const evt: any =  window.event || event;
         const button = evt?.which || evt?.button;
-        if(data.node.parent === '#'){
+        if(data.node.parent === '#' || data.node.text === 'assets'){
             if(button === 1){
                 data.instance.deselect_node(data.node);
                 if(data.node.state.opened){
@@ -79,39 +79,37 @@ onload = () => {
 }
 
 function contextMenu(node: Node){
-    let create = undefined;
     let remove = undefined;
+    let download = undefined;
     
     let parent = node.parent;
-    if(parent === 'global' || node.text === 'global'){
-        create = {
-            label: 'create global file',
-            icon: '../assets/interface/add.svg',
-            action: () => window.onAddFileGlobal(),
-        };
-    }
-    else if(parent === 'project' || node.text === 'project'){
-        create = {
-            label: 'create project file',
-            icon: '../assets/interface/add.svg',
-            action: () => window.onAddFileProject(),
-        };
-    }
-
-    if(! ['index.js', 'scenario.md'].includes(node.text) && !['#', 'docs'].includes(parent)){
-        let name = node.text;
-        if(name.length > 10){
-            name = name.substring(0,8) + '...';
-        }
+    if(! ['index.js', 'assets'].includes(node.text) && !['#', 'docs'].includes(parent)){
         remove = {
-            label: `delete&nbsp;file&nbsp;'${name}'`,
+            label: `delete&nbsp;file`,
             icon: '../assets/interface/trash.svg',
             action: () => window.onDelete(node.data),
         }
     }
+    if(! ['assets'].includes(node.text) && !['#', 'docs'].includes(parent)){
+        download = {
+            label: `download&nbsp;file`,
+            icon: '../assets/interface/download.svg',
+            action: () => window.onDownloadFile(node.data),
+        }
+    }
     
     return {
-        create,
+        create: {
+            label: 'create&nbsp;file',
+            icon: '../assets/interface/add.svg',
+            action: () => window.onAddFile(),
+        },
+        upload: {
+            label: 'upload&nbsp;file',
+            icon: '../assets/interface/upload.svg',
+            action: () => window.onUploadFile(),
+        },
+        download,
         remove,
     }
 }
@@ -124,6 +122,35 @@ function getEnding(fileName: string){
 }
 
 window.updateFiles = async function(global: File[], project: File[], activeFile: File, errors: ProjectErrors = []){
+    const projectFiles = project.filter(file => !/\.(png|jpe?g)$/.test(file.name));
+    const projectAssets = project.filter(file => /\.(png|jpe?g)$/.test(file.name));
+    const globalFiles = global.filter(file => !/\.(png|jpe?g)$/.test(file.name));
+    const globalAssets = global.filter(file => /\.(png|jpe?g)$/.test(file.name));
+
+    const assetFolders: object[] = [];
+    if(projectAssets.length){
+        assetFolders.push({
+            id: 'projectAssets',
+            parent: 'project',
+            text: 'assets',
+            state: {
+                opened: false,
+                selected: false
+            }
+        });
+    }
+    if(globalAssets.length){
+        assetFolders.push({
+            id: 'globalAssets',
+            parent: 'global',
+            text: 'assets',
+            state: {
+                opened: false,
+                selected: false
+            }
+        });
+    }
+
     const allDocs = Array.from(docs).map(([key, value]) => {
         let ending = getEnding(key);
         return {
@@ -142,6 +169,7 @@ window.updateFiles = async function(global: File[], project: File[], activeFile:
 
     const data = [
         ...allDocs,
+        ...assetFolders,
         {
             id: 'docs',
             parent: '#',
@@ -169,7 +197,7 @@ window.updateFiles = async function(global: File[], project: File[], activeFile:
                selected: false
             }
         },
-        ...project.map(file => {
+        ...projectFiles.map(file => {
             let ending = getEnding(file.name);
             return {
                 id: file.id,
@@ -179,11 +207,31 @@ window.updateFiles = async function(global: File[], project: File[], activeFile:
                 data: file,
             }
         }),
-        ...global.map(file => {
+        ...projectAssets.map(file => {
+            let ending = getEnding(file.name);
+            return {
+                id: file.id,
+                parent: 'projectAssets',
+                text: file.name,
+                icon: `../assets/filetree/${ending}.svg`,
+                data: file,
+            }
+        }),
+        ...globalFiles.map(file => {
             let ending = getEnding(file.name);
             return {
                 id: file.id,
                 parent: 'global',
+                text: file.name,
+                icon: `../assets/filetree/${ending}.svg`,
+                data: file,
+            }
+        }),
+        ...globalAssets.map(file => {
+            let ending = getEnding(file.name);
+            return {
+                id: file.id,
+                parent: 'globalAssets',
                 text: file.name,
                 icon: `../assets/filetree/${ending}.svg`,
                 data: file,
@@ -238,6 +286,9 @@ export type JSTreeWindow = Window & {
     onFile: (file: File) => void;
     onAddFileGlobal: () => void;
     onAddFileProject: () => void;
+    onAddFile: () => void;
+    onUploadFile: () => void;
+    onDownloadFile: (file: File) => void;
     onDelete: (file: File) => Promise<void>;
 
     updateFiles: (global: File[], project: File[], activeFile: File, errors: ProjectErrors) => Promise<void>;

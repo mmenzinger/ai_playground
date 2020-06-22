@@ -1,1 +1,0 @@
-export class ScenarioError extends Error{}; 

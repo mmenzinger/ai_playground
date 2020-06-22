@@ -1,6 +1,9 @@
 import { serialize, deserialize, messageWithResult } from '@util';
 import { MessageType, JSONMessage } from '@worker/types';
 
+import SR from 'seedrandom';
+
+export const SeedRandom: seedrandom.seedrandom_prng = SR;
 
 /***********************************************************************************************
  *  file handling
@@ -107,3 +110,16 @@ export const localStorage = {
  */
 declare const __console: Console;
 export const _console = __console;
+
+/***********************************************************************************************
+ *  gui interaction
+ */
+export function getCanvas(): OffscreenCanvas{
+    return (self as any).__canvas;
+}
+
+export async function sleep(ms: number): Promise<void>{
+    return new Promise((resolve, _) => {
+        setTimeout(resolve, ms);
+    });
+} 

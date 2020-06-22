@@ -2,7 +2,7 @@ import {
     validAction, createAction, EPlayer,
 } from 'scenario/tictactoe.js';
 
-import { storeJson, loadJson } from 'scenario/util.js';
+import { storeJson, loadJson } from 'lib/utils.js';
 
 
 //------------------------------------------------------------------------------

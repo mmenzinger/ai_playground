@@ -164,7 +164,11 @@ export function uploadProjectTemplate(): ModalTemplate {
                 const projectFilesPromises: Promise<File>[] = [];
                 zip.folder('project').forEach((filename, file) => {
                     projectFilesPromises.push(new Promise((resolve, _) => {
-                        file.async('text').then(content => {
+                        let filetype: 'text'|'blob' = 'text';
+                        if(/\.(png|jpe?g)$/.test(file.name)){
+                            filetype = 'blob';
+                        }
+                        file.async(filetype).then(content => {
                             resolve({
                                 id: 0,
                                 projectId: 0,
@@ -179,7 +183,11 @@ export function uploadProjectTemplate(): ModalTemplate {
                 if (globals) {
                     zip.folder('global').forEach((filename, file) => {
                         globalFilesPromises.push(new Promise((resolve, _) => {
-                            file.async('text').then(content => {
+                            let filetype: 'text'|'blob' = 'text';
+                            if(/\.(png|jpe?g)$/.test(file.name)){
+                                filetype = 'blob';
+                            }
+                            file.async(filetype).then(content => {
                                 resolve({
                                     id: 0,
                                     projectId: 0,
@@ -232,77 +240,6 @@ export function uploadProjectTemplate(): ModalTemplate {
     };
 }
 
-//------------------------------------------------------------------------------
-// Delete Project
-//------------------------------------------------------------------------------
-export function deleteProjectTemplate(project: Project): ModalTemplate {
-    return {
-        title: 'Permanently Delete Project',
-        submit: 'Delete',
-        abort: 'Cancel',
-
-        content: html`
-            <li><p>Are you sure you want to <em>permanently<em> delete the project '${project.name}'?<br>
-            This operation can not be undone!</p></li>
-        `,
-    };
-}
-
-//------------------------------------------------------------------------------
-// Create File
-//------------------------------------------------------------------------------
-export function createFileTemplate(projectId: number): ModalTemplate {
-    return {
-        title: 'Create File',
-        submit: 'Create File',
-        abort: 'Cancel',
-
-        content: html`
-            <li>
-                <label for="name">Name</label>
-                <input id="name" type="text" placeholder="filename">
-                <select id="type">
-                    <option value="js">.js</option>
-                    <option value="json">.json</option>
-                    <option value="pl">.pl</option>
-                    <option value="md">.md</option>
-                </select>
-            </li>
-        `,
-
-        init: async (shadowRoot: ShadowRoot) => {
-            const name = shadowRoot.getElementById('name') as HTMLInputElement;
-            const type = shadowRoot.getElementById('type') as HTMLSelectElement;
-            name.value = '';
-            type.selectedIndex = 0;
-        },
-
-        check: async (fields: { [key: string]: any }) => {
-            if (fields.name.length === 0)
-                return Error('Empty filename! Every file must have a name.');
-            if (!fields.name.match(/[a-zA-Z0-9_-]/))
-                return Error('Invalid character! Only numbers, letters, _ and - are allowed.');
-            if (await db.fileExists(projectId, `${fields.name}.${fields.type}`))
-                return Error('Duplicate name! A file with that name and ending already exists!');
-            return true;
-        },
-    };
-}
-
-//------------------------------------------------------------------------------
-// Delete File
-//------------------------------------------------------------------------------
-export function deleteFileTemplate(file: File): ModalTemplate {
-    const type = file.projectId === 0 ? 'global' : 'project';
-    return {
-        title: 'Delete File',
-        submit: 'Yes Delete',
-        abort: 'No',
-
-        content: html`
-            <li><p>Are you sure you want to <em>permanently</em> delete the <em>${type}</em> file '${file.name}'?</p></li>`,
-    };
-}
 
 //------------------------------------------------------------------------------
 // Download Project
@@ -334,4 +271,212 @@ export function downloadProjectTemplate(project: Project): ModalTemplate {
             globals.checked = false;
         },
     }
+}
+
+//------------------------------------------------------------------------------
+// Delete Project
+//------------------------------------------------------------------------------
+export function deleteProjectTemplate(project: Project): ModalTemplate {
+    return {
+        title: 'Permanently Delete Project',
+        submit: 'Delete',
+        abort: 'Cancel',
+
+        content: html`
+            <li><p>Are you sure you want to <em>permanently<em> delete the project '${project.name}'?<br>
+            This operation can not be undone!</p></li>
+        `,
+    };
+}
+
+//------------------------------------------------------------------------------
+// Create File
+//------------------------------------------------------------------------------
+export function createFileTemplate(projectId: number): ModalTemplate {
+    return {
+        title: 'Create File',
+        submit: 'Create File',
+        abort: 'Cancel',
+
+        content: html`
+            <li>
+                <label for="projectId">Visibility</label>
+                <select id="projectId">
+                    <option value="${projectId}">Project</option>
+                    <option value="0">Global</option>
+                </select>
+            </li>
+            <li>
+                <label for="name">Name</label>
+                <input id="name" type="text" placeholder="filename">
+                <select id="type">
+                    <option value="js">.js</option>
+                    <option value="json">.json</option>
+                    <option value="pl">.pl</option>
+                    <option value="md">.md</option>
+                </select>
+            </li>
+        `,
+
+        init: async (shadowRoot: ShadowRoot) => {
+            const name = shadowRoot.getElementById('name') as HTMLInputElement;
+            const type = shadowRoot.getElementById('type') as HTMLSelectElement;
+            const visibility = shadowRoot.getElementById('projectId') as HTMLSelectElement;
+            name.value = '';
+            type.selectedIndex = 0;
+            visibility.selectedIndex = 0;
+        },
+
+        check: async (fields: { [key: string]: any }) => {
+            const project = Number(fields.projectId);
+            if (fields.name.length === 0)
+                return Error('Empty filename! Every file must have a name.');
+            if (!fields.name.match(/[a-zA-Z0-9_-]/))
+                return Error('Invalid character! Only numbers, letters, _ and - are allowed.');
+            if (await db.fileExists(project, `${fields.name}.${fields.type}`))
+                return Error('Duplicate name! A file with that name and ending already exists!');
+            return true;
+        },
+    };
+}
+
+//------------------------------------------------------------------------------
+// Upload File
+//------------------------------------------------------------------------------
+export function uploadFileTemplate(projectId: number): ModalTemplate {
+    let file: {
+        name: string,
+        content: string | Blob,
+        projectId: Number,
+    };
+
+    async function onSelectFile(fileSelectElement: HTMLInputElement, nameElement: HTMLInputElement, typeElement: HTMLSelectElement) {
+        // @ts-ignore - it will throw an exception if null
+        const selectedFile = (fileSelectElement.files)[0];
+        const name = selectedFile.name;
+        const content: string | Blob = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+                if(reader.result instanceof ArrayBuffer){
+                    resolve(new Blob([reader.result]));
+                }
+                else if(typeof reader.result === 'string'){
+                    resolve(reader.result);
+                }
+                else{
+                    reject('invalid file');
+                }
+            };
+            if(/\.(png|jpe?g)$/.test(name)){
+                reader.readAsArrayBuffer(selectedFile);
+            }
+            else if(/\.(js|pl|json|md)$/.test(name)){
+                reader.readAsText(selectedFile);
+            }
+            else{
+                reject('invalid file type');
+            }
+        });
+
+        const [filename, ending] = name.split('.');
+        nameElement.value = filename;
+        [...typeElement.options].some((option, index) => {
+            if (option.value == ending) {
+                typeElement.selectedIndex = index;
+                return true;
+            }
+            return false;
+        });
+        file = {
+            name,
+            content,
+            projectId,
+        }
+    }
+
+    return {
+        title: 'Upload File',
+        submit: 'Upload',
+        abort: 'Cancel',
+
+        content: html`
+            <li>
+                <label for="file">File</label>
+                <input id="file" type="file">
+            </li>
+            <li>
+                <label for="projectId">Visibility</label>
+                <select id="projectId">
+                    <option value="${projectId}">Project</option>
+                    <option value="0">Global</option>
+                </select>
+            </li>
+            <li>
+                <label for="name">Name</label>
+                <input id="name" type="text" placeholder="filename">
+                <select id="type">
+                    <option value="js">.js</option>
+                    <option value="json">.json</option>
+                    <option value="pl">.pl</option>
+                    <option value="md">.md</option>
+                    <option value="png">.png</option>
+                    <option value="jpg">.jpg</option>
+                </select>
+            </li>
+        `,
+
+        init: async (shadowRoot: ShadowRoot) => {
+            const file = shadowRoot.getElementById('file') as HTMLInputElement;
+            const name = shadowRoot.getElementById('name') as HTMLInputElement;
+            const type = shadowRoot.getElementById('type') as HTMLSelectElement;
+            const visibility = shadowRoot.getElementById('projectId') as HTMLSelectElement;
+            file.value = '';
+            name.value = '';
+            type.selectedIndex = 0;
+            visibility.selectedIndex = 0;
+        },
+
+        check: async (fields: { [key: string]: any }) => {
+            const project = Number(fields.projectId);
+            const filename = `${fields.name}.${fields.type}`;
+            if (fields.name.length === 0)
+                return Error('Empty filename! Every file must have a name.');
+            if (!fields.name.match(/[a-zA-Z0-9_-]/))
+                return Error('Invalid character! Only numbers, letters, _ and - are allowed.');
+            if (await db.fileExists(project, filename))
+                return Error('Duplicate name! A file with that name and ending already exists!');
+            file.projectId = project;
+            file.name = filename;
+            return true;
+        },
+
+        async result(shadowRoot: ShadowRoot) {
+            return {
+                ...file,
+            }
+        },
+
+        change: {
+            file: (event: Event, shadowRoot: ShadowRoot) => {
+                const name = shadowRoot.getElementById('name') as HTMLInputElement;
+                const type = shadowRoot.getElementById('type') as HTMLSelectElement;
+                onSelectFile(event.target as HTMLInputElement, name, type);
+            },
+        },
+    };
+}
+
+//------------------------------------------------------------------------------
+// Delete File
+//------------------------------------------------------------------------------
+export function deleteFileTemplate(file: File): ModalTemplate {
+    const type = file.projectId === 0 ? 'global' : 'project';
+    return {
+        title: 'Delete File',
+        submit: 'Yes Delete',
+        abort: 'No',
+
+        content: html`
+            <li><p>Are you sure you want to <em>permanently</em> delete the <em>${type}</em> file '${file.name}'?</p></li>`,
+    };
 }

@@ -20,14 +20,11 @@ class C4fEditorIframe extends LitElement {
             style,
         ];
     }
-    _activeFile = null;
-    _currentMode = 'plain_text';
-    _preventOnChange = false;
-    _monaco = new Defer<MonacoWindow>();
-    _firstErrorUpdate = true;
+    #monaco = new Defer<MonacoWindow>();
+    #firstErrorUpdate = true;
 
     render() {
-        this._firstErrorUpdate = true;
+        this.#firstErrorUpdate = true;
         const theme = settingsStore.get('editor-theme', 'vs');
         const wrap = settingsStore.get('editor-wordwrap', true);
         return html`
@@ -45,6 +42,7 @@ class C4fEditorIframe extends LitElement {
                     </select>
                 </li>
             </ul>
+            <div id="preview" style="display:none"></div>
         `;
     }
 
@@ -55,7 +53,7 @@ class C4fEditorIframe extends LitElement {
 
         iframe.onload = () => {
             const monaco = iframe.contentWindow as MonacoWindow;
-            this._monaco.resolve(monaco);
+            this.#monaco.resolve(monaco);
 
             new ResizeObserver(() => {
                 monaco.resize();
@@ -70,8 +68,8 @@ class C4fEditorIframe extends LitElement {
             }
 
             monaco.onErrorChange = (fileErrorsList) => {
-                if(this._firstErrorUpdate){
-                    this._firstErrorUpdate = false;
+                if(this.#firstErrorUpdate){
+                    this.#firstErrorUpdate = false;
                     if(projectStore.activeFile){
                         monaco.openFile(projectStore.activeFile);
                     }
@@ -88,14 +86,14 @@ class C4fEditorIframe extends LitElement {
         }
 
         theme.onchange = async (_) => {
-            const monaco = await this._monaco.promise;
+            const monaco = await this.#monaco.promise;
             const selectedTheme = theme.options[theme.selectedIndex].value;
             settingsStore.set('editor-theme', selectedTheme);
             monaco.setTheme(selectedTheme);
         }
 
         wordwrap.onchange = async (_) => {
-            const monaco = await this._monaco.promise;
+            const monaco = await this.#monaco.promise;
             settingsStore.set('editor-wordwrap', wordwrap.checked);
             monaco.setWordWrap(wordwrap.checked);
         }
@@ -103,17 +101,31 @@ class C4fEditorIframe extends LitElement {
         autorun(async _ => {
             const file = projectStore.activeFile;
             if (file) {
-                const monaco = await this._monaco.promise;
-                monaco.openFile(file);
+                const editor = this.shadowRoot?.getElementById('editor') as HTMLElement;
+                const menu = this.shadowRoot?.getElementById('menu') as HTMLElement;
+                const preview = this.shadowRoot?.getElementById('preview') as HTMLElement;
+                const monaco = await this.#monaco.promise;
+                if(/\.(png|jpe?g)$/.test(file.name)){
+                    editor.style.display = 'none';
+                    menu.style.display = 'none';
+                    preview.style.display = 'block';
+                    preview.innerHTML = `<img src="/${file.projectId}/${file.name}">`;
+                }
+                else{
+                    editor.style.display = 'block';
+                    menu.style.display = 'flex';
+                    preview.style.display = 'none';
+                    monaco.openFile(file);
+                }
             }
         });
 
         autorun(async _ => {
             const project = projectStore.activeProject;
             if(project){
-                const monaco = await this._monaco.promise;
+                const monaco = await this.#monaco.promise;
                 let files = await db.getProjectFiles(project.id);
-                files = [...files, ...await db.getProjectFiles(0)]
+                files = [...files, ...await db.getProjectFiles(0)].filter(file => !(file.content instanceof Blob));
                 monaco.openProject(project, files, projectStore.activeFile || undefined);
             }
         });

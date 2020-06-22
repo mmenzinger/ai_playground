@@ -44,7 +44,7 @@ class AiProjectIndex extends LazyElement {
                     <header>
                         <a href="#project=${project.id}">
                             <h1>${project.name}</h1>
-                            <div class="logo" ><embed src="assets/${project.scenario}/logo.svg"></div>
+                            <div class="logo"><img src="/${project.id}/logo.png" onerror="this.src='/assets/logo.png';this.onerror=''"></div>
                         </a>
                     </header>
                     <footer>
@@ -80,7 +80,7 @@ class AiProjectIndex extends LazyElement {
             let template = scenario.templates[modal.template];
             if(!template)
                 template = scenario.examples[modal.template];
-            template.files.push(scenario.description);
+            template.files.push(...scenario.files);
             await projectStore.createProject(modal.name, template.scenario, template.files);
             this._projects = await db.getProjects();
         }
@@ -119,7 +119,7 @@ class AiProjectIndex extends LazyElement {
                 }
             }
             zip.file('settings.json', JSON.stringify(project));
-            const zipFile = await zip.generateAsync({type:"blob"});
+            const zipFile = await zip.generateAsync({type: 'blob'});
             saveAs(zipFile, modal.name);
         }
         catch (error) {
@@ -131,7 +131,6 @@ class AiProjectIndex extends LazyElement {
     async onUploadProject() {
         try{
             const modal = await appStore.showModal(Modals.GENERIC, uploadProjectTemplate());
-            console.log(modal);
             await projectStore.importProject(
                 modal.name,
                 modal.settings.scenario,
