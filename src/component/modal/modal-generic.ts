@@ -68,13 +68,23 @@ export class ModalGeneric extends LazyElement {
             if (this.data && this.data.init) {
                 this.data.init(root);
             }
-            const firstElement = root.querySelector('input,select') as HTMLElement;
+            const firstElement = root.querySelector('input') as HTMLElement;
             if (firstElement)
                 firstElement.focus();
             if (this.data && this.data.change) {
                 for (let [field, callback] of Object.entries(this.data.change)) {
                     const element = root.getElementById(field);
                     element?.addEventListener('change', e => callback(e, root));
+                }
+            }
+            const inputElements = root.querySelectorAll('input');
+            for(const input of inputElements){
+                input.onkeydown = (e: KeyboardEvent) => {
+                    console.log(e.key)
+                    if(['Escape', 'Enter'].includes(e.key)){
+                        this.onKeyDown(e.key);
+                        e.preventDefault();
+                    }
                 }
             }
             const error = root.getElementById('error') as HTMLLIElement;

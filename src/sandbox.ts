@@ -58,8 +58,7 @@ export class Sandbox{
                 }
             }
             if(m.ports.length > 0){
-                console.log(result);
-                m.ports[0].postMessage(result.data || result || {}, result.transfer || []);
+                m.ports[0].postMessage(result?.data || result || {}, result?.transfer || []);
             }
         }
     

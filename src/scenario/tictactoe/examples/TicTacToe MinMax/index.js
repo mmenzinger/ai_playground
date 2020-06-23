@@ -1,6 +1,41 @@
 import {
-    getWinner, getScore, getActions, performAction, actionToObject, EPlayer,
-} from 'scenario/tictactoe.js';
+    getWinner, getScore, getActions, performAction, actionToObject, EPlayer, createState, run
+} from 'project/scenario.js';
+
+
+const SETTINGS = {
+    startingPlayer: EPlayer.Computer,
+};
+
+
+export async function start(){
+    const state = createState(SETTINGS);
+    const computer = { init, update };
+    return await run(state, computer);
+}
+
+//------------------------------------------------------------------------------
+export async function update(state, actions) {
+    // calculate best action
+    const [score, action, turns] = minmax(state);
+
+    console.log(turns, 'turns simulated');
+    console.log('best action with value', score, 'is', actionToObject(action));
+
+    // perform action
+    return action;
+}
+
+//------------------------------------------------------------------------------
+export async function init(state){
+    console.log('game started');
+    if(state.player === EPlayer.Computer){
+        console.log('calculating first action...');
+    }
+    else{
+        console.log('waiting for player action...');
+    }
+}
 
 //------------------------------------------------------------------------------
 // pseudo-randomly shuffle an array
@@ -47,27 +82,4 @@ function minmax(state, player = EPlayer.Computer) {
     }
 
     return [bestScore, bestAction, turnsSimulated];
-}
-
-//------------------------------------------------------------------------------
-export async function update(state, actions) {
-    // calculate best action
-    const [score, action, turns] = minmax(state);
-
-    console.log(turns, 'turns simulated');
-    console.log('best action with value', score, 'is', actionToObject(action));
-
-    // perform action
-    return action;
-}
-
-//------------------------------------------------------------------------------
-export async function init(state){
-    console.log('game started');
-    if(state.player === EPlayer.Computer){
-        console.log('calculating first action...');
-    }
-    else{
-        console.log('waiting for player action...');
-    }
 }

@@ -348,10 +348,12 @@ window.openFile = (file: File) => {
     if (!model) {
         model = createModel(file, uri);
     }
-    editor.setModel(model);
-    if(model){
-        validateModel(model);
+    if(!model){
+        console.error(file);
+        throw Error(`could not open file!`);
     }
+    model.setValue(file.content || '');
+    editor.setModel(model);
 
     if (file.state) {
         editor.restoreViewState(file.state);

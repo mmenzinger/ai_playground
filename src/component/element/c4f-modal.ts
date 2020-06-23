@@ -10,7 +10,6 @@ import style from './c4f-modal.css';
 
 export enum Modals  {
     GENERIC = 'generic',
-    UPLOAD_PROJECT = 'upload-project',
 }
 
 export class ModalAbort extends Error {};
@@ -29,7 +28,6 @@ class C4fModal extends MobxLitElement {
             <div id="background" ?active="${appStore.modal !== null}">
                 <div id="content">
                     <modal-generic id="${Modals.GENERIC}" class="modal" ?active="${template === Modals.GENERIC}"></modal-generic>
-                    <modal-upload-project id="${Modals.UPLOAD_PROJECT}" class="modal" ?active="${template === Modals.UPLOAD_PROJECT}"></modal-upload-project>
                 </div>
             </div>
         `;
@@ -45,7 +43,11 @@ class C4fModal extends MobxLitElement {
 
     firstUpdated() {
         window.onkeydown = (e: KeyboardEvent) => {
-            if(appStore.modal && ['Escape'/*, 'Enter'*/].includes(e.key)){
+            const keys = ['Escape'];
+            if(!appStore.reportOpen){
+                keys.push('Enter')
+            }
+            if(appStore.modal && keys.includes(e.key)){
                 const template = appStore.modal.template;
                 const modal = this.shadowRoot?.getElementById(template) as ModalGeneric;
                 if(modal && modal.onKeyDown)

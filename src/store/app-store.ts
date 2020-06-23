@@ -13,6 +13,7 @@ class AppStore {
     @observable params: string[][] = [];
     @observable offline = false;
     @observable modal: Modal | null = null;
+    @observable reportOpen = false;
 
     @action
     async navigate(_: string, search: string): Promise<void> {
@@ -104,6 +105,14 @@ class AppStore {
             this.modal.result.reject(data);
             this.modal = null;
         }
+    }
+
+    @action openReport() {
+        this.reportOpen = true;
+    }
+
+    @action closeReport() {
+        this.reportOpen = false;
     }
 }
 

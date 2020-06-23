@@ -16,6 +16,7 @@ import style from './c4f-bug-tracker.css';
 
 
 async function sendReport(data: string){
+    data = lzstring.compressToBase64(data);
     return fetch('https://api.subset42.com?token=eAg4FPusH8uyvzEFzF9DByA5Gh89Fz', {
         method: 'post',
         body: data,
@@ -33,12 +34,6 @@ function setStoredReports(reports: {[hash:string]: string}){
 
 
 class C4fBugTracker extends MobxLitElement {
-    static get properties() {
-        return {
-            open: { type: Boolean },
-        }
-    }
-
     static get styles() {
         return [
             sharedStyles,
@@ -46,7 +41,6 @@ class C4fBugTracker extends MobxLitElement {
         ];
     }
 
-    open = false;
     #sent: Defer<TemplateResult>;
     #result: Defer<TemplateResult>;
     #minDescLength = 20;
@@ -58,11 +52,14 @@ class C4fBugTracker extends MobxLitElement {
         setTimeout(async () => {
             const storedReports = getStoredReports();
 
-            for(const [hash, data] of Object.entries(storedReports)){
-                const response = await sendReport(data);
-                if(response?.success === true){
-                    console.log("report sent");
-                    delete storedReports[hash];
+            for(const [hash, utf16] of Object.entries(storedReports)){
+                const data = lzstring.decompressFromUTF16(utf16);
+                if(data){
+                    const response = await sendReport(data);
+                    if(response?.success === true){
+                        console.log("report sent");
+                        delete storedReports[hash];
+                    }
                 }
             }
             setStoredReports(storedReports);
@@ -81,7 +78,7 @@ class C4fBugTracker extends MobxLitElement {
                 </li>
             `;
         }
-        if(this.open){
+        if(appStore.reportOpen){
             return html`
             <button class="error" @click=${this.onClick}>Report Bug</button>
             <form id="form" autocomplete="off" action="javascript:void(0);">
@@ -139,7 +136,7 @@ class C4fBugTracker extends MobxLitElement {
     }
 
     close(){
-        this.open = false;
+        appStore.closeReport();
     }
 
     onDescriptionChange(event: Event){
@@ -181,13 +178,13 @@ class C4fBugTracker extends MobxLitElement {
             files.push(...await db.getProjectFiles(projectStore.activeProject?.id));
         }
 
-        const data = lzstring.compressToUTF16(JSON.stringify({
+        const data = JSON.stringify({
             description,
             appStore: appStoreData,
             projectStore: projectStoreData,
             settingsStore: settingsStoreData,
             files,
-        }));
+        });
 
         this.#result = new Defer<TemplateResult>();
         sendReport(data).then(response => {
@@ -205,7 +202,7 @@ class C4fBugTracker extends MobxLitElement {
                 crypto.subtle.digest('SHA-256', new TextEncoder().encode(data)).then(digest => {
                     const hash = new TextDecoder().decode(digest);
                     const storedReports = getStoredReports();
-                    storedReports[hash] = data;
+                    storedReports[hash] = lzstring.compressToUTF16(data);
                     setStoredReports(storedReports);
                 });
                 this.#result.resolve(html`
@@ -226,12 +223,12 @@ class C4fBugTracker extends MobxLitElement {
     }
 
     onClick(){
-        if(this.open){
+        if(appStore.reportOpen){
             this.onAbort();
         }
         else{
             this.#sent = new Defer<TemplateResult>();
-            this.open = true;
+            appStore.openReport();
         }
     }
 }
