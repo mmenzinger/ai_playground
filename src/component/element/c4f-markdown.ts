@@ -1,5 +1,5 @@
 import { html, LitElement } from 'lit-element';
-import { autorun } from 'mobx';
+import { reaction, toJS } from 'mobx';
 import projectStore from '@store/project-store';
 import { Project } from '@store/types';
 
@@ -16,6 +16,7 @@ import style from './c4f-markdown.css';
 import prism from 'prismjs/themes/prism.css';
 // @ts-ignore
 import prismLineNumbers from 'prismjs/plugins/line-numbers/prism-line-numbers.css';
+import db from '@localdb';
 
 const showdown = require('showdown');
 const converter = new showdown.Converter({
@@ -46,21 +47,48 @@ class C4fMarkdown extends LitElement {
     firstUpdated(){
         const container = this.shadowRoot?.querySelector('#markdown') as HTMLElement;
 
-        autorun(async _ => {
-            // clear markdown
-            const project = projectStore.activeProject;
-            const file = projectStore.activeFile;
-            if(project !== this.#activeProject){
-                this.#activeProject = project;
-                container.innerHTML = '';
+        reaction(
+            () => projectStore.activeProject,
+            project => {
+                if(project !== this.#activeProject){
+                    this.#activeProject = project;
+                    container.innerHTML = '';
+                }
             }
-            // update markdown
-            if (file && file.name.endsWith('.md')) {
-                container.innerHTML = converter.makeHtml(file.content);
-                this.updateHyperlinks(container);
-                this.updateCodeHighlight(container);
+        )
+        reaction(
+            () => projectStore.activeFile,
+            async file => {
+                if(!file?.name.endsWith('.md') && projectStore.activeProject && container.innerHTML.length === 0){
+                    const projectId = projectStore.activeProject.id;
+                    for(const fileName of ['readme.md', 'scenario.md']){
+                        try{
+                            file = await db.loadFileByName(projectId, fileName);
+                            break;
+                        }
+                        catch(_){}
+                    }
+                    if(!file?.name.endsWith('.md')){
+                        const files = await db.getProjectFiles(projectId);
+                        for(const pfile of files){
+                            if(pfile.name.endsWith('.md')){
+                                file = pfile;
+                                break;
+                            }
+                        }
+                    }
+                }
+                if(file?.name.endsWith('.md')){
+                    container.innerHTML = converter.makeHtml(file.content);
+                    this.updateHyperlinks(container);
+                    this.updateCodeHighlight(container);
+                }
+            },
+            {
+                fireImmediately: true,
+                delay: 1,
             }
-        });
+        );
     }
 
     updateHyperlinks(element: HTMLElement){

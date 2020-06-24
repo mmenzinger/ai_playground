@@ -63,7 +63,6 @@ export function getScenarios(): {[key:string]: ScenarioTemplates} {
             }
         }
     });
-    console.log(scenarios);
 
     return scenarios;
 }

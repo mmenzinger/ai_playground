@@ -12,7 +12,7 @@ import '@element/dynamic-split';
 import '@element/tab-group';
 import '@element/file-tree';
 import '@element/c4f-editor-iframe';
-//import '@element/c4f-editor';
+// import '@element/c4f-editor';
 import '@element/ai-simulator';
 import '@element/c4f-console';
 import '@element/c4f-markdown';
@@ -28,7 +28,7 @@ class AiProject extends LazyElement {
                     <dynamic-split slot="start" direction="horizontal" minSize="100px" defaultRatio="0.3" saveId="project_files_editor">
                         <file-tree slot="start"></file-tree>
                         <tab-group slot="end" id="editorTabGroup">
-                            <!-- <c4f-editor name="Editor"></c4f-editor>-->
+                            <!-- <c4f-editor name="Editor"></c4f-editor> -->
                             <c4f-editor-iframe name="Editor"></c4f-editor-iframe>
                             <c4f-markdown name="Markdown"></c4f-markdown>
                         </tab-group>

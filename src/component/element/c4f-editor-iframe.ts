@@ -1,5 +1,5 @@
 import { html, LitElement } from 'lit-element';
-import { autorun, reaction } from 'mobx';
+import { reaction } from 'mobx';
 import projectStore from '@store/project-store';
 import settingsStore from '@store/settings-store';
 import { ResizeObserver } from 'resize-observer';
