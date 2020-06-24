@@ -213,17 +213,20 @@ const editor = monaco.editor.create(container, {
 }) as monaco.editor.IStandaloneCodeEditor;
 
 editor.onDidChangeModelContent(_ => {
-    if (activeFile && activeFile.id)
+    if (activeFile && activeFile.id){
         window.onContentChange(activeFile.id, editor.getValue());
+    }
 });
 
 editor.onDidChangeCursorSelection(_ => {
-    if (activeFile && activeFile.id)
+    if (activeFile && activeFile.id){
         window.onStateChange(activeFile.id, editor.saveViewState());
+    }
 });
 editor.onDidScrollChange(_ => {
-    if (activeFile && activeFile.id)
+    if (activeFile && activeFile.id){
         window.onStateChange(activeFile.id, editor.saveViewState());
+    }
 })
 
 editor.onDidChangeModelDecorations(_ => {
@@ -318,7 +321,7 @@ window.openProject = (project: Project, files: File[], initialFile?: File) => {
 
     activeProject = project;
     if (initialFile) {
-        window.openFile(initialFile); window.openFile(initialFile);
+        window.openFile(initialFile);
     }
 }
 

@@ -1,9 +1,11 @@
 import { serialize, deserialize, messageWithResult } from '@util';
 import { MessageType, JSONMessage } from '@worker/types';
 
-import SR from 'seedrandom';
+import seedrandom from 'seedrandom';
 
-export const SeedRandom: seedrandom.seedrandom_prng = SR;
+export function seedRandom(seed: string){
+    return seedrandom(seed);
+}
 
 /***********************************************************************************************
  *  file handling

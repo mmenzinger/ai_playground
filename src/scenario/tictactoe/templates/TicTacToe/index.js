@@ -1,29 +1,24 @@
-import { createState, run, EPlayer } from 'project/scenario.js';
+import * as $ from 'project/scenario.js';
 
 const SETTINGS = {
-    startingPlayer: EPlayer.Computer,
+    complexity: $.EComplexity.Simple,
+    size: 4,
+    seed: '42',
+    delay: 200,
 };
 
-export async function start(){
-    const state = createState(SETTINGS);
-    const computer = { init, update, finish };
-    return await run(state, computer);
-}
-
-async function init(state){
-    console.log('Let the game beginn...');
-}
-
-async function update(state, actions){
+export async function update(state, actions){
     // take a random action
     const action = Math.round(Math.random()*(actions.length-1));
     return actions[action];
 }
 
-async function finish(state, score){
-    switch(score){
-        case 1: console.log('The computer has won!'); break;
-        case 0: console.log('Draw!'); break;
-        case -1: console.log('The player has won!'); break;
-    }
+export async function finish(state, score){
+    console.log('score: ', score);
+}
+
+export async function start() {
+    const state = $.createState(SETTINGS);
+    const player = { update, finish }
+    await $.run(state, player, SETTINGS.delay);
 }

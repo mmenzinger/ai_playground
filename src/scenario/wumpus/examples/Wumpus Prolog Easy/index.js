@@ -1,9 +1,9 @@
-import { EComplexity, createState, run, EPercept, EAction } from 'project/scenario.js';
+import * as $ from 'project/scenario.js';
 // import tau-prolog
 import { pl } from 'lib/prolog.js';
 
 const SETTINGS = {
-    complexity: EComplexity.Simple,
+    complexity: $.EComplexity.Simple,
     size: 4,
     seed: '42',
     delay: 200,
@@ -26,9 +26,9 @@ function shuffle(array) {
 }
 
 export async function start() {
-    const state = createState(SETTINGS);
+    const state = $.createState(SETTINGS);
     const player = { init, update, result, finish }
-    await run(state, player, SETTINGS.delay);
+    await $.run(state, player, SETTINGS.delay);
 }
 
 async function init(state){
@@ -44,31 +44,31 @@ async function update(state, actions){
     const y = state.position.y;
 
     // update knowledge base with percepts
-    if(state.percepts & EPercept.Breeze){
+    if(state.percepts & $.EPercept.Breeze){
         await kb.run(`asserta(breeze(${x},${y})).`);
     }
-    if(state.percepts & EPercept.Stench){
+    if(state.percepts & $.EPercept.Stench){
         await kb.run(`asserta(stench(${x},${y})).`);
     }
-    if(state.percepts & EPercept.Scream){
+    if(state.percepts & $.EPercept.Scream){
         await kb.run(`asserta(scream).`);
     }
 
     // shoot wumpus if possible
-    if(state.arrows > 0 && state.percepts & EPercept.Stench){
+    if(state.arrows > 0 && state.percepts & $.EPercept.Stench){
         if(await kb.isTrue(`certainWumpus(${x-1}, ${y}).`))
-            return {type: EAction.ShootLeft};
+            return {type: $.EAction.ShootLeft};
         if(await kb.isTrue(`certainWumpus(${x+1}, ${y}).`))
-            return {type: EAction.ShootRight};
+            return {type: $.EAction.ShootRight};
         if(await kb.isTrue(`certainWumpus(${x}, ${y-1}).`))
-            return {type: EAction.ShootUp};
+            return {type: $.EAction.ShootUp};
         if(await kb.isTrue(`certainWumpus(${x}, ${y+1}).`))
-            return {type: EAction.ShootDown};
+            return {type: $.EAction.ShootDown};
     }
     
     // make a save move whenever possible
     for(const action of shuffle(actions)){
-        if(action.type === EAction.MoveTo){
+        if(action.type === $.EAction.MoveTo){
             if(await kb.isTrue(`saveMove(${action.x}, ${action.y}).`)){
                 return action;
             }

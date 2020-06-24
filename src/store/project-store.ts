@@ -3,7 +3,7 @@ import db from '@localdb';
 import { throttle } from 'lodash-es';
 import settingsStore from '@store/settings-store';
 
-import type { File, Project, ProjectSettings, ProjectErrors, Caller, Log, LogType, IPosition } from '@store/types';
+import type { File, Project, ProjectErrors, Caller, Log, LogType, IPosition } from '@store/types';
 
 class ProjectStore {
     @observable activeProject: Project | null = null;
@@ -41,20 +41,29 @@ class ProjectStore {
      */
     @action 
     async openProject(id: number) : Promise<Project> {
+        const project = await db.getProject(id);
         let file: File | null = null;
-        for(const fileName of ['readme.md', 'scenario.md', 'index.js']){
+        if(project.openFileId){
             try{
-                file = await db.loadFileByName(id, fileName);
-                break;
+                file = await db.loadFile(project.openFileId);
             }
             catch(_){}
         }
-        const project = await db.getProject(id);
+        if(!file){
+            for(const fileName of ['readme.md', 'scenario.md', 'index.js']){
+                try{
+                    file = await db.loadFileByName(id, fileName);
+                    break;
+                }
+                catch(_){}
+            }
+        }
         runInAction(() => {
             this.activeFile = file;
             this.activeProject = project;
             this.lastFileTreeChange = Date.now();
         });
+        
         return project;
     }
 
@@ -66,16 +75,6 @@ class ProjectStore {
 
     async createProject(name: string, scenario: string, files: Array<File>): Promise<number> {
         return await db.createProject(name, scenario, files);
-    }
-
-    @action
-    async updateProjectSettings(id: number, settings: ProjectSettings): Promise<void> {
-        await db.saveProjectSettings(id, settings)
-        runInAction(() => {
-            if (this.activeProject?.id === id) {
-                this.activeProject.settings = settings;
-            }
-        });
     }
 
     @action
@@ -123,6 +122,10 @@ class ProjectStore {
             await this.flushFile();
         }
         const file = await db.loadFile(id);
+        if(this.activeProject){
+            db.setProjectOpenFileId(this.activeProject.id, id);
+        }
+        
 
         if(scrollTo && file.state){
             file.state.cursorState = [{

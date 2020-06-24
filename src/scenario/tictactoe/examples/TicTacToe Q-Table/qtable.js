@@ -1,8 +1,5 @@
-import {
-    validAction, createAction, EPlayer,
-} from 'project/scenario.js';
-
 import { storeJson, loadJson } from 'lib/utils.js';
+import * as $ from 'project/scenario.js';
 
 
 //------------------------------------------------------------------------------
@@ -18,7 +15,7 @@ export class QTable {
     }
 
     idToAction(id, player) {
-        return createAction(player, id / 3 | 0, id % 3);
+        return $.createAction(player, id / 3 | 0, id % 3);
     }
 
     actionToId(action) {
@@ -57,7 +54,7 @@ export class QTable {
         return this._data.get(board)[actionId];
     }
 
-    getBestValidAction(state, player = EPlayer.Computer, punish = 0) {
+    getBestValidAction(state, player = $.EPlayer.Computer, punish = 0) {
         const board = this.getBoard(state);
         const actions = this.get(board).map((x, i) => [i, x]);
         shuffle(actions);
@@ -66,7 +63,7 @@ export class QTable {
         let bestAction;
         for (let i = 0; i < actions.length; i++) {
             bestAction = this.idToAction(actions[i][0], player);
-            if (validAction(state, bestAction))
+            if ($.validAction(state, bestAction))
                 break;
             else if(punish){
                 // invalid move, punish

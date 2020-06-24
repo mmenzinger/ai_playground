@@ -5,14 +5,17 @@ import prolog from '!!raw-loader!@doc/prolog.md';
 // @ts-ignore
 import tensorflow from '!!raw-loader!@doc/tensorflow.md';
 // @ts-ignore
-import util from '!!raw-loader!@doc/util.md';
+import utils from '!!raw-loader!@doc/utils.md';
 // @ts-ignore
 import editor from '!!raw-loader!@doc/editor.md';
+// @ts-ignore
+import index from '!!raw-loader!@doc/index.md';
 
 export const docs = new Map([
     ['debugging.md', debugging],
     ['editor.md', editor],
-    ['tensorflow.md', tensorflow],
+    ['index.md', index],
     ['prolog.md', prolog],
-    ['util.md', util],
+    ['tensorflow.md', tensorflow],
+    ['utils.md', utils],
 ]);

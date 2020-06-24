@@ -1,7 +1,5 @@
 import { QTable } from 'project/qtable.js';
-import {
-    run, createState, getScore, getWinner, EPlayer, getActions, performAction
-} from 'project/scenario.js';
+import * as $ from 'project/scenario.js';
 
 export async function generateQTable() {
     const qtable = new QTable(0);
@@ -32,7 +30,7 @@ export async function generateQTable() {
                         return actions[actionId];
                     }
                     else { // use qtable to get best move, punish on invalid move attempts
-                        return qtable.getBestValidAction(state, EPlayer.Player1, -1);
+                        return qtable.getBestValidAction(state, $.EPlayer.Player1, -1);
                     }
                 },
                 async result(oldState, action, newState, reward) {
@@ -43,24 +41,24 @@ export async function generateQTable() {
 
             const player2 = {
                 async update(state, actions) {
-                    return qtable.getBestValidAction(state, EPlayer.Player2);
+                    return qtable.getBestValidAction(state, $.EPlayer.Player2);
                 }
             };
 
             const settings = {
                 startingPlayer: episode % 2 + 1, // switch between first and second player
             };
-            let state = createState(settings);
-            state = await run(state, player1, player2, false);
+            let state = $.createState(settings);
+            state = await $.run(state, player1, player2, false);
 
-            const winner = getWinner(state);
+            const winner = $.getWinner(state);
             switch(winner){
-                case EPlayer.Player1: wins++; break;
-                case EPlayer.Player2: losses++; break;
-                case EPlayer.Both: draws++; break;
+                case $.EPlayer.Player1: wins++; break;
+                case $.EPlayer.Player2: losses++; break;
+                case $.EPlayer.Both: draws++; break;
             }
 
-            let score = getScore(state, EPlayer.Player1);
+            let score = $.getScore(state, $.EPlayer.Player1);
             let lastMemory = memoryPlayer.shift();
             // rate last action based on the final result
             qtable.set(lastMemory.state, lastMemory.action, score);

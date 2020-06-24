@@ -1,10 +1,11 @@
 import { html, LitElement } from 'lit-element';
-import { autorun } from 'mobx';
+import { autorun, reaction } from 'mobx';
 import projectStore from '@store/project-store';
 import settingsStore from '@store/settings-store';
 import { ResizeObserver } from 'resize-observer';
 import { Defer, dispatchIframeEvents } from '@util';
 import { MonacoWindow } from '@iframe/monaco';
+import { Project, File } from '@store/types';
 
 import db from '@localdb';
 
@@ -98,37 +99,45 @@ class C4fEditorIframe extends LitElement {
             monaco.setWordWrap(wordwrap.checked);
         }
 
-        autorun(async _ => {
-            const file = projectStore.activeFile;
-            if (file) {
-                const editor = this.shadowRoot?.getElementById('editor') as HTMLElement;
-                const menu = this.shadowRoot?.getElementById('menu') as HTMLElement;
-                const preview = this.shadowRoot?.getElementById('preview') as HTMLElement;
-                const monaco = await this.#monaco.promise;
-                if(/\.(png|jpe?g)$/.test(file.name)){
-                    editor.style.display = 'none';
-                    menu.style.display = 'none';
-                    preview.style.display = 'block';
-                    preview.innerHTML = `<img src="/${file.projectId}/${file.name}">`;
+        let project: Project;
+        let file: File;
+        reaction(
+            () => ({
+                activeProject: projectStore.activeProject,
+                activeFile: projectStore.activeFile,
+            }),
+            async (data, _) => {
+                if(data.activeProject !== project && data.activeProject){
+                    project = data.activeProject;
+                    const monaco = await this.#monaco.promise;
+                    let files = await db.getProjectFiles(project.id);
+                    files = [...files, ...await db.getProjectFiles(0)].filter(file => !(file.content instanceof Blob));
+                    monaco.openProject(project, files);
                 }
-                else{
-                    editor.style.display = 'block';
-                    menu.style.display = 'flex';
-                    preview.style.display = 'none';
-                    monaco.openFile(file);
+                if (data.activeFile !== file && data.activeFile) {
+                    file = data.activeFile;
+                    const editor = this.shadowRoot?.getElementById('editor') as HTMLElement;
+                    const menu = this.shadowRoot?.getElementById('menu') as HTMLElement;
+                    const preview = this.shadowRoot?.getElementById('preview') as HTMLElement;
+                    const monaco = await this.#monaco.promise;
+                    if(/\.(png|jpe?g)$/.test(file.name)){
+                        editor.style.display = 'none';
+                        menu.style.display = 'none';
+                        preview.style.display = 'block';
+                        preview.innerHTML = `<img src="/${file.projectId}/${file.name}">`;
+                    }
+                    else{
+                        editor.style.display = 'block';
+                        menu.style.display = 'flex';
+                        preview.style.display = 'none';
+                        monaco.openFile(file);
+                    }
                 }
+            },
+            {
+                fireImmediately: true,
             }
-        });
-
-        autorun(async _ => {
-            const project = projectStore.activeProject;
-            if(project){
-                const monaco = await this.#monaco.promise;
-                let files = await db.getProjectFiles(project.id);
-                files = [...files, ...await db.getProjectFiles(0)].filter(file => !(file.content instanceof Blob));
-                monaco.openProject(project, files, projectStore.activeFile || undefined);
-            }
-        });
+        );
     }
 }
 

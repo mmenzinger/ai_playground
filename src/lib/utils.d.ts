@@ -11,5 +11,9 @@ export declare const localStorage: {
 }
 export declare const _console: Console;
 export declare function getCanvas(): OffscreenCanvas;
-export declare const SeedRandom: seedrandom.seedrandom_prng;
+export declare function seedRandom(seed?: string): {
+    (): number,
+    quick(): number,
+    int32(): number,
+};
 export declare function sleep(ms: number): Promise<void>

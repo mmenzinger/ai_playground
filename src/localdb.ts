@@ -1,7 +1,7 @@
 import Dexie from 'dexie';
 import { editor } from 'monaco-editor';
 
-import type { File, Project, ProjectSettings } from '@store/types';
+import type { File, Project } from '@store/types';
 
 export interface IFiles {
     id?: number,
@@ -17,7 +17,7 @@ export interface IProjects {
     id?: number,
     name: string,
     scenario: string,
-    settings?: ProjectSettings,
+    openFileId?: number,
 }
 
 class LocalDB {
@@ -106,12 +106,6 @@ class LocalDB {
         });
     }
 
-    async saveProjectSettings(id: number, settings: ProjectSettings): Promise<void> {
-        const records: number = await this.#projects.update(id, {settings});
-        if(records === 0)
-            throw new LocalDBError(`could not update project ${id} settings`);
-    }
-
     async removeProject(id: number): Promise<void>{
         await this.#db.transaction('rw', this.#projects, this.#files, async () => {
             await this.#files.where('projectId').equals(id).delete();
@@ -159,6 +153,12 @@ class LocalDB {
             }
         }
         return files;
+    }
+
+    async setProjectOpenFileId(id: number, fileId: number): Promise<void> {
+        const records: number = await this.#projects.update(id, {openFileId: fileId});
+        if(records === 0)
+            throw new LocalDBError(`could not update project ${id} openFileId`);
     }
 
     async importProject(name: string, scenario: string, projectFiles: File[], globalFiles: File[], collision: string): Promise<number>{
