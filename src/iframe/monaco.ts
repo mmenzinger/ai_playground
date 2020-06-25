@@ -372,6 +372,12 @@ window.openFile = (file: File) => {
     editor.focus();
 }
 
+window.closeProject = () => {
+    editor.setModel(null);
+    activeProject = null;
+    activeFile = null;
+}
+
 window.resize = () => {
     try{
         editor.layout();
@@ -488,6 +494,7 @@ export type MonacoWindow = Window & {
     onErrorChange: (errors: ProjectErrors) => void,
     openProject: (project: Project, files: File[], initialFile?: File) => void,
     openFile: (file: File) => void,
+    closeProject: () => void,
     revalidateFile: (file: File) => void,
     resize: () => void,
     setTheme: (theme: string) => void,

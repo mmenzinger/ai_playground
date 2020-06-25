@@ -4,6 +4,7 @@ const merge = require('webpack-merge');
 const common = require('./webpack.app.js');
 const TerserPlugin = require('terser-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const { InjectManifest } = require('workbox-webpack-plugin');
 
 const app = require('./webpack.app.js');
 const modules = require('./webpack.modules.js');
@@ -54,7 +55,23 @@ const config = {
     },
 };
 
+const appConfig = {
+    ...config,
+    plugins: [
+        ...config.plugins,
+        new InjectManifest({
+            swSrc: './src/worker/service-worker.ts',
+            additionalManifestEntries: [
+                {url: 'lib/utils.js', revision: null},
+                {url: 'lib/prolog.js', revision: null},
+                {url: 'lib/tensorflow.js', revision: null},
+            ],
+            maximumFileSizeToCacheInBytes: 50 * 1024 * 1024, // monaco has huge file sizes...
+        }),
+    ],
+}
+
 module.exports = [
-    merge(app, config),
+    merge(app, appConfig),
     merge(modules, config),
 ];

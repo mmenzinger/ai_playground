@@ -1,4 +1,4 @@
-import { SeedRandom, getCanvas, sleep } from 'lib/utils.js';
+import { seedRandom, getCanvas, sleep } from 'lib/utils.js';
 
 export const EComplexity = {
     Simple: 0 | 0,
@@ -83,7 +83,7 @@ export function getMap(state) {
     const size = state.size;
     const seed = state.seed;
     const pitchance = 0.15;
-    const rng = SeedRandom(`${seed}x${size}`);
+    const rng = seedRandom(`${seed}x${size}`);
 
     const map = new Uint8Array(new ArrayBuffer(state.size ** 2));
 

@@ -107,12 +107,17 @@ class C4fEditorIframe extends LitElement {
                 activeFile: projectStore.activeFile,
             }),
             async (data, _) => {
-                if(data.activeProject !== project && data.activeProject){
-                    project = data.activeProject;
+                if(data.activeProject !== project){
                     const monaco = await this.#monaco.promise;
-                    let files = await db.getProjectFiles(project.id);
-                    files = [...files, ...await db.getProjectFiles(0)].filter(file => !(file.content instanceof Blob));
-                    monaco.openProject(project, files);
+                    if(data.activeProject){
+                        project = data.activeProject;
+                        let files = await db.getProjectFiles(project.id);
+                        files = [...files, ...await db.getProjectFiles(0)].filter(file => !(file.content instanceof Blob));
+                        monaco.openProject(project, files);
+                    }
+                    else{
+                        monaco.closeProject();
+                    }
                 }
                 if (data.activeFile !== file && data.activeFile) {
                     file = data.activeFile;

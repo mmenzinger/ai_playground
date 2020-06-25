@@ -1,7 +1,6 @@
 import { registerRoute, RouteHandlerCallbackContext } from 'workbox-routing';
 import { precacheAndRoute } from 'workbox-precaching';
 import { CacheFirst } from 'workbox-strategies';
-import { Plugin as ExpirationPlugin } from 'workbox-expiration';
 import { Project } from '@store/types';
 import db from '@localdb';
 
@@ -36,11 +35,7 @@ if(PRODUCTION){
         /\.(js|html)$/,
         new CacheFirst({
             cacheName: 'script-cache',
-            plugins: [
-                new ExpirationPlugin({
-                    maxAgeSeconds: 60 * 60,
-                }),
-            ],
+            plugins: [],
         }),
     );
     
@@ -48,11 +43,7 @@ if(PRODUCTION){
         /\.(svg|png)$/,
         new CacheFirst({
             cacheName: 'image-cache',
-            plugins: [
-                new ExpirationPlugin({
-                    maxAgeSeconds: 24 * 60 * 60,
-                }),
-            ],
+            plugins: [],
         }),
     );
 }
@@ -91,9 +82,9 @@ async function userFile(arg: RouteHandlerCallbackContext): Promise<Response>{
         response = new Response(file.content, init);
     }
     catch(error){
-        if(!PRODUCTION){
-            console.warn(`could not load user file '${arg.url.pathname}'`, error);
-        }
+        // if(!PRODUCTION){
+        //     console.warn(`could not load user file '${arg.url.pathname}'`, error);
+        // }
         if(arg.request){
             response = await fetch(arg.request);
         }

@@ -24,7 +24,14 @@ const config = {
     },
 }
 
+const appConfig = {
+    ...config,
+    entry: {
+        'service-worker': './src/worker/service-worker',
+    }
+}
+
 module.exports = [
-    merge(app, config),
+    merge(app, appConfig),
     merge(modules, config),
 ];

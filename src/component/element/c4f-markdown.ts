@@ -1,5 +1,5 @@
 import { html, LitElement } from 'lit-element';
-import { reaction, toJS } from 'mobx';
+import { reaction } from 'mobx';
 import projectStore from '@store/project-store';
 import { Project } from '@store/types';
 

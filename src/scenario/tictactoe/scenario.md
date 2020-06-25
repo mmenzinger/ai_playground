@@ -2,19 +2,13 @@
 
 ## Table of Contents
 1. [Introduction](#introduction)
-2. [Callbacks](#callbacks)
-    - [init(state)](#initstate)
-    - [update(state, actions)](#updatestate-actions)
-    - [result(oldState, action, newState, score)](#resultoldstate-action-newstate-score)
-    - [finish(state, score)](#finishstate-score)
-    - [train()](#train)
-3. [Objects and Types](#objects-and-types)
+2. [Objects and Types](#objects-and-types)
     - [Action](#action)
     - [Agent](#agent)
     - [Player](#player)
     - [Settings](#settings)
     - [State](#state)
-4. [Functions](#functions)
+3. [Functions](#functions)
     - [createAction(player, row, col)](#createactionplayer-row-col)
     - [createState(player, board?)](#createstateplayer-board)
     - [actionToObject(action)](#actiontoobjectaction)
@@ -37,60 +31,6 @@ The complexity of the game is quite low, when both players play perfectly neithe
 [[Top](#tictactoe)]
 
 
-## Callbacks
-
-All callbacks are [asynchronous](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function) functions which have to be [exported](https://developer.mozilla.org/en-US/docs/web/javascript/reference/statements/export) in the index.js file.  
-The callback **[update](#updatestate-actions) is mandatory**, all other callbacks are optional.
-
-### init(state)
-Called once at the beginning of the game. State is the starting [state](#scenariogetstate).
-```javascript
-export async function init(state){
-    ...
-}
-```
-[[Top](#tictactoe)]
-
-### update(state, actions)
-Called every time at the beginning of the computers turn. State is the current state [state](#scenariogetstate) and actions is a list of available [actions](#scenariogetactions).  
-Returns the chosen action.
-```javascript
-export async function update(state, actions){
-    ...
-    return Action;
-}
-```
-[[Top](#tictactoe)]
-
-### result(oldState, action, newState, score)
-Called every time at the end of the computers turn. OldState and newState are the [states](#scenariogetstate) before and after the action. Action is the used [action](#scenariogetactions) and score is the resulting [score](#scenariogetscoreplayer).  
-This callback is mainly used to evaluate the action and train some kind of reinforced learning algorithm.
-```javascript
-export function result(oldState, action, newState, score){
-    ...
-}
-```
-[[Top](#tictactoe)]
-
-### finish(state, score)
-Called once when the game has concluded. State is the final [state](#scenariogetstate) and score is the final [score](#scenariogetscoreplayer).  
-```javascript
-export async function finish(state, score){
-    ...
-}
-```
-[[Top](#tictactoe)]
-
-### train()
-Called when the train-button is pressed. Can be used to do anything, for example train a neural network.  
-```javascript
-export async function train(){
-    ...
-}
-```
-[[Top](#tictactoe)]
-
-
 ## Objects and Types
 
 ### Action
@@ -103,13 +43,13 @@ type Action: number;
 [[Top](#tictactoe)]
 
 ### Agent
-Contains all [callbacks](#callbacks) for a [player](#player). Only update is mandatory, the rest are optional.
+Contains all callbacks for a [player](#player). Only update is mandatory, the rest are optional.
 ```javascript
 {
-    init?: (state: State) => Promise<void>;
-    update: (state: State, actions: Action[]) => Promise<Action>;
-    result?: (oldState: State, action: Action, newState: State, score: number) => Promise<void>;
-    finish?: (state: State, score: number) => Promise<void>;
+    init?: (state: State) => Promise<void>; // called once at the beginning
+    update: (state: State, actions: Action[]) => Promise<Action>; // called every turn
+    result?: (oldState: State, action: Action, newState: State, score: number) => Promise<void>; // called after each turn
+    finish?: (state: State, score: number) => Promise<void>; // called once at the end
 }
 ```
 [[Top](#tictactoe)]
