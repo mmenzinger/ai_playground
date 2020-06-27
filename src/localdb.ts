@@ -156,9 +156,7 @@ class LocalDB {
     }
 
     async setProjectOpenFileId(id: number, fileId: number): Promise<void> {
-        const records: number = await this.#projects.update(id, {openFileId: fileId});
-        if(records === 0)
-            throw new LocalDBError(`could not update project ${id} openFileId`);
+        await this.#projects.update(id, {openFileId: fileId});
     }
 
     async importProject(name: string, scenario: string, projectFiles: File[], globalFiles: File[], collision: string): Promise<number>{

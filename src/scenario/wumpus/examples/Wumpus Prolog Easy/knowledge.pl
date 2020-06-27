@@ -31,12 +31,12 @@ possiblePit(X,Y) :-
 % there is a breeze with 3 known non pit tiles -> last tile must be a pit
 certainPit(X,Y) :-
     possiblePit(X,Y),
-    breeze(X1,Y1),
     adjacent(X,Y,X1,Y1),
-    X2 is X1-1, (\+inmap(X2,Y1); (visited(X2,Y1), \+breeze(X2,Y1)); (X = X2, Y = Y1); certainWumpus(X2,Y1)),
-    X3 is X1+1, (\+inmap(X3,Y1); (visited(X3,Y1), \+breeze(X3,Y1)); (X = X3, Y = Y1); certainWumpus(X3,Y1)),
-    Y2 is Y1-1, (\+inmap(X1,Y2); (visited(X1,Y2), \+breeze(X1,Y2)); (X = X1, Y = Y2); certainWumpus(X1,Y2)),
-    Y3 is Y1+1, (\+inmap(X1,Y3); (visited(X1,Y3), \+breeze(X1,Y3)); (X = X1, Y = Y3); certainWumpus(X1,Y3)).
+    breeze(X1,Y1),
+    X2 is X1-1, (\+inmap(X2,Y1); visited(X2,Y1); X2 = X),
+    X3 is X1+1, (\+inmap(X3,Y1); visited(X3,Y1); X3 = X),
+    Y2 is Y1-1, (\+inmap(X1,Y2); visited(X1,Y2); Y2 = Y),
+    Y3 is Y1+1, (\+inmap(X1,Y3); visited(X1,Y3); Y3 = Y).
 
 %-------------------------------------------------------------------------------
 % all known adjacent tiles contain stench
@@ -66,12 +66,25 @@ certainWumpus(X,Y) :-
     ).
 
 %-------------------------------------------------------------------------------
+% there is a stench with 3 known tiles -> last tile must be wumpus
+certainWumpus(X,Y) :-
+    possibleWumpus(X,Y),
+    adjacent(X,Y,X1,Y1),
+    stench(X1,Y1),
+    X2 is X1-1, (\+inmap(X2,Y1); visited(X2,Y1); X2 = X),
+    X3 is X1+1, (\+inmap(X3,Y1); visited(X3,Y1); X3 = X),
+    Y2 is Y1-1, (\+inmap(X1,Y2); visited(X1,Y2); Y2 = Y),
+    Y3 is Y1+1, (\+inmap(X1,Y3); visited(X1,Y3); Y3 = Y).
+
+%-------------------------------------------------------------------------------
 saveMove(X,Y) :- 
     inmap(X,Y),
-    visited(X,Y);
     (
-        \+possiblePit(X,Y),
-        \+possibleWumpus(X,Y)
+        visited(X,Y);
+        (
+            \+possiblePit(X,Y),
+            \+possibleWumpus(X,Y)
+        )
     ).
 
 %-------------------------------------------------------------------------------

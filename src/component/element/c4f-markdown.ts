@@ -1,5 +1,5 @@
 import { html, LitElement } from 'lit-element';
-import { reaction } from 'mobx';
+import { reaction, toJS } from 'mobx';
 import projectStore from '@store/project-store';
 import { Project } from '@store/types';
 
@@ -44,13 +44,13 @@ class C4fMarkdown extends LitElement {
         return html`<div id="markdown"></div>`;
     }
 
-    firstUpdated(){
+    firstUpdated() {
         const container = this.shadowRoot?.querySelector('#markdown') as HTMLElement;
 
         reaction(
             () => projectStore.activeProject,
             project => {
-                if(project !== this.#activeProject){
+                if (project !== this.#activeProject) {
                     this.#activeProject = project;
                     container.innerHTML = '';
                 }
@@ -62,29 +62,31 @@ class C4fMarkdown extends LitElement {
                 content: projectStore.activeFile?.content,
             }),
             async data => {
-                let {file, content} = data;
+                let { file } = data;
                 // load readme.md or scenario.md when no md-file is selected in the beginning
-                if(!file?.name.endsWith('.md') && projectStore.activeProject && container.innerHTML.length === 0){
+                if (!file?.name.endsWith('.md') && projectStore.activeProject && container.innerHTML.length === 0) {
                     const projectId = projectStore.activeProject.id;
-                    for(const fileName of ['readme.md', 'scenario.md']){
-                        try{
+                    for (const fileName of ['readme.md', 'scenario.md']) {
+                        try {
                             file = await db.loadFileByName(projectId, fileName);
                             break;
                         }
-                        catch(_){}
+                        catch (_) { }
                     }
-                    if(!file?.name.endsWith('.md')){
+
+                    if (!file?.name.endsWith('.md')) {
                         const files = await db.getProjectFiles(projectId);
-                        for(const pfile of files){
-                            if(pfile.name.endsWith('.md')){
+                        for (const pfile of files) {
+                            if (pfile.name.endsWith('.md')) {
                                 file = pfile;
                                 break;
                             }
                         }
                     }
                 }
-                if(file?.name.endsWith('.md')){
-                    container.innerHTML = converter.makeHtml(content);
+
+                if (file?.name.endsWith('.md')) {
+                    container.innerHTML = converter.makeHtml(file.content);
                     this.updateHyperlinks(container);
                     this.updateCodeHighlight(container);
                 }
@@ -96,23 +98,23 @@ class C4fMarkdown extends LitElement {
         );
     }
 
-    updateHyperlinks(element: HTMLElement){
+    updateHyperlinks(element: HTMLElement) {
         const anchors = element.querySelectorAll('a');
         anchors.forEach(anchor => {
             const href = anchor.getAttribute('href');
-            if(href && href[0] === '#'){
+            if (href && href[0] === '#') {
                 anchor.onclick = (event) => {
                     event.preventDefault();
                     const target = element.querySelector(href);
-                    if(target)
+                    if (target)
                         target.scrollIntoView();
                 };
             }
         });
     }
 
-    updateCodeHighlight(element: HTMLElement){
-        for(const pre of element.querySelectorAll('pre')){
+    updateCodeHighlight(element: HTMLElement) {
+        for (const pre of element.querySelectorAll('pre')) {
             pre.classList.add('line-numbers');
         }
 

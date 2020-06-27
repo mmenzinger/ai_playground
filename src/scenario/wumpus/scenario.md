@@ -33,7 +33,7 @@ While the game is a good example for a [knowledge-based agent](https://www.tutor
 
 The game has two complexity settings Simple and Advanced. On Simple possible moves are limited to unexplored tiles next to already explored ones. This means the agent can jump all over the map (the assumption is he can move freely around the already explored cave). On Advanced the explorer can only move to one adjacent tile at a time.
 
-Additionally the map size can vary between 4x4 und 10x10 und a seed can be used to get a specific map layout.
+Additionally the map size can vary and a seed can be used to get a specific map layout.
 
 [[Top](#wumpus-world)]
 

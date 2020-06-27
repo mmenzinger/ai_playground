@@ -122,7 +122,7 @@ class ProjectStore {
             await this.flushFile();
         }
         const file = await db.loadFile(id);
-        if(this.activeProject){
+        if(this.activeProject && this.activeFile?.id !== id ){
             db.setProjectOpenFileId(this.activeProject.id, id);
         }
         

@@ -82,7 +82,7 @@ class C4fConsole extends MobxLitElement {
             for(const name of log.caller.functionNames){
                 link += `:${name}`;
             }
-            return html`<p class="${type}"><a class="file" @click=${()=>{this.onClick(fileId, scrollTo)}}>${link}</a>${args.join(' ')}</p>`;
+            return html`<p class="${type}"><a class="file" @click=${()=>this.onClick(fileId, scrollTo)}>${link}</a>${args.join(' ')}</p>`;
         }
         else{
             return html`<p class="${type}">${args.join(' ')}</p>`;

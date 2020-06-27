@@ -223,7 +223,7 @@ export function getActions(state) {
         const size = state.size;
         for (let y = 0; y < size; y++) {
             for (let x = 0; x < size; x++) {
-                if (getTile(state, x, y) === ETile.Unknown && (
+                if (getTile(state, x, y) === ETile.Empty || (
                     (x > 0 && getTile(state, x - 1, y) !== ETile.Unknown) ||
                     (x < (size - 1) && getTile(state, x + 1, y) !== ETile.Unknown) ||
                     (y > 0 && getTile(state, x, y - 1) !== ETile.Unknown) ||
@@ -256,11 +256,12 @@ export function validAction(state, action) {
     if (state.arrows > 0 && action.type === EAction.ShootUp || action.type === EAction.ShootDown
         || action.type === EAction.ShootLeft || action.type === EAction.ShootRight)
         return true;
-    // moveto only adjacent to explored tiles
+    // moveto only adjacent to or on to explored tiles
     if (action.type === EAction.MoveTo && action.x !== undefined && action.y !== undefined) {
         const x = action.x;
         const y = action.y;
         if (
+            getTile(state, x, y) === ETile.Empty || 
             (x > 0 && getTile(state, x - 1, y) !== ETile.Unknown) ||
             (x < (state.size - 1) && getTile(state, x + 1, y) !== ETile.Unknown) ||
             (y > 0 && getTile(state, x, y - 1) !== ETile.Unknown) ||
@@ -388,53 +389,56 @@ export async function run(state, player, delay = 100, updateGUI = true) {
 }
 
 //------------------------------------------------------------------------------
+let oldPos;
 export function drawState(state) {
     const canvas = _.getCanvas();
     const size = Math.min(canvas.width, canvas.height);
+    const tileSize = size / state.size;
     var ctx = canvas.getContext("2d");
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    drawGrid(ctx, size, state);
-    for (let row = 0; row < state.size; row++) {
-        for (let col = 0; col < state.size; col++) {
-            drawTile(ctx, size, state, row, col);
+    ctx.lineWidth = Math.ceil(tileSize / 60);
+    ctx.strokeStyle = '#aaa';
+    
+    if(!oldPos){
+        for (let row = 0; row < state.size; row++) {
+            for (let col = 0; col < state.size; col++) {
+                drawTile(ctx, size, state, row, col);
+            }
         }
+        ctx.save();
+        ctx.globalAlpha = 0.3;
+        ctx.fillRect(0, 0, size, size);
+        ctx.restore();
+        drawTile(ctx, size, state, state.position.y, state.position.x);
+        oldPos = {row: state.position.y, col: state.position.x};
+    }
+    else{
+        drawTile(ctx, size, state, oldPos.row, oldPos.col);
+        const row = state.position.y;
+        const col = state.position.x;
+        oldPos = { row, col };
+        drawTile(ctx, size, state, row, col);
     }
     drawPlayer(ctx, size, state);
 }
 
 //------------------------------------------------------------------------------
-function drawGrid(ctx, size, state) {
-    const tileSize = size / state.size;
-    ctx.save();
-    ctx.lineWidth = tileSize / 20;
-    ctx.strokeStyle = '#aaa';
-    ctx.lineCap = 'round';
-    ctx.beginPath();
-
-    for (let row = 0; row <= state.size; row++) {
-        ctx.moveTo(0, row * tileSize);
-        ctx.lineTo(size, row * tileSize);
-    }
-    for (let col = 0; col <= state.size; col++) {
-        ctx.moveTo(col * tileSize, 0);
-        ctx.lineTo(col * tileSize, size);
-    }
-    ctx.stroke();
-    ctx.restore();
-}
-
-//------------------------------------------------------------------------------
 function drawTile(ctx, size, state, row, col) {
-    let unknown = false;
-    let tile = getTile(state, col, row);
-    let percepts = getPercepts(state, col, row)
+    const fullTile = realTile(state, col, row);
+    let tile = fullTile >>> 5;
+    let percepts = fullTile & 0x1f;
     const tileSize = size / state.size;
 
-    if (tile === ETile.Unknown) {
-        unknown = true;
-        tile = realTile(state, col, row) >>> 5;
-        percepts = realTile(state, col, row) & 0b11111;
-    }
+    ctx.clearRect(col*tileSize, row*tileSize, tileSize, tileSize);
+    
+    const margin = Math.floor(ctx.lineWidth / 2);
+    ctx.beginPath();
+    ctx.moveTo(col * tileSize + margin, row * tileSize + margin);
+    ctx.lineTo((col+1) * tileSize - margin, row * tileSize + margin);
+    ctx.lineTo((col+1) * tileSize - margin, (row+1) * tileSize - margin);
+    ctx.lineTo(col * tileSize + margin, (row+1) * tileSize - margin);
+    ctx.lineTo(col * tileSize + margin, row * tileSize + margin);
+    ctx.stroke();
+
     switch(tile){
         case ETile.Gold: {
             const img = _.getImage('gold');
@@ -482,15 +486,6 @@ function drawTile(ctx, size, state, row, col) {
         const x = col * tileSize + tileSize*0.75;
         const y = row * tileSize + tileSize*0.75;
         ctx.drawImage(img, x, y, img.width*factor, img.height*factor);
-    }
-
-    if(unknown){
-        const x = col * tileSize;
-        const y = row * tileSize;
-        ctx.save();
-        ctx.globalAlpha = 0.3;
-        ctx.fillRect(x, y, tileSize, tileSize);
-        ctx.restore();
     }
 }
 

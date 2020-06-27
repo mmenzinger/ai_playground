@@ -129,6 +129,10 @@ form > footer{
   justify-content: space-between;
 }
 
+form select{
+  height: 2.4em;
+}
+
 form > ul{
   list-style-type: none;
 }

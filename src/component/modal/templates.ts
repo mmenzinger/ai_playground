@@ -54,9 +54,9 @@ export function newProjectTemplate(scenarioTemplates: { [key: string]: ScenarioT
 
         check: async (fields: { [key: string]: any }) => {
             if (fields.name.length === 0)
-                return Error('Empty project name! Every project must have a name.');
+                return Error('Empty project name!<br>Every project must have a name.');
             if (await db.projectExists(fields.name))
-                return Error('Duplicate name! A project with that name already exists!');
+                return Error('Duplicate name!<br>A project with the same name already exists.');
             return true;
         },
 
@@ -199,9 +199,9 @@ export function uploadProjectTemplate(): ModalTemplate {
                     });
                 }
                 if (name.length === 0)
-                    throw Error('Empty project name! Every project must have a name.');
+                    throw Error('Empty project name!<br>Every project must have a name.');
                 if (await db.projectExists(name))
-                    throw Error('Duplicate name! A project with that name already exists!');
+                    throw Error('Duplicate name!<br>A project with the same name already exists.');
 
                 projectFiles = await Promise.all(projectFilesPromises);
                 globalFiles = await Promise.all(globalFilesPromises);
@@ -330,11 +330,11 @@ export function createFileTemplate(projectId: number): ModalTemplate {
         check: async (fields: { [key: string]: any }) => {
             const project = Number(fields.projectId);
             if (fields.name.length === 0)
-                return Error('Empty filename! Every file must have a name.');
-            if (!fields.name.match(/[a-zA-Z0-9_-]/))
-                return Error('Invalid character! Only numbers, letters, _ and - are allowed.');
+                return Error('Empty filename!<br>Every file must have a name.');
+            if (!fields.name.match(/^[a-zA-Z0-9_-]+$/))
+                return Error('Invalid character!<br>Only numbers, letters, _ and - are allowed.');
             if (await db.fileExists(project, `${fields.name}.${fields.type}`))
-                return Error('Duplicate name! A file with that name and ending already exists!');
+                return Error('Duplicate name!<br>A file with the same name and ending already exists.');
             return true;
         },
     };
@@ -440,11 +440,11 @@ export function uploadFileTemplate(projectId: number): ModalTemplate {
             const project = Number(fields.projectId);
             const filename = `${fields.name}.${fields.type}`;
             if (fields.name.length === 0)
-                return Error('Empty filename! Every file must have a name.');
-            if (!fields.name.match(/[a-zA-Z0-9_-]/))
-                return Error('Invalid character! Only numbers, letters, _ and - are allowed.');
+                return Error('Empty filename!<br>Every file must have a name.');
+            if (!fields.name.match(/^[a-zA-Z0-9_-]+$/))
+                return Error('Invalid character!<br>Only numbers, letters, _ and - are allowed.');
             if (await db.fileExists(project, filename))
-                return Error('Duplicate name! A file with that name and ending already exists!');
+                return Error('Duplicate name!<br>A file with the same name and ending already exists.');
             file.projectId = project;
             file.name = filename;
             return true;

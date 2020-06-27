@@ -72,23 +72,48 @@ async function update(state, actions){
         if(await kb.isTrue(`certainWumpus(${x}, ${y+1}).`))
             return {type: $.EAction.ShootDown};
     }
-    
-    // make a save move whenever possible
+
+    // make a save exploration move whenever possible
     for(const action of shuffle(actions)){
         if(action.type === $.EAction.MoveTo){
-            if(await kb.isTrue(`saveMove(${action.x}, ${action.y}).`)){
+            if(await kb.isTrue(`
+                \\+visited(${action.x}, ${action.y}),
+                saveMove(${action.x}, ${action.y}).
+            `)){
                 return action;
+            }
+        }
+    }
+
+    // move adjacent to wumpus to kill
+    for(const action of actions){
+        if(action.type === $.EAction.MoveTo){
+            if(await kb.isTrue(`
+                \\+visited(${action.x}, ${action.y}),
+                certainWumpus(${action.x}, ${action.y}).
+            `)){
+                for(const action2 of actions){
+                    if(action2.type === $.EAction.MoveTo){
+                        if(await kb.isTrue(`
+                            visited(${action2.x}, ${action2.y}),
+                            adjacent(${action.x}, ${action.y}, ${action2.x}, ${action2.y}).
+                        `)){
+                            return action2;
+                        }
+                    }
+                }
             }
         }
     }
     
     // make a possibly non fatal action
     console.log("no save action taking chance!");
-    //kb.query(`certainPit(X,Y).`);
-    //console.log('pits:', unique(await kb.answers()));
     for(const action of shuffle(actions)){
-        if(action.type === 'MoveTo'){
-            if(await kb.isTrue(`unsaveMove(${action.x}, ${action.y}).`)){
+        if(action.type === $.EAction.MoveTo){
+            if(await kb.isTrue(`
+                \\+visited(${action.x}, ${action.y}),
+                unsaveMove(${action.x}, ${action.y}).
+            `)){
                 return action;
             }
         }

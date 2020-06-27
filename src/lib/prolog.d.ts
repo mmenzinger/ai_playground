@@ -4,7 +4,7 @@ export declare const pl: {
 
 export type KnowledgeBase = {
     query(query: string): void,
-    answers(): Promise<any[]>,
+    answers(max: number = 1000): Promise<any[]>,
     asserta(string: string): Promise<void>,
     assertz(string: string): Promise<void>,
     run(string: string): Promise<void>,

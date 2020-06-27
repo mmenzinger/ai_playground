@@ -36,9 +36,9 @@ module.exports = merge(common, {
     module: {
         rules: [
             {
-                test: /\.js$/,
-                exclude: /(node_modules|examples|templates)/,
-                use: {
+                test: /\.m?[tj]s$/,
+                include: path.join(__dirname, 'src/components'),
+                use: [{
                     loader: 'minify-lit-html-loader',
                     options: {
                         htmlMinifier: {
@@ -47,7 +47,10 @@ module.exports = merge(common, {
                             ]
                         }
                     }
-                }
+                },
+                {
+                    loader: 'babel-loader',
+                }]
             },
         ],
     },

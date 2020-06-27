@@ -25,13 +25,8 @@ class AiHeader extends MobxLitElement {
 
     render() {
         const breadcrumbs = [html`<li><a href="./">Home</a></li>`];
-        for(const [key, value] of appStore.params.map(([key, value]) => {
-            if(key === 'project'){
-                return [projectStore.activeProject?.name || key, projectStore.activeProject?.id || value];
-            }
-            return [key, value];
-        })){
-            breadcrumbs.push(html`<li>></li><li><a href="?${key}${value ? '=' + value : ''}">${key}</a></li>`);
+        for(const [key, value] of appStore.params){
+            breadcrumbs.push(html`<li>></li><li><a href="#${key}${value ? '=' + value : ''}">${projectStore.activeProject?.name || key}</a></li>`);
         }
         return html`
             <header>

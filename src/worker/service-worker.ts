@@ -1,6 +1,7 @@
 import { registerRoute, RouteHandlerCallbackContext } from 'workbox-routing';
 import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching';
-// import { CacheFirst } from 'workbox-strategies';
+import { StaleWhileRevalidate } from 'workbox-strategies';
+import { Plugin as ExpirationPlugin } from 'workbox-expiration';
 import { Project } from '@store/types';
 import db from '@localdb';
 
@@ -9,7 +10,7 @@ declare var PRODUCTION: boolean;
 let project: Project | null = null;
 
 onmessage = m => {
-    if(m.data.type === 'setProject'){
+    if (m.data.type === 'setProject') {
         project = m.data.project;
         m.ports[0].postMessage({ project });
     }
@@ -24,43 +25,47 @@ onmessage = m => {
 
 
 registerRoute(
-    /\/(global|project|[0-9]+)\//,
+    ({ url }) => url.origin === location.origin && /^\/(global|project|[0-9]+)\//.test(url.pathname),
     userFile
 );
 
-if(PRODUCTION){
+if (PRODUCTION) {
     cleanupOutdatedCaches();
 
     precacheAndRoute(self.__WB_MANIFEST, {
         cleanURLs: false,
     });
 
-    // registerRoute(
-    //     /^https?:\/\//,
-    //     new CacheFirst({
-    //         cacheName: 'cross-origin-cache',
-    //         plugins: [],
-    //     }),
-    // );
+    registerRoute(
+        ({ url }) => url.origin !== location.origin,
+        new StaleWhileRevalidate({
+            cacheName: 'cors-cache',
+            plugins: [
+                new ExpirationPlugin({
+                    maxAgeSeconds: 30 * 7 * 24 * 60 * 60,
+                }),
+            ],
+        }),
+    );
 }
-else{
+else {
     // console.log(self.__WB_MANIFEST);
 }
 
-async function userFile(arg: RouteHandlerCallbackContext): Promise<Response>{
+async function userFile(arg: RouteHandlerCallbackContext): Promise<Response> {
     let response: Response;
     const init = {
         status: 200,
         statusText: 'OK',
-        headers: {'Content-Type': 'application/javascript'}
+        headers: { 'Content-Type': 'application/javascript' }
     };
 
-    try{
+    try {
         const path = arg.url.pathname.split('/');
         let id;
-        switch(path[1]){
+        switch (path[1]) {
             case 'project': {
-                if(!project)
+                if (!project)
                     throw Error('no project loaded');
                 id = project.id; break;
             }
@@ -68,24 +73,24 @@ async function userFile(arg: RouteHandlerCallbackContext): Promise<Response>{
             default: id = Number(path[1]);
         }
 
-        let filename = path[path.length-1];
+        let filename = path[path.length - 1];
         const file = await db.loadFileByName(id, filename);
-        if(! (file.content instanceof Blob) && file.name.endsWith('.js')){
+        if (!(file.content instanceof Blob) && file.name.endsWith('.js')) {
             file.content = file.content?.replace(/(from\s*['"`])(project|global|scenario|lib)\//g, '$1/$2/');
         }
-        else if(file.name.endsWith('.png')){
-            init.headers = {'Content-Type': 'image/png'};
+        else if (file.name.endsWith('.png')) {
+            init.headers = { 'Content-Type': 'image/png' };
         }
         response = new Response(file.content, init);
     }
-    catch(error){
-        if(arg.url.pathname.endsWith('localstorage.json')){
+    catch (error) {
+        if (arg.url.pathname.endsWith('localstorage.json')) {
             response = new Response('{}', init);
         }
-        else if(arg.request){
+        else if (arg.request) {
             response = await fetch(arg.request);
         }
-        else{
+        else {
             console.error(`invalid request`);
             response = await fetch(arg.url.toString());
         }

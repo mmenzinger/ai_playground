@@ -64,17 +64,14 @@ pl.type.Session.prototype.answers = function( max = 1000, after = undefined ) {
 	})
 };
 
-pl.type.Session.prototype.isTrue = function( string, runUntilResult = false ) {
+pl.type.Session.prototype.isTrue = function( string ) {
 	return new Promise((resolve, reject) => {
 		const thread = this.thread;
 
 		function result(value){
 			if(value !== false){
 				if(value === null){
-					if(runUntilResult)
-						thread.answer( result );
-					else
-						throw Error('No solution found!');
+					thread.answer( result );
 				}
 					
 				if(value.id === 'throw')
