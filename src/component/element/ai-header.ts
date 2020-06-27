@@ -44,6 +44,7 @@ class AiHeader extends MobxLitElement {
                 <ul id="breadcrumbs">${breadcrumbs}</ul>
                 <ul id="additional">
                     <li><a href="https://docs.google.com/forms/d/e/1FAIpQLSfrFYo0PnULmqOhQY4bxE_uWwe21m-RtxmboGFRlJW9Or5r4w/viewform?usp=sf_link">Feedback</a></li>
+                    <li><a href="https://www.eduvidual.at/course/view.php?id=23313">Community</a></li>
                     <li><a href="#impressum">Impressum</a></li>
                 </ul>
             </nav>

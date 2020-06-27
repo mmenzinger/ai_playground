@@ -59,7 +59,7 @@ class AiProjectIndex extends LazyElement {
                 <header>
                     <a @click=${this.onNewProject}>
                         <h1>New Project</h1>
-                        <div class="logo"><embed style="height:50%" src="assets/interface/add.svg"></div>
+                        <div class="logo"><img style="height:50%" src="assets/interface/add.svg"></div>
                     </a>
                 </header>
                 <footer>

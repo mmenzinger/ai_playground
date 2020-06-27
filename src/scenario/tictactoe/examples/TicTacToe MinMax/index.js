@@ -1,11 +1,11 @@
 import * as $ from 'project/scenario.js';
 
-
+//------------------------------------------------------------------------------
 const SETTINGS = {
     startingPlayer: $.EPlayer.Computer,
 };
 
-
+//------------------------------------------------------------------------------
 export async function start(){
     const state = $.createState(SETTINGS);
     const computer = { init, update };
@@ -13,7 +13,7 @@ export async function start(){
 }
 
 //------------------------------------------------------------------------------
-export async function update(state, actions) {
+async function update(state, actions) {
     // calculate best action
     const [score, action, turns] = minmax(state);
 
@@ -25,7 +25,7 @@ export async function update(state, actions) {
 }
 
 //------------------------------------------------------------------------------
-export async function init(state){
+async function init(state){
     console.log('game started');
     if(state.player === $.EPlayer.Computer){
         console.log('calculating first action...');

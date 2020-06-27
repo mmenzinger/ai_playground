@@ -1,6 +1,7 @@
 import { QTable } from 'project/qtable.js';
 import * as $ from 'project/scenario.js';
 
+//------------------------------------------------------------------------------
 export async function generateQTable() {
     const qtable = new QTable(0);
 
@@ -41,7 +42,8 @@ export async function generateQTable() {
 
             const player2 = {
                 async update(state, actions) {
-                    return qtable.getBestValidAction(state, $.EPlayer.Player2);
+                    const action = Math.round(Math.random()*(actions.length-1));
+                    return actions[action];
                 }
             };
 

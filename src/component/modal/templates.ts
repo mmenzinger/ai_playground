@@ -13,7 +13,7 @@ export function newProjectTemplate(scenarioTemplates: { [key: string]: ScenarioT
     const firstScenario = Object.values(scenarioTemplates)[0];
     const firstTemplate = Object.values(firstScenario.templates)[0];
 
-    let selectedScenarioIndex = 0;
+    let selectedScenarioIndex = 1;
     let selectedTemplateIndex = 0;
 
     function updateTemplates(templateSelect: HTMLSelectElement, scenario: string) {

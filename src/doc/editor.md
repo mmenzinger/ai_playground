@@ -6,7 +6,7 @@ The editor in use ist [monaco](https://microsoft.github.io/monaco-editor).
 | Keys | Effect |
 |---|---|
 | F1 | Command Palette |
-| Ctrl + K -> I | Add Line Comment |
+| Ctrl + K -> C | Add Line Comment |
 | Ctrl + K -> U | Remove Line Comment |
 | Ctrl + Shift + I | Auto Format (JavaScript) |
 | Ctrl + Alt + Shift + Up/Down | Duplicate Line |

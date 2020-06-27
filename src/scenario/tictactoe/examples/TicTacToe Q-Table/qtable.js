@@ -8,24 +8,30 @@ export function shuffle(array) {
     return array.sort(() => Math.random() - 0.5);
 }
 
+//------------------------------------------------------------------------------
 export class QTable {
+    //--------------------------------------------------------------------------
     constructor(initialValue = 0) {
         this._data = new Map();
         this._initialValue = initialValue;
     }
 
+    //--------------------------------------------------------------------------
     idToAction(id, player) {
         return $.createAction(player, id / 3 | 0, id % 3);
     }
 
+    //--------------------------------------------------------------------------
     actionToId(action) {
         return (action >> 4 & 0b11) * 3 + (action >> 2 & 0b11);
     }
 
+    //--------------------------------------------------------------------------
     getBoard(state){
         return state & 0x3ffff;
     }
 
+    //--------------------------------------------------------------------------
     set(state, action, value) {
         const board = this.getBoard(state);
         const actionId = this.actionToId(action);
@@ -39,6 +45,7 @@ export class QTable {
         }
     }
 
+    //--------------------------------------------------------------------------
     get(state, action = undefined) {
         const board = this.getBoard(state);
         if (!this._data.has(board)) {
@@ -54,6 +61,7 @@ export class QTable {
         return this._data.get(board)[actionId];
     }
 
+    //--------------------------------------------------------------------------
     getBestValidAction(state, player = $.EPlayer.Computer, punish = 0) {
         const board = this.getBoard(state);
         const actions = this.get(board).map((x, i) => [i, x]);
@@ -74,11 +82,12 @@ export class QTable {
         return bestAction;
     }
 
+    //--------------------------------------------------------------------------
     async store(name = 'qtable') {
-        debugger;
         await storeJson(name, this._data);
     }
 
+    //--------------------------------------------------------------------------
     async load(name = 'qtable') {
         try {
             this._data = await loadJson(name);

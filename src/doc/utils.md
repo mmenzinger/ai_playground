@@ -7,12 +7,16 @@ import * as utils from 'lib/utils.js';
 ## Table of Contents
 1. [Introduction](#introduction)
 2. [Exports](#exports)
+    - [getCanvas()](#getcanvas)
+    - [loadImages(paths)](#loadimagespaths)
+    - [getImage(name)](#getimagename)
+    - [setMessages(html)](#setmessageshtml)
+    - [addMessage(html)](#addmessagehtml)
     - [storeJson(path, data)](#storejsonpath-data)
     - [loadJson(path)](#loadjsonpath)
     - [getFileContent(path)](#getfilecontentpath)
-    - [getCanvas()](#getcanvas)
-    - [sleep(ms)](#sleepms)
     - [seedRandom(seed)](#seedrandomseed)
+    - [sleep(ms)](#sleepms)
     - [localStorage](#localstorage)
     - [_console](#_console)
 
@@ -25,6 +29,67 @@ The util.js library provides a mixture of useful functions.
 
 
 ## Exports
+
+
+### getCanvas()
+Returns the main [HTML canvas](https://www.w3schools.com/html/html5_canvas.asp) as an OffscreenCanvas. This function is mainly used inside of scenarios to provide graphical feedback.
+```javascript
+function getCanvas(): OffscreenCanvas;
+```
+[[Top](#utils)]
+
+
+### loadImages(paths)
+Loads all given images into memory.  
+They then can be used with [getImage](#getimagename).
+```javascript
+function loadImages(paths: string[]): Promise<void>;
+```
+Example:
+```javascript
+await utils.loadImages([
+    '/project/hero.png',
+]);
+```
+[[Top](#utils)]
+
+
+### getImage(name)
+Returns an image, previously loaded with [loadImages](#loadimagespaths).  
+The name is the filename of the image without the extension.  
+Returns undefined when the image was not loaded correctly.
+```javascript
+function getImage(name: string): ImageBitmap | undefined;
+```
+Example:
+```javascript
+const img = getImage('hero');
+```
+[[Top](#utils)]
+
+
+### setMessages(html)
+Overwrites all current messages with the given html.
+```javascript
+function setMessages(html: string): Promise<void>;
+```
+Example:
+```javascript
+utils.setMessages('<p>some text here...</p>');
+```
+[[Top](#utils)]
+
+
+### addMessage(html)
+Appends the given html at the end of the messages.
+```javascript
+function addMessage(html: string): Promise<void>;
+```
+Example:
+```javascript
+utils.addMessage('<p>some additional text here...</p>');
+```
+[[Top](#utils)]
 
 
 ### storeJson(path, data)
@@ -59,26 +124,6 @@ export declare function getFileContent(path: string): Promise<any>;
 [[Top](#utils)]
 
 
-### getCanvas()
-Returns the main [HTML canvas](https://www.w3schools.com/html/html5_canvas.asp) as an OffscreenCanvas. This function is mainly used inside of scenarios to provide graphical feedback.
-```javascript
-function getCanvas(): OffscreenCanvas;
-```
-[[Top](#utils)]
-
-
-### sleep(ms)
-Returns a promise that resolved aber a given number of milliseconds.
-```javascript
-function sleep(ms: number): Promise<void>
-```
-Example:
-```javascript
-await sleep(500);
-```
-[[Top](#utils)]
-
-
 ### seedRandom(seed)
 Returns a pseudo-random-number-generator based of a given seed. Further calls return the same sequence of pseudo-random-numbers. It is based on the [seedrandom](https://github.com/davidbau/seedrandom) library.
 export declare const SeedRandom: seedrandom.seedrandom_prng;
@@ -95,6 +140,18 @@ const rng = utils.seedRandom('42');
 console.log(rng()) // 64bit float between 0 and 1
 console.log(rng.quick()) // 32bit float between 0 and 1
 console.log(rng.int32()) // 32bit signed integer
+```
+[[Top](#utils)]
+
+
+### sleep(ms)
+Returns a promise that resolved aber a given number of milliseconds.
+```javascript
+function sleep(ms: number): Promise<void>
+```
+Example:
+```javascript
+await sleep(500);
 ```
 [[Top](#utils)]
 

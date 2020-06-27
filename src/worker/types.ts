@@ -15,6 +15,7 @@ export enum MessageType {
     JSON_STORE,
     CALL,
     EVENT,
+    HTML,
 }
 
 export enum Functions {
@@ -49,4 +50,10 @@ export interface EventMessage {
     type: MessageType.EVENT,
     callbackName: string,
     data: any,
+}
+
+export interface HtmlMessage {
+    type: MessageType.HTML,
+    action: 'add' | 'set',
+    html: string,
 }

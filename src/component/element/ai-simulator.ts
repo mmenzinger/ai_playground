@@ -25,15 +25,24 @@ class AiSimulator extends MobxLitElement {
         ];
     }
 
+    constructor(){
+        super();
+        this.#sandbox.onUpdateMessages = this.updateMessages.bind(this);
+    }
+
     render() {
         const project = projectStore.activeProject;
         if (project) {
             return html`
-                <header>
-                    <button class="ok" @click=${this.simRun}>start&nbsp;/&nbsp;restart</button>
-                    <button class="warning" @click=${this.simTrain}>call&nbsp;train</button>
-                    <button class="error" @click=${this.simTerminate}>terminate</button>
-                </header>
+                <div id="wrapper">
+                    <header>
+                        <button class="ok" @click=${this.simRun}>start&nbsp;/&nbsp;restart</button>
+                        <button class="warning" @click=${this.simTrain}>call&nbsp;train</button>
+                        <button class="error" @click=${this.simTerminate}>terminate</button>
+                    </header>
+                    <div id="display"></div>
+                    <footer id="messages"></footer>
+                </div>
             `;
         }
         else {
@@ -50,6 +59,8 @@ class AiSimulator extends MobxLitElement {
                 projectStore.addLog(LogType.ERROR, error.args, error.caller);
             }
         }
+        const messages = this.shadowRoot?.getElementById('messages') as HTMLDivElement;
+        messages.innerHTML = '';
         const canvas = await this.getCanvas();
         this.#sandbox.call('/project/index.js', 'start', canvas);
     }
@@ -79,15 +90,31 @@ class AiSimulator extends MobxLitElement {
         }
     }
 
+    updateMessages(action: 'set' | 'add', html: string){
+        const messages = this.shadowRoot?.getElementById('messages') as HTMLDivElement;
+        if(messages){
+            if(action === 'set'){
+                messages.innerHTML = html;
+                messages.scrollTop = messages.scrollHeight;
+            }
+            else{
+                messages.innerHTML += html;
+                messages.scrollTop = messages.scrollHeight;
+            }
+        }
+    }
+
     async getCanvas() {
         return new Promise<OffscreenCanvas>((resolve, _) => {
+            
+            const display = this.shadowRoot?.getElementById('display') as HTMLDivElement;
             let canvas = this.shadowRoot?.getElementById('canvas') as HTMLCanvasElement;
             if (canvas) {
-                this.shadowRoot?.removeChild(canvas);
+                display.removeChild(canvas);
             }
             canvas = document.createElement('canvas');
             canvas.id = 'canvas';
-            this.shadowRoot?.appendChild(canvas);
+            display.appendChild(canvas);
             canvas.onmousemove = throttle(event => {
                 const msg = this.getMouseEventMessage(event, canvas, 'onmousemove');
                 this.#sandbox.sendMessage(msg);

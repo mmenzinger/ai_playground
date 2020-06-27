@@ -23,7 +23,7 @@ class AiProject extends LazyElement {
 
     render() {
         return html`
-            <dynamic-split direction="horizontal" minSize="200px" defaultRatio="0.6" saveId="project_simulation">
+            <dynamic-split direction="horizontal" minSize="300px" defaultRatio="0.6" saveId="project_simulation">
                 <dynamic-split slot="start" direction="vertical" minSize="50px" defaultRatio="0.8" saveId="project_console">
                     <dynamic-split slot="start" direction="horizontal" minSize="100px" defaultRatio="0.3" saveId="project_files_editor">
                         <file-tree slot="start"></file-tree>

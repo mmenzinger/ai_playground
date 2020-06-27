@@ -2,6 +2,7 @@ import * as $ from 'project/scenario.js';
 // import tau-prolog
 import { pl } from 'lib/prolog.js';
 
+//------------------------------------------------------------------------------
 const SETTINGS = {
     complexity: $.EComplexity.Simple,
     size: 4,
@@ -9,9 +10,18 @@ const SETTINGS = {
     delay: 200,
 };
 
+//------------------------------------------------------------------------------
 // global variable for knowledge base
 const kb = pl.create();
 
+//------------------------------------------------------------------------------
+export async function start() {
+    const state = $.createState(SETTINGS);
+    const player = { init, update, result, finish }
+    await $.run(state, player, SETTINGS.delay);
+}
+
+//------------------------------------------------------------------------------
 // return an array of unique elements
 // used for debugging purposes when prolog returns the same answer multiple 
 // times
@@ -20,17 +30,13 @@ function unique(array){
         .map(x => JSON.parse(x));
 }
 
+//------------------------------------------------------------------------------
 // shuffle an array, used to randomize equal actions
 function shuffle(array) {
     return array.sort(() => Math.random() - 0.5);
 }
 
-export async function start() {
-    const state = $.createState(SETTINGS);
-    const player = { init, update, result, finish }
-    await $.run(state, player, SETTINGS.delay);
-}
-
+//------------------------------------------------------------------------------
 async function init(state){
     // load knowledge base
     await kb.consult('knowledge.pl');
@@ -39,6 +45,7 @@ async function init(state){
     await kb.asserta(`visited(0,0)`);
 }
 
+//------------------------------------------------------------------------------
 async function update(state, actions){
     const x = state.position.x;
     const y = state.position.y;
@@ -93,12 +100,14 @@ async function update(state, actions){
     return actions[action];
 }
 
+//------------------------------------------------------------------------------
 async function result(oldState, action, state, score){
     const x = state.position.x;
     const y = state.position.y;
     await kb.asserta(`visited(${x},${y})`);
 }
 
+//------------------------------------------------------------------------------
 async function finish(state, score){
     console.log('score: ', state.score);
 }

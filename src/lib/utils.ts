@@ -1,5 +1,5 @@
 import { serialize, deserialize, messageWithResult } from '@util';
-import { MessageType, JSONMessage } from '@worker/types';
+import { MessageType, JSONMessage, HtmlMessage } from '@worker/types';
 
 import seedrandom from 'seedrandom';
 
@@ -125,3 +125,43 @@ export async function sleep(ms: number): Promise<void>{
         setTimeout(resolve, ms);
     });
 } 
+
+export async function setMessages(html: string): Promise<void>{
+    const msg: HtmlMessage = { 
+        type: MessageType.HTML,
+        action: 'set',
+        html,
+    };
+    await messageWithResult(msg);
+}
+
+export async function addMessage(html: string): Promise<void>{
+    const msg: HtmlMessage = { 
+        type: MessageType.HTML,
+        action: 'add',
+        html,
+    };
+    await messageWithResult(msg)
+}
+
+let images = new Map<string, ImageBitmap>();
+export async function loadImages(paths: string[]): Promise<void> {
+    const newImages = await Promise.all(paths.map(async (path) => {
+        const match = path.match(/\/([^\/]+)\.(png|jpeg)$/);
+        let name = path;
+        if(match && match.length > 1){
+            name = match[1];
+        }
+        const bitmap = await createImageBitmap(
+            await fetch(path).then(r => r.blob())
+        )
+        return {name, bitmap};
+    }));
+    for(const image of newImages){
+        images.set(image.name, image.bitmap);
+    }
+}
+
+export function getImage(name: string): ImageBitmap | undefined{
+    return images.get(name);
+}

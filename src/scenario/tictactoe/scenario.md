@@ -21,6 +21,7 @@
     - [validAction(state, action)](#validactionstate-action)
     - [performAction(state, action)](#performactionstate-action)
     - [run(state, agent1, agent2?)](#runstate-agent1-agent2)
+    - [drawState(state, hover?)](#drawstatestate-hover)
 
 
 ## Introduction
@@ -34,9 +35,9 @@ The complexity of the game is quite low, when both players play perfectly neithe
 ## Objects and Types
 
 ### Action
-Contains a position and the current [player](#player).
-Action is a 6-bit number containing the row in the 2 upper bits, col in the 2 middle bits and the [player](#player) in the 2 lower bits.
-Can be created using the [createAction]() function.
+Contains a position and the current [player](#player).  
+Action is a 6-bit number containing the row in the 2 upper bits, col in the 2 middle bits and the [player](#player) in the 2 lower bits.  
+Can be created using the [createAction](#createactionplayer-row-col) function.
 ```javascript
 type Action: number;
 ```
@@ -55,7 +56,7 @@ Contains all callbacks for a [player](#player). Only update is mandatory, the re
 [[Top](#tictactoe)]
 
 ### Player
-Player is a 2-bit number containing a bit for each of the players.
+Player is a 2-bit number containing a bit for each of the players.  
 The enum EPlayer provides easily readable defaults.
 ```javascript
 enum EPlayer {
@@ -80,9 +81,9 @@ Contains the settings needed to create a new [state](#state).
 [[Top](#tictactoe)]
 
 ### State
-Contains the board and the active as well as the starting [player](#player).
-The state is a 20-bit number, containing the current [player](#player) in its two highest bits and the nine fields from top/left to bottom/right in the 18 rightmost bits.
-The functions getPlayer and getBoard can be used to easily get the current [player](#player) or board.
+Contains the board and the active as well as the starting [player](#player).  
+The state is a 20-bit number, containing the current [player](#player) in its two highest bits and the nine fields from top/left to bottom/right in the 18 rightmost bits.  
+The functions getPlayer and getBoard can be used to easily get the current [player](#player) or board.  
 Since it is a trivial datatype assignment always results in a copy of the state.
 ```javascript
 type State: number;
@@ -100,7 +101,7 @@ function createAction(player: Player, row: number, col: number): Action;
 [[Top](#tictactoe)]
 
 ### createState(player, board?)
-Returns the resulting [state](#state).
+Returns the resulting [state](#state).  
 Board is an optional 2-dimensional array of [players](#player).
 ```javascript
 function createState(player: Player, board?: Player[][]): State;
@@ -150,7 +151,7 @@ function getScore(state: State, player: Player): number;
 [[Top](#tictactoe)]
 
 ### getWinner(state)
-Returns the winning [player](#player).
+Returns the winning [player](#player).  
 Returns Player.None if the game is still going and Player.Both in case of a draw.  
 ```javascript
 function getWinner(state: State): Player;
@@ -172,7 +173,7 @@ function validAction(state: State, action: Action): boolean;
 [[Top](#tictactoe)]
 
 ### performAction(state, action)
-Returns the new state as a result of the given [action](#action).
+Returns the new state as a result of the given [action](#action).  
 Throws an error when the [action](#action) is invalid.
 ```javascript
 function performAction(state: State, action: Action): State;
@@ -180,11 +181,21 @@ function performAction(state: State, action: Action): State;
 [[Top](#tictactoe)]
 
 ### run(state, agent1, agent2?)
-Takes two [agents](#agent) and uses their update function to decide their [actions](#action). When agent2 is not provided the user acts as agent2.
-The init, result and finish functions are optional.
-Throws an error if any chosen [action](#action) is invalid.
+Takes two [agents](#agent) and uses their update function to decide their [actions](#action).  
+When agent2 is not provided the user acts as agent2.  
+The init, result and finish functions are optional.  
+Throws an error if any chosen [action](#action) is invalid.  
 Returns a promise with the final [state](#state).
 ```javascript
 async function run(state: State, agent1: Agent, agent2?: Agent): Promise<State>;
+```
+[[Top](#tictactoe)]
+
+drawState(state, hover = undefined)
+### drawState(state, hover?)
+Draws the given [state](#state).  
+When hover is provided, the corresponding tile will be highlighted.
+```javascript
+function drawState(state: State, hover?: {row: number, col: number}): void;
 ```
 [[Top](#tictactoe)]

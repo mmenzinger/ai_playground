@@ -57,8 +57,13 @@ class C4fMarkdown extends LitElement {
             }
         )
         reaction(
-            () => projectStore.activeFile,
-            async file => {
+            () => ({
+                file: projectStore.activeFile,
+                content: projectStore.activeFile?.content,
+            }),
+            async data => {
+                let {file, content} = data;
+                // load readme.md or scenario.md when no md-file is selected in the beginning
                 if(!file?.name.endsWith('.md') && projectStore.activeProject && container.innerHTML.length === 0){
                     const projectId = projectStore.activeProject.id;
                     for(const fileName of ['readme.md', 'scenario.md']){
@@ -79,7 +84,7 @@ class C4fMarkdown extends LitElement {
                     }
                 }
                 if(file?.name.endsWith('.md')){
-                    container.innerHTML = converter.makeHtml(file.content);
+                    container.innerHTML = converter.makeHtml(content);
                     this.updateHyperlinks(container);
                     this.updateCodeHighlight(container);
                 }

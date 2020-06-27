@@ -17,3 +17,7 @@ export declare function seedRandom(seed?: string): {
     int32(): number,
 };
 export declare function sleep(ms: number): Promise<void>
+export declare function setMessages(html: string): Promise<void>;
+export declare function addMessage(html: string): Promise<void>;
+export declare function loadImages(paths: string[]): Promise<void>;
+export declare function getImage(name: string): ImageBitmap | undefined;

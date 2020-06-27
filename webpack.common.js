@@ -4,6 +4,7 @@ const CopyPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const FaviconsWebpackPlugin = require('favicons-webpack-plugin')
 // const { InjectManifest } = require('workbox-webpack-plugin');
+const EsmWebpackPlugin = require('@purtuga/esm-webpack-plugin');
 const glob = require('glob');
 
 const staticFiles = [
@@ -16,7 +17,25 @@ const staticFiles = [
     { from: 'node_modules/jquery/dist/jquery.min.js', to: 'jstree/jquery.min.js' },
 ];
 
-const alias = require('./webpack.alias.js');
+const alias = {
+    '@src': path.join(__dirname, 'src'),
+    '@store': path.join(__dirname, 'src/store'),
+    '@doc': path.join(__dirname, 'src/doc'),
+    '@localdb': path.join(__dirname, 'src/localdb'),
+    '@util': path.join(__dirname, 'src/util'),
+    '@lib': path.join(__dirname, 'src/lib'),
+    '@sandbox': path.join(__dirname, 'src/sandbox'),
+    '@shared-styles': path.join(__dirname, 'src/component/shared-styles.css'),
+    '@component': path.join(__dirname, 'src/component'),
+    '@worker': path.join(__dirname, 'src/worker'),
+    '@modal': path.join(__dirname, 'src/component/modal'),
+    '@element': path.join(__dirname, 'src/component/element'),
+    '@page': path.join(__dirname, 'src/component/page'),
+    '@scenario': path.join(__dirname, 'src/scenario'),
+
+    'node_modules': path.join(__dirname, 'node_modules'),
+    'mobx': path.join(__dirname + '/node_modules/mobx/lib/mobx.es6.js'),
+};
 
 module.exports = {
     entry: {
@@ -27,10 +46,15 @@ module.exports = {
         'monaco/editor-worker': 'monaco-editor/esm/vs/editor/editor.worker',
         'monaco/json-worker': 'monaco-editor/esm/vs/language/json/json.worker',
         'monaco/ts-worker': 'monaco-editor/esm/vs/language/typescript/ts.worker',
+        'lib/utils': './src/lib/utils',
+        'lib/prolog': './src/lib/prolog',
+        'lib/tensorflow': './src/lib/tensorflow',
     },
 
     output: {
         filename: '[name].js',
+        library: 'LIB',
+        libraryTarget: 'var',
     },
 
     resolve: {
@@ -124,6 +148,12 @@ module.exports = {
                     yandex: false
                 },
             },
+        }),
+        new EsmWebpackPlugin({
+            exclude(fileName, chunck) {
+                // exclude all non library files
+                return !/^lib\/.+.\.js$/i.test(fileName);
+            }
         }),
     ],
 

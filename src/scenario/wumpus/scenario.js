@@ -1,14 +1,28 @@
-import { seedRandom, getCanvas, sleep } from 'lib/utils.js';
+/*******************************************************************************
+ * scenario.js
+ * 
+ * This file contains all the scenario specific functionality. Normally you do
+ * not need to edit this file, unless you want to change the core rules of the
+ * scenario.
+ * 
+ * A description on how to use this library can be found inside the scenario.md
+ * file.
+ */
+import * as _ from 'lib/utils.js';
 
+//------------------------------------------------------------------------------
 export const EComplexity = {
-    Simple: 0 | 0,
+    Simple:   0 | 0,
     Advanced: 1 | 0,
+    0: 'Simple',
+    1: 'Advanced',
 }
 
+//------------------------------------------------------------------------------
 export const EDirection = {
-    Up: 0 | 0,
-    Down: 1 | 0,
-    Left: 2 | 0,
+    Up:    0 | 0,
+    Down:  1 | 0,
+    Left:  2 | 0,
     Right: 3 | 0,
     0: 'Up',
     1: 'Down',
@@ -16,62 +30,64 @@ export const EDirection = {
     3: 'Right',
 };
 
+//------------------------------------------------------------------------------
 export const EAction = {
-    Wait: 0 | 0,
-    Shoot: 4 | 0,
-    ShootUp: 4 | EDirection.Up,
-    ShootDown: 4 | EDirection.Down,
-    ShootLeft: 4 | EDirection.Left,
+    Wait:       0 | 0,
+    Shoot:      4 | 0,
+    ShootUp:    4 | EDirection.Up,
+    ShootDown:  4 | EDirection.Down,
+    ShootLeft:  4 | EDirection.Left,
     ShootRight: 4 | EDirection.Right,
-    Move: 8 | 0,
-    MoveUp: 8 | EDirection.Up,
-    MoveDown: 8 | EDirection.Down,
-    MoveLeft: 8 | EDirection.Left,
-    MoveRight: 8 | EDirection.Right,
-    MoveTo: 8 | 16,
-    0: 'Wait',
-    4: 'Shoot|ShootUp',
-    5: 'ShootDown',
-    6: 'ShootLeft',
-    7: 'ShootRight',
-    8: 'Move|MoveUp',
-    9: 'MoveDown',
+    Move:       8 | 0,
+    MoveUp:     8 | EDirection.Up,
+    MoveDown:   8 | EDirection.Down,
+    MoveLeft:   8 | EDirection.Left,
+    MoveRight:  8 | EDirection.Right,
+    MoveTo:     8 | 16,
+     0: 'Wait',
+     4: 'Shoot|ShootUp',
+     5: 'ShootDown',
+     6: 'ShootLeft',
+     7: 'ShootRight',
+     8: 'Move|MoveUp',
+     9: 'MoveDown',
     10: 'MoveLeft',
     11: 'MoveRight',
     24: 'MoveTo',
 };
 
+//------------------------------------------------------------------------------
 export const EPercept = {
-    None: 0 | 0,
-    Bump: 1 | 0,
-    Breeze: 2 | 0,
-    Stench: 4 | 0,
+    None:    0 | 0,
+    Bump:    1 | 0,
+    Breeze:  2 | 0,
+    Stench:  4 | 0,
     Glitter: 8 | 0,
     Scream: 16 | 0,
-    0: 'None',
-    1: 'Bump',
-    2: 'Breeze',
-    4: 'Stench',
-    8: 'Glitter',
+     0: 'None',
+     1: 'Bump',
+     2: 'Breeze',
+     4: 'Stench',
+     8: 'Glitter',
     16: 'Scream',
-    5: 'Stench,Bump',
-    6: 'Stench,Breeze',
+     5: 'Stench,Bump',
+     6: 'Stench,Breeze',
     12: 'Stench,Glitter',
     20: 'Stench,Scream',
-    7: 'Stench,Breeze,Bump',
+     7: 'Stench,Breeze,Bump',
     14: 'Stench,Breeze,Glitter',
     22: 'Stench,Breeze,Scream',
-    3: 'Breeze,Bump',
+     3: 'Breeze,Bump',
     10: 'Breeze,Glitter',
 };
 
-
+//------------------------------------------------------------------------------
 export const ETile = {
     Unknown: 7 | 0,
-    Empty: 0 | 0,
-    Pit: 1 | 0,
-    Wumpus: 2 | 0,
-    Gold: 4 | 0,
+    Empty:   0 | 0,
+    Pit:     1 | 0,
+    Wumpus:  2 | 0,
+    Gold:    4 | 0,
     0: 'Empty',
     1: 'Pit',
     2: 'Wumpus',
@@ -79,11 +95,12 @@ export const ETile = {
     7: 'Unknown',
 };
 
+//------------------------------------------------------------------------------
 export function getMap(state) {
     const size = state.size;
     const seed = state.seed;
     const pitchance = 0.15;
-    const rng = seedRandom(`${seed}x${size}`);
+    const rng = _.seedRandom(`${seed}x${size}`);
 
     const map = new Uint8Array(new ArrayBuffer(state.size ** 2));
 
@@ -135,6 +152,7 @@ export function getMap(state) {
     return map;
 }
 
+//------------------------------------------------------------------------------
 let mapSeed = '';
 let map;
 function realTile(state, x, y) {
@@ -147,6 +165,7 @@ function realTile(state, x, y) {
     return map[x + y * size];
 }
 
+//------------------------------------------------------------------------------
 export function copyState(state) {
     return {
         ...state,
@@ -155,6 +174,7 @@ export function copyState(state) {
     }
 }
 
+//------------------------------------------------------------------------------
 export function createState(settings, map = new Uint8Array(new ArrayBuffer(settings.size ** 2)).fill(0xff)) {
     const state = {
         size: settings.size,
@@ -171,6 +191,7 @@ export function createState(settings, map = new Uint8Array(new ArrayBuffer(setti
     return state;
 }
 
+//------------------------------------------------------------------------------
 export function getTile(state, x, y) {
     const tile = state.map[x + y * state.size] >>> 5;
     if (tile === ETile.Unknown)
@@ -178,6 +199,7 @@ export function getTile(state, x, y) {
     return tile;
 }
 
+//------------------------------------------------------------------------------
 export function getPercepts(state, x, y) {
     const tile = state.map[x + y * state.size];
     if (tile >>> 5 === ETile.Unknown)
@@ -185,11 +207,12 @@ export function getPercepts(state, x, y) {
     return tile & 0b11111;
 }
 
-
+//------------------------------------------------------------------------------
 export function hasWon(state) {
     return (state.percepts & EPercept.Glitter) > 0
 }
 
+//------------------------------------------------------------------------------
 export function getActions(state) {
     const actions = [];
     if (state.arrows > 0)
@@ -212,6 +235,7 @@ export function getActions(state) {
     return actions;
 }
 
+//------------------------------------------------------------------------------
 export function validateAction(state, action) {
     if (!validAction(state, action)) {
         let error = `invalid action ${action.type}`;
@@ -222,6 +246,7 @@ export function validateAction(state, action) {
     }
 }
 
+//------------------------------------------------------------------------------
 export function validAction(state, action) {
     // directional move is always valid
     if (action.type === EAction.MoveUp || action.type === EAction.MoveDown
@@ -248,6 +273,7 @@ export function validAction(state, action) {
     return false;
 }
 
+//------------------------------------------------------------------------------
 export function performAction(state, action) {
     validateAction(state, action);
     const newState = copyState(state);
@@ -303,28 +329,56 @@ export function performAction(state, action) {
     return newState;
 }
 
+//------------------------------------------------------------------------------
 export async function run(state, player, delay = 100, updateGUI = true) {
-    if (updateGUI)
-        await loadImages();
+    if (updateGUI){
+        await _.loadImages([
+            'project/explorer.png',
+            'project/wumpus.png',
+            'project/gold.png',
+            'project/pit.png',
+            'project/stench.png',
+            'project/breeze.png',
+            'project/glitter.png',
+        ]);
+    }
 
-    if (player.init instanceof Function)
+    if (player.init instanceof Function){
         await player.init(state);
-    if (updateGUI)
+    }
+    if (updateGUI) {
         drawState(state);
+    }
 
     let newState = state;
     while (!hasWon(state) && state.alive && state.score > -1000) {
         if(delay){
-            await sleep(delay);
+            await _.sleep(delay);
         }
         const actions = getActions(state);
         const action = await player.update(state, actions);
         newState = performAction(state, action);
-        if (player.result instanceof Function)
+        if (player.result instanceof Function){
             await player.result(state, action, newState, newState.score);
-        if (updateGUI)
+        }
+        if (updateGUI){
+            if(action.type & EAction.MoveTo){
+                _.addMessage(`<p>MoveTo: ${action.x}, ${action.y}</p>`);
+            }
+            else {
+                _.addMessage(`<p>${EAction[action.type]}</p>`);
+            }
             drawState(newState);
+        }
         state = newState;
+    }
+    if (updateGUI){
+        if(state.score < 0){
+            _.addMessage(`<h1>The explorer died!</h1>`);
+        }
+        else{
+            _.addMessage(`<h1>The explorer found the gold!</h1>`);
+        }
     }
 
     if (player.finish instanceof Function) {
@@ -333,33 +387,9 @@ export async function run(state, player, delay = 100, updateGUI = true) {
     return state;
 }
 
-const images = {};
-async function loadImages() {
-    images.explorer = await createImageBitmap(
-        await fetch('project/explorer.png').then(r => r.blob())
-    );
-    images.wumpus = await createImageBitmap(
-        await fetch('project/wumpus.png').then(r => r.blob())
-    );
-    images.gold = await createImageBitmap(
-        await fetch('project/gold.png').then(r => r.blob())
-    );
-    images.pit = await createImageBitmap(
-        await fetch('project/pit.png').then(r => r.blob())
-    );
-    images.stench = await createImageBitmap(
-        await fetch('project/stench.png').then(r => r.blob())
-    );
-    images.breeze = await createImageBitmap(
-        await fetch('project/breeze.png').then(r => r.blob())
-    );
-    images.glitter = await createImageBitmap(
-        await fetch('project/glitter.png').then(r => r.blob())
-    );
-}
-
+//------------------------------------------------------------------------------
 export function drawState(state) {
-    const canvas = getCanvas();
+    const canvas = _.getCanvas();
     const size = Math.min(canvas.width, canvas.height);
     var ctx = canvas.getContext("2d");
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -372,6 +402,7 @@ export function drawState(state) {
     drawPlayer(ctx, size, state);
 }
 
+//------------------------------------------------------------------------------
 function drawGrid(ctx, size, state) {
     const tileSize = size / state.size;
     ctx.save();
@@ -392,6 +423,7 @@ function drawGrid(ctx, size, state) {
     ctx.restore();
 }
 
+//------------------------------------------------------------------------------
 function drawTile(ctx, size, state, row, col) {
     let unknown = false;
     let tile = getTile(state, col, row);
@@ -405,7 +437,7 @@ function drawTile(ctx, size, state, row, col) {
     }
     switch(tile){
         case ETile.Gold: {
-            const img = images.gold;
+            const img = _.getImage('gold');
             const factor = tileSize / Math.max(img.width, img.height);
             const x = col * tileSize + tileSize/5;
             const y = row * tileSize + tileSize/6;
@@ -413,7 +445,7 @@ function drawTile(ctx, size, state, row, col) {
             break;
         }
         case ETile.Wumpus: {
-            const img = images.wumpus;
+            const img = _.getImage('wumpus');
             const factor = tileSize / Math.max(img.width, img.height) * 0.9;
             const x = col * tileSize + tileSize/20;
             const y = row * tileSize + tileSize/10;
@@ -421,7 +453,7 @@ function drawTile(ctx, size, state, row, col) {
             break;
         }
         case ETile.Pit: {
-            const img = images.pit;
+            const img = _.getImage('pit');
             const factor = tileSize / Math.max(img.width, img.height);
             const x = col * tileSize;
             const y = row * tileSize;
@@ -431,21 +463,21 @@ function drawTile(ctx, size, state, row, col) {
     }
 
     if(percepts & EPercept.Breeze){
-        const img = images.breeze;
+        const img = _.getImage('breeze');
         const factor = tileSize / Math.max(img.width, img.height) * 0.25;
         const x = col * tileSize + tileSize/50;
         const y = row * tileSize + tileSize/50;
         ctx.drawImage(img, x, y, img.width*factor, img.height*factor);
     }
     if(percepts & EPercept.Stench){
-        const img = images.stench;
+        const img = _.getImage('stench');
         const factor = tileSize / Math.max(img.width, img.height) * 0.25;
         const x = col * tileSize + tileSize*0.75;
         const y = row * tileSize + tileSize/50;
         ctx.drawImage(img, x, y, img.width*factor, img.height*factor);
     }
     if(percepts & EPercept.Glitter){
-        const img = images.glitter;
+        const img = _.getImage('glitter');
         const factor = tileSize / Math.max(img.width, img.height) * 0.25;
         const x = col * tileSize + tileSize*0.75;
         const y = row * tileSize + tileSize*0.75;
@@ -462,8 +494,9 @@ function drawTile(ctx, size, state, row, col) {
     }
 }
 
+//------------------------------------------------------------------------------
 function drawPlayer(ctx, size, state) {
-    const img = images.explorer;
+    const img = _.getImage('explorer');
     const tileSize = size / state.size;
     const factor = tileSize / Math.max(img.width, img.height) * 0.8;
     const x = state.position.x * tileSize + tileSize/20;

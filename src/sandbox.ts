@@ -1,10 +1,11 @@
 import projectStore from '@store/project-store';
 import db from '@localdb';
 import { messageWithResult } from '@util';
-import { Message, LogMessage, MessageType, CallMessage, JSONMessage } from '@worker/types';
+import { Message, LogMessage, MessageType, CallMessage, JSONMessage, HtmlMessage } from '@worker/types';
 
 export class Sandbox{
     #worker?: Worker;
+    onUpdateMessages?: (action: 'set' | 'add', html: string) => any;
 
     constructor(){
         this.#worker;
@@ -51,9 +52,11 @@ export class Sandbox{
                         throw new SandboxError('no active project')
                     }
                 }
-                case MessageType.CALL:{
-                    //const data = (msg as CallMessage);
-                    //result = await this.#scenario.onCall(data.functionName, data.args);
+                case MessageType.HTML:{
+                    if(this.onUpdateMessages){
+                        const data = (msg as HtmlMessage);
+                        this.onUpdateMessages(data.action, data.html);
+                    }
                     break;
                 }
             }

@@ -1,6 +1,6 @@
 import { registerRoute, RouteHandlerCallbackContext } from 'workbox-routing';
-import { precacheAndRoute } from 'workbox-precaching';
-import { CacheFirst } from 'workbox-strategies';
+import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching';
+// import { CacheFirst } from 'workbox-strategies';
 import { Project } from '@store/types';
 import db from '@localdb';
 
@@ -29,23 +29,19 @@ registerRoute(
 );
 
 if(PRODUCTION){
-    precacheAndRoute(self.__WB_MANIFEST);
+    cleanupOutdatedCaches();
 
-    registerRoute(
-        /\.(js|html)$/,
-        new CacheFirst({
-            cacheName: 'script-cache',
-            plugins: [],
-        }),
-    );
-    
-    registerRoute(
-        /\.(svg|png)$/,
-        new CacheFirst({
-            cacheName: 'image-cache',
-            plugins: [],
-        }),
-    );
+    precacheAndRoute(self.__WB_MANIFEST, {
+        cleanURLs: false,
+    });
+
+    // registerRoute(
+    //     /^https?:\/\//,
+    //     new CacheFirst({
+    //         cacheName: 'cross-origin-cache',
+    //         plugins: [],
+    //     }),
+    // );
 }
 else{
     // console.log(self.__WB_MANIFEST);
@@ -53,12 +49,13 @@ else{
 
 async function userFile(arg: RouteHandlerCallbackContext): Promise<Response>{
     let response: Response;
+    const init = {
+        status: 200,
+        statusText: 'OK',
+        headers: {'Content-Type': 'application/javascript'}
+    };
+
     try{
-        const init = {
-            status: 200,
-            statusText: 'OK',
-            headers: {'Content-Type': 'application/javascript'}
-        };
         const path = arg.url.pathname.split('/');
         let id;
         switch(path[1]){
@@ -82,10 +79,10 @@ async function userFile(arg: RouteHandlerCallbackContext): Promise<Response>{
         response = new Response(file.content, init);
     }
     catch(error){
-        // if(!PRODUCTION){
-        //     console.warn(`could not load user file '${arg.url.pathname}'`, error);
-        // }
-        if(arg.request){
+        if(arg.url.pathname.endsWith('localstorage.json')){
+            response = new Response('{}', init);
+        }
+        else if(arg.request){
             response = await fetch(arg.request);
         }
         else{

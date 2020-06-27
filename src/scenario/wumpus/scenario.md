@@ -2,13 +2,7 @@
 
 ## Table of Contents
 1. [Introduction](#introduction)
-2. [Callbacks](#callbacks)
-    - [init(state)](#initstate)
-    - [update(state, actions)](#updatestate-actions)
-    - [result(oldState, action, newState, score)](#resultoldstate-action-newstate-score)
-    - [finish(state, score)](#finishstate-score)
-    - [train()](#train)
-3. [Objects and Types](#objects-and-types)
+2. [Objects and Types](#objects-and-types)
     - [Direction](#direction)
     - [Action](#action)
     - [Agent](#agent)
@@ -16,7 +10,7 @@
     - [Tile](#tile)
     - [Settings](#settings)
     - [State](#state)
-4. [Functions](#functions)
+3. [Functions](#functions)
     - [copyState(state)](#copystatestate)
     - [createState(settings)](#createstatesettings)
     - [getTile(state, x, y)](#gettilestate-x-y)
@@ -27,6 +21,7 @@
     - [validAction(state, action)](#validactionstate-action)
     - [performAction(state, action)](#performactionstate-action)
     - [run(state, player, update?)](#runstate-player-update)
+    - [drawState(state)](#drawstatestate)
 
 
 ## Introduction
@@ -40,60 +35,6 @@ The game has two complexity settings Simple and Advanced. On Simple possible mov
 
 Additionally the map size can vary between 4x4 und 10x10 und a seed can be used to get a specific map layout.
 
-[[Top](#wumpus-world)]
-
-
-## Callbacks
-
-All callbacks are [asynchronous](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function) functions which have to be [exported](https://developer.mozilla.org/en-US/docs/web/javascript/reference/statements/export) in the index.js file.  
-The callback **[update](#updatestate-actions) is mandatory**, all other callbacks are optional.
-
-### init(state)
-Called once at the beginning of the game. State is the starting [state](#scenariogetstate).
-```javascript
-export async function init(state){
-    ...
-}
-```
-[[Top](#wumpus-world)]
-
-### update(state, actions)
-Called every time at the beginning of the computers turn. State is the current state [state](#scenariogetstate) and actions is a list of available [actions](#scenariogetactions).  
-Returns the chosen action.
-```javascript
-export async function update(state, actions){
-    ...
-    return Action;
-}
-```
-[[Top](#wumpus-world)]
-
-### result(oldState, action, newState, score)
-Called every time at the end of the computers turn. OldState and newState are the [states](#scenariogetstate) before and after the action. Action is the used [action](#scenariogetactions) and score is the resulting [score](#scenariogetscoreplayer).  
-This callback is mainly used to evaluate the action and train some kind of reinforced learning algorithm.
-```javascript
-export function result(oldState, action, newState, score){
-    ...
-}
-```
-[[Top](#wumpus-world)]
-
-### finish(state, score)
-Called once when the game has concluded. State is the final [state](#scenariogetstate) and score is the final [score](#scenariogetscoreplayer).  
-```javascript
-export async function finish(state, score){
-    ...
-}
-```
-[[Top](#wumpus-world)]
-
-### train()
-Called when the train-button is pressed. Can be used to do anything, for example train a neural network.  
-```javascript
-export async function train(){
-    ...
-}
-```
 [[Top](#wumpus-world)]
 
 
@@ -141,10 +82,10 @@ export declare type Action = {
 Contains all [callbacks](#callbacks) for the explorer. Only update is mandatory, the rest are optional.
 ```javascript
 {
-    init?: (state: State) => Promise<void>;
-    update: (state: State, actions: Action[]) => Promise<Action>;
-    result?: (oldState: State, action: Action, newState: State, score: number) => Promise<void>;
-    finish?: (state: State, score: number) => Promise<void>;
+    init?: (state: State) => Promise<void>; // called once at the beginning
+    update: (state: State, actions: Action[]) => Promise<Action>; // called every turn
+    result?: (oldState: State, action: Action, newState: State, score: number) => Promise<void>; // called after each turn
+    finish?: (state: State, score: number) => Promise<void>; // called once at the end
 }
 ```
 [[Top](#wumpus-world)]
@@ -289,5 +230,12 @@ Throws an error if any chosen [action](#action) is invalid.
 Returns a promise with the final [state](#state).
 ```javascript
 async function run(state: State, player: Agent, update?: boolean): Promise<State>;
+```
+[[Top](#wumpus-world)]
+
+### drawState(state)
+Draws the given [state](#state).  
+```javascript
+function drawState(state: State): void;
 ```
 [[Top](#wumpus-world)]
