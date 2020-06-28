@@ -11,7 +11,7 @@ export function seedRandom(seed: string){
  *  file handling
  */
 
-export async function storeJson(path: string, data: any): Promise<any> {
+export async function storeJson(path: string, data: any): Promise<void> {
     path = fixPath(path, '.json');
     const match = path.match(/\/?([^\/]+)\/([^\/]+$)/);
     if(match){
@@ -24,7 +24,7 @@ export async function storeJson(path: string, data: any): Promise<any> {
             json,
         };
         
-        return messageWithResult(msg, 1000)
+        await messageWithResult(msg, 1000)
             .catch(_ => {
                 throw Error(`could not store file ${match[2]}`);
             });
@@ -111,7 +111,7 @@ export const localStorage = {
  *  logging
  */
 declare const __console: Console;
-export const _console = __console;
+export const console = __console;
 
 /***********************************************************************************************
  *  gui interaction

@@ -5,6 +5,10 @@
  * not need to edit this file, unless you want to change the core rules of the
  * scenario.
  * 
+ * To be able to train an ai on thousands of games per second, the code makes 
+ * heavy use of binary operations while providing access functions for 
+ * usability.
+ * 
  * A description on how to use this library can be found inside the scenario.md
  * file.
  */

@@ -7,6 +7,9 @@
  * 
  * A description on how to use this library can be found inside the scenario.md
  * file.
+ * 
+ * Further performance increases are in planning but significant changes most
+ * likely require web-assembly, which is on the todo list...
  */
 import * as _ from 'lib/utils.js';
 

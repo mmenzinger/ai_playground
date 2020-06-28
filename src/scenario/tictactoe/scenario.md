@@ -20,12 +20,12 @@
     - [validateAction(state, action)](#validateactionstate-action)
     - [validAction(state, action)](#validactionstate-action)
     - [performAction(state, action)](#performactionstate-action)
-    - [run(state, agent1, agent2?)](#runstate-agent1-agent2)
+    - [run(state, agent1, agent2?, updateGUI?)](#runstate-agent1-agent2-updategui)
     - [drawState(state, hover?)](#drawstatestate-hover)
 
 
 ## Introduction
-[Tic-Tac-Toe](https://en.wikipedia.org/wiki/Tic-tac-toe) is a two player game played on a 3 by 3 board. In alternating turns the players put their token (represented by X and O) on the board. The first player who has 3 of his tokens in a row (horizontally, vertically or diagonally) wins.
+[Tic-Tac-Toe](https://en.wikipedia.org/wiki/Tic-tac-toe) is a two player game played on a 3 by 3 board. In alternating turns the players put their token (represented by X and O) on the board. The first player who has 3 of his tokens in a line (horizontally, vertically or diagonally) wins.
 
 The complexity of the game is quite low, when both players play perfectly neither can win. An unbeatable AI can easily be created using an [min-max](https://en.wikipedia.org/wiki/Minimax) approach. Since the number of possible states is also fairly low a simple [Q-learning](https://en.wikipedia.org/wiki/Q-learning) algorithm (with a complete Q-table) can also be used.
 
@@ -81,7 +81,7 @@ Contains the settings needed to create a new [state](#state).
 [[Top](#tictactoe)]
 
 ### State
-Contains the board and the active as well as the starting [player](#player).  
+Contains the board and the active [player](#player).  
 The state is a 20-bit number, containing the current [player](#player) in its two highest bits and the nine fields from top/left to bottom/right in the 18 rightmost bits.  
 The functions getPlayer and getBoard can be used to easily get the current [player](#player) or board.  
 Since it is a trivial datatype assignment always results in a copy of the state.
@@ -94,14 +94,14 @@ type State: number;
 ## Functions
 
 ### createAction(player, row, col)
-Returns the resulting [action](#action).
+Returns the corresponding [action](#action).
 ```javascript
 function createAction(player: Player, row: number, col: number): Action;
 ```
 [[Top](#tictactoe)]
 
 ### createState(player, board?)
-Returns the resulting [state](#state).  
+Returns the corresponding [state](#state).  
 Board is an optional 2-dimensional array of [players](#player).
 ```javascript
 function createState(player: Player, board?: Player[][]): State;
@@ -137,7 +137,7 @@ function getPlayer(state: State): Player;
 [[Top](#tictactoe)]
 
 ### getBoard(state)
-Returns the current board in form of an 2-dimension [player](#player) array. 
+Returns the current board in form of an 2-dimensional [player](#player) array. 
 ```javascript
 function getBoard(state: State): Player[][];
 ```
@@ -152,14 +152,14 @@ function getScore(state: State, player: Player): number;
 
 ### getWinner(state)
 Returns the winning [player](#player).  
-Returns Player.None if the game is still going and Player.Both in case of a draw.  
+Returns *EPlayer.None* if the game is still going and *EPlayer.Both* in case of a draw.  
 ```javascript
 function getWinner(state: State): Player;
 ```
 [[Top](#tictactoe)]
 
 ### validateAction(state, action)
-Throws an exception if it is not a valid action given the state. 
+Throws an exception if the action is invalid given the state. 
 ```javascript
 function validateAction(state: State, action: Action): void;
 ```
@@ -180,18 +180,17 @@ function performAction(state: State, action: Action): State;
 ```
 [[Top](#tictactoe)]
 
-### run(state, agent1, agent2?)
+### run(state, agent1, agent2?, updateGUI?)
 Takes two [agents](#agent) and uses their update function to decide their [actions](#action).  
 When agent2 is not provided the user acts as agent2.  
-The init, result and finish functions are optional.  
+Then updateGUI is true, the state will be drawn and updated.
 Throws an error if any chosen [action](#action) is invalid.  
 Returns a promise with the final [state](#state).
 ```javascript
-async function run(state: State, agent1: Agent, agent2?: Agent): Promise<State>;
+async function run(state: State, agent1: Agent, agent2?: Agent, updateGUI: boolean = true): Promise<State>;
 ```
 [[Top](#tictactoe)]
 
-drawState(state, hover = undefined)
 ### drawState(state, hover?)
 Draws the given [state](#state).  
 When hover is provided, the corresponding tile will be highlighted.

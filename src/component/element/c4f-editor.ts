@@ -219,7 +219,7 @@ class C4fEditor extends LitElement {
     render() {
         this.#firstErrorUpdate = true;
         const theme = settingsStore.get('editor-theme', 'vs');
-        const wrap = settingsStore.get('editor-wordwrap', true);
+        const wrap = settingsStore.get('editor-wordwrap', false);
         return html`
             <div id="editor"></div>
             <ul id="menu">

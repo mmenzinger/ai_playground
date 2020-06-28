@@ -20,18 +20,18 @@
     - [validateAction(state, action)](#validateactionstate-action)
     - [validAction(state, action)](#validactionstate-action)
     - [performAction(state, action)](#performactionstate-action)
-    - [run(state, player, update?)](#runstate-player-update)
+    - [run(state, player, delay?, updateGUI?)](#runstate-player-delay-updategui)
     - [drawState(state)](#drawstatestate)
 
 
 ## Introduction
-[Wumpus World](https://www.javatpoint.com/the-wumpus-world-in-artificial-intelligence) is a simple exploration game where the explorer has to find the treasure inside a cave without falling into a pit or getting eaten by Wumpus. The cave is generally unknown, the player only knows the tiles he has already visited und the perceptions on them. He can either perceive a breeze, when a pit is adjacent or a stench when Wumpus is adjacent.  
+[Wumpus World](https://www.javatpoint.com/the-wumpus-world-in-artificial-intelligence) is a simple exploration game where the explorer has to find the treasure inside a cave without falling into a pit or getting eaten by a monster named Wumpus. The cave is generally unknown, the player only knows the tiles he has already visited und the perceptions on them. He can either perceive a breeze, when a pit is adjacent or a stench when Wumpus is adjacent.  
 With this information the explorer has to manoeuver through the cave and optionally use his single arrow to kill the Wumpus, so he can pass over its tile.  
-If the player has not found the treasure after 1000 moves, the game is also lost.
+If the player has not found the treasure after 1000 moves, the game is lost.
 
 While the game is a good example for a [knowledge-based agent](https://www.tutorialandexample.com/knowledge-based-agents-in-ai), there might not be a perfect solution. The situation can be ambiguous and the explorer might have to choose between multiple possibly risky next steps.
 
-The game has two complexity settings Simple and Advanced. On Simple possible moves are limited to unexplored tiles next to already explored ones. This means the agent can jump all over the map (the assumption is he can move freely around the already explored cave). On Advanced the explorer can only move to one adjacent tile at a time.
+The game has two complexity settings Simple and Advanced. On Simple possible moves are limited to already explored tiles or unexplored tiles next to explored ones. This means the agent can jump all over the map (the assumption is he can move freely around the already explored cave). On Advanced the explorer can only move to one adjacent tile at a time.
 
 Additionally the map size can vary and a seed can be used to get a specific map layout.
 
@@ -42,35 +42,35 @@ Additionally the map size can vary and a seed can be used to get a specific map 
 
 ### Direction
 Enum for the four main directions. Mainly used inside [actions](#action) to provide a direction.
-```typescript
-export declare enum EDirection {
-    Up = 0,
-    Down = 1,
-    Left = 2,
+```javascript
+enum EDirection {
+    Up    = 0,
+    Down  = 1,
+    Left  = 2,
     Right = 3,
 }
-export declare type Direction = number;
+type Direction = number;
 ```
 [[Top](#wumpus-world)]
 
 ### Action
 Object containing the action and optionally x and y coordinates. Inside the type the direction is stored in the lower 2 bits.
 ```javascript
-export declare enum EAction {
-    Wait = 0,
-    Shoot = 4,
-    ShootUp = 4 | EDirection.Up,
-    ShootDown = 4 | EDirection.Down,
-    ShootLeft = 4 | EDirection.Left,
+enum EAction {
+    Wait       = 0,
+    Shoot      = 4,
+    ShootUp    = 4 | EDirection.Up,
+    ShootDown  = 4 | EDirection.Down,
+    ShootLeft  = 4 | EDirection.Left,
     ShootRight = 4 | EDirection.Right,
-    Move = 8,
-    MoveUp = 8 | EDirection.Up,
-    MoveDown = 8 | EDirection.Down,
-    MoveLeft = 8 | EDirection.Left,
-    MoveRight = 8 | EDirection.Right,
-    MoveTo = 8 | 16,
+    Move       = 8,
+    MoveUp     = 8 | EDirection.Up,
+    MoveDown   = 8 | EDirection.Down,
+    MoveLeft   = 8 | EDirection.Left,
+    MoveRight  = 8 | EDirection.Right,
+    MoveTo     = 8 | 16,
 }
-export declare type Action = {
+type Action = {
     type: EAction,
     x?: number,
     y?: number,
@@ -79,7 +79,7 @@ export declare type Action = {
 [[Top](#wumpus-world)]
 
 ### Agent
-Contains all [callbacks](#callbacks) for the explorer. Only update is mandatory, the rest are optional.
+Contains all callbacks for the explorer. Only update is mandatory, the rest are optional.
 ```javascript
 {
     init?: (state: State) => Promise<void>; // called once at the beginning
@@ -93,39 +93,48 @@ Contains all [callbacks](#callbacks) for the explorer. Only update is mandatory,
 ### Percept
 Percept is a 5-bit number containing a bit for each of the possible perceptions.
 ```javascript
-export declare enum EPercept {
-    None = 0,
-    Bump = 1,
-    Breeze = 2,
-    Stench = 4,
+enum EPercept {
+    None    = 0,
+    Bump    = 1,
+    Breeze  = 2,
+    Stench  = 4,
     Glitter = 8,
-    Scream = 16,
+    Scream  = 16,
 }
-export declare type Percept = number;
+type Percept = number;
 ```
 [[Top](#wumpus-world)]
 
 ### Tile
-Tile is a 8-bit number containing percepts in its 5 lower bits and the tile-type in its 3 upper bits. Generally a tile can only have one type, but when all tile-bits are set the tile is considered as unknown.
+Tile is a 8-bit number containing percepts in its 5 lower bits and the tile-type in its 3 upper bits. Generally a tile can only have one type, but when all type-bits are set the tile is considered unknown.
 ```javascript
-export declare enum ETile {
+enum ETile {
+    Empty   = 0,
+    Pit     = 1,
+    Wumpus  = 2,
+    Gold    = 4,
     Unknown = 7,
-    Empty = 0,
-    Pit = 1,
-    Wumpus = 2,
-    Gold = 4,
 }
-export declare type Tile = number;
+type Tile = number;
+```
+[[Top](#wumpus-world)]
+
+### Complexity
+Complexity can be either *Simple* (the player can teleport) or *Advanced* (the player can only move to adjacent tiles).
+```javascript
+enum EComplexity {
+    Simple:   0,
+    Advanced: 1,
+}
+type Complexity = number;
 ```
 [[Top](#wumpus-world)]
 
 ### Settings
 Contains the settings needed to create a new [state](#state).  
-Complexity is either 1 (Simple) or 2 (Advanced), size can be 4, 6, 8 or 10 and
-the seed can be any string.
 ```javascript
-export declare type Settings = {
-    complexity: number,
+type Settings = {
+    complexity: Complexity,
     size: number,
     seed: string,
 }
@@ -133,13 +142,13 @@ export declare type Settings = {
 [[Top](#wumpus-world)]
 
 ### State
-Object containing all information to describe the current state. For a deep copy the state the [copystate](#copystatestate) function has to be used.  
-Size, complexity, seed correspond to [settings](#settings). Map is an uint8 array, each entry containing a [tile](#tile) (row-wise). In the beginning most [tiles](#tile) will be unknown, they get revealed whenever the explorer moves to that [tile](#tile).  
-Position describes the player position starting in the top left corner and percepts the perceptions on the current tile.  
+Object containing all information to describe the current state. For a deep copy the [copystate](#copystatestate) function can be used.  
+Size, complexity and seed correspond to [settings](#settings). Map is an uint8 array, each entry containing a [tile](#tile) (row-wise). In the beginning most [tiles](#tile) will be unknown, they get revealed whenever the explorer moves on a [tile](#tile).  
+Position describes the player position starting in the top left corner and percepts correspond the perceptions on the current tile.  
 Score starts at 0 and gets decreased for every action the player takes. Finding the gold adds 1000 score, whenever the score reaches -1000, the player has lost.  
-Alive signals if the explorer is still alive and arrow his number of arrows (1 in the beginning).
+Alive signals if the explorer is still alive and arrow tracks his number of arrows (1 in the beginning).
 ```javascript
-export declare type State = {
+type State = {
     size: number;
     complexity: number;
     seed: string;
@@ -155,7 +164,6 @@ export declare type State = {
 
 
 ## Functions
-
 
 ### copyState(state)
 Returns a deep copy of the [state](#state).
@@ -201,7 +209,7 @@ function getActions(state: State): Action[];
 [[Top](#wumpus-world)]
 
 ### validateAction(state, action)
-Throws an exception if it is not a valid action given the state. 
+Throws an exception if the action is invalid given the state. 
 ```javascript
 function validateAction(state: State, action: Action): void;
 ```
@@ -222,19 +230,19 @@ function performAction(state: State, action: Action): State;
 ```
 [[Top](#wumpus-world)]
 
-### run(state, player, update?)
-Takes an [agent](#agent) and uses its update function to decide its [action](#action).
-When update is true, the state will update inside the user interface.
-The init, result and finish functions are optional.
-Throws an error if any chosen [action](#action) is invalid.
+### run(state, player, delay?, updateGUI?)
+Takes an [agent](#agent) and uses its update function to decide its [action](#action).  
+Delay creates a waiting period in milliseconds after each action and updateGUI states if the state will be drawn and updated or not.  
+Throws an error if any chosen [action](#action) is invalid.  
 Returns a promise with the final [state](#state).
 ```javascript
-async function run(state: State, player: Agent, update?: boolean): Promise<State>;
+async function run(state: State, player: Agent, delay: number = 100, updateGUI: boolean = true): Promise<State>;
 ```
 [[Top](#wumpus-world)]
 
 ### drawState(state)
 Draws the given [state](#state).  
+It relies of the *utils.js* function *getImage*, all assets have to be loaded in advance (*loadImages([...])*).
 ```javascript
 function drawState(state: State): void;
 ```

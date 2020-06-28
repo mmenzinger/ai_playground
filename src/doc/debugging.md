@@ -2,13 +2,14 @@
 
 
 ## General
-Generally the written code gets executed in a WebWorker directly inside your browser, meaning all available features allowed in this context can be used. This mainly excludes dom-access and the window object. With this in mind some changes were made to provide better error feedback.
+All the written code is executed inside a module WebWorker directly inside your browser, meaning all available features allowed in this context can be used. This mainly excludes dom-access and the window object.  
+With this in mind some changes were made to provide better error feedback.
 
 
 ## Logging
 First of all, the console.log/warn/error calls get intercepted and printed to the editor console. Additionally all calls go to the developer-console of the browser which can be useful when something doesn't render correctly or is not known at the time of logging (e.g. promises).
 The code inside the worker runs on a single thread with the result, that the logging output only reaches the main app when the program has time to send the messages. This means logging statements inside busy-loops will not be visible until the blocking code is finished.
-Alternatively the handle _console from util.js can be used to log directly to the normal developer console without any limitations.
+Alternatively the handle _console from utils.js can be used to log directly to the normal developer console without any limitations.
 
 
 ## Debugger

@@ -1,5 +1,4 @@
 import * as $ from 'project/scenario.js';
-// import tau-prolog
 import { pl } from 'lib/prolog.js';
 
 //------------------------------------------------------------------------------
@@ -85,7 +84,7 @@ async function update(state, actions){
         }
     }
 
-    // move adjacent to wumpus to kill
+    // try to move adjacent to wumpus to kill
     for(const action of actions){
         if(action.type === $.EAction.MoveTo){
             if(await kb.isTrue(`

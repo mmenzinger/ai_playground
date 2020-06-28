@@ -1,4 +1,4 @@
-export declare function storeJson(path: string, data: any): Promise<any>;
+export declare function storeJson(path: string, data: any): Promise<void>;
 export declare function loadJson(path: string): Promise<any>;
 export declare function getFileContent(path: string): Promise<string>;
 export declare const localStorage: {
@@ -9,7 +9,7 @@ export declare const localStorage: {
     removeItem(key: string): void,
     clear(): void,
 }
-export declare const _console: Console;
+export declare const console: Console;
 export declare function getCanvas(): OffscreenCanvas;
 export declare function seedRandom(seed?: string): {
     (): number,

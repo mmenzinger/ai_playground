@@ -2,7 +2,7 @@
 
 The editor in use ist [monaco](https://microsoft.github.io/monaco-editor).
 
-## Shortcuts
+## Common Shortcuts
 | Keys | Effect |
 |---|---|
 | F1 | Command Palette |

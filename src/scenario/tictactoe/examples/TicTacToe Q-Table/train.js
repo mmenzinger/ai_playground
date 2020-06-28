@@ -19,7 +19,7 @@ export async function generateQTable() {
         let losses = 0;
         let draws = 0;
 
-        // decline explore rate starting value with each epoch, down to 0
+        // decline exploration rate starting value with each epoch, down to 0
         let epsilon = epsilonStart * ((epochs - epoch - 1) / (epochs - 1));
         for (let episode = 0; episode < episodes; episode++) {
             const memoryPlayer = [];
@@ -72,7 +72,7 @@ export async function generateQTable() {
                 qtable.set(memory.state, memory.action, newScore);
                 lastMemory = memory;
             });
-            // decrease explore rate
+            // decrease exploration rate
             epsilon = Math.max(epsilonMin, epsilon - epsilonDecline);
         }
         console.log(`winrate: ${wins / episodes}, lossrate: ${losses / episodes}, drawrate: ${draws / episodes}`);

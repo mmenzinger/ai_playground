@@ -8,7 +8,7 @@ const SETTINGS = {
 //------------------------------------------------------------------------------
 export async function start(){
     const state = $.createState(SETTINGS);
-    const computer = { init, update };
+    const computer = { update };
     return await $.run(state, computer);
 }
 
@@ -22,17 +22,6 @@ async function update(state, actions) {
 
     // perform action
     return action;
-}
-
-//------------------------------------------------------------------------------
-async function init(state){
-    console.log('game started');
-    if(state.player === $.EPlayer.Computer){
-        console.log('calculating first action...');
-    }
-    else{
-        console.log('waiting for player action...');
-    }
 }
 
 //------------------------------------------------------------------------------

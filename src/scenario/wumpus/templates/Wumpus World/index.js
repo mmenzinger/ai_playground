@@ -1,8 +1,8 @@
-import { EComplexity, createState, run } from 'project/scenario.js';
+import * as $ from 'project/scenario.js';
 
 //------------------------------------------------------------------------------
 const SETTINGS = {
-    complexity: EComplexity.Simple,
+    complexity: $.EComplexity.Simple,
     size: 4,
     seed: '42',
     delay: 200,
@@ -10,9 +10,9 @@ const SETTINGS = {
 
 //------------------------------------------------------------------------------
 export async function start() {
-    const state = createState(SETTINGS);
+    const state = $.createState(SETTINGS);
     const player = { update, finish }
-    await run(state, player, SETTINGS.delay);
+    await $.run(state, player, SETTINGS.delay);
 }
 
 //------------------------------------------------------------------------------

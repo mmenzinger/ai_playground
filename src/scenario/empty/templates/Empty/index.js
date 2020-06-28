@@ -1,3 +1,6 @@
+// import the scenario module
+import * as $ from 'project/scenario.js';
+
 export function start(){
     // do something...
 }

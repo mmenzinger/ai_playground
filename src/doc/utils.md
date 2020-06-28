@@ -1,7 +1,7 @@
 # Utils
 
 ```javascript
-import * as utils from 'lib/utils.js';
+import * as _ from 'lib/utils.js';
 ```
 
 ## Table of Contents
@@ -18,11 +18,11 @@ import * as utils from 'lib/utils.js';
     - [seedRandom(seed)](#seedrandomseed)
     - [sleep(ms)](#sleepms)
     - [localStorage](#localstorage)
-    - [_console](#_console)
+    - [console](#console)
 
 
 ## Introduction
-The util.js library provides a mixture of useful functions.
+The util.js library provides a mixture of useful functions, ranging from debugging to drawing and file handling.
 
 [[Top](#utils)]
 
@@ -47,7 +47,7 @@ function loadImages(paths: string[]): Promise<void>;
 ```
 Example:
 ```javascript
-await utils.loadImages([
+await _.loadImages([
     '/project/hero.png',
 ]);
 ```
@@ -63,7 +63,7 @@ function getImage(name: string): ImageBitmap | undefined;
 ```
 Example:
 ```javascript
-const img = getImage('hero');
+const img = _.getImage('hero');
 ```
 [[Top](#utils)]
 
@@ -75,7 +75,7 @@ function setMessages(html: string): Promise<void>;
 ```
 Example:
 ```javascript
-utils.setMessages('<p>some text here...</p>');
+_.setMessages('<p>some text here...</p>');
 ```
 [[Top](#utils)]
 
@@ -87,7 +87,7 @@ function addMessage(html: string): Promise<void>;
 ```
 Example:
 ```javascript
-utils.addMessage('<p>some additional text here...</p>');
+_.addMessage('<p>some additional text here...</p>');
 ```
 [[Top](#utils)]
 
@@ -95,11 +95,11 @@ utils.addMessage('<p>some additional text here...</p>');
 ### storeJson(path, data)
 Saves any object to a file using the JSON-format and returns a promise, which resolves when the file has been written.
 ```javascript
-export declare function storeJson(path: string, data: any): Promise<any>;
+function storeJson(path: string, data: any): Promise<void>;
 ```
 Example:
 ```javascript
-await utils.storeJson('project/myFile.json', { answer: 42 });
+await _.storeJson('project/myFile.json', { answer: 42 });
 ```
 [[Top](#utils)]
 
@@ -107,11 +107,11 @@ await utils.storeJson('project/myFile.json', { answer: 42 });
 ### loadJson(path)
 Loads and parses the given json-file and returns a promise with the resulting object.
 ```javascript
-export declare function loadJson(path: string): Promise<any>;
+function loadJson(path: string): Promise<any>;
 ```
 Example:
 ```javascript
-const data = await utils.loadJson('project/myFile.json');
+const data = await _.loadJson('project/myFile.json');
 ```
 [[Top](#utils)]
 
@@ -119,14 +119,13 @@ const data = await utils.loadJson('project/myFile.json');
 ### getFileContent(path)
 Loads and returns the content of a file as string.
 ```javascript
-export declare function getFileContent(path: string): Promise<any>;
+function getFileContent(path: string): Promise<any>;
 ```
 [[Top](#utils)]
 
 
 ### seedRandom(seed)
 Returns a pseudo-random-number-generator based of a given seed. Further calls return the same sequence of pseudo-random-numbers. It is based on the [seedrandom](https://github.com/davidbau/seedrandom) library.
-export declare const SeedRandom: seedrandom.seedrandom_prng;
 ```javascript
 function seedRandom(seed: string): {
     (): number,
@@ -136,7 +135,7 @@ function seedRandom(seed: string): {
 ```
 Example:
 ```javascript
-const rng = utils.seedRandom('42');
+const rng = _.seedRandom('42');
 console.log(rng()) // 64bit float between 0 and 1
 console.log(rng.quick()) // 32bit float between 0 and 1
 console.log(rng.int32()) // 32bit signed integer
@@ -145,13 +144,13 @@ console.log(rng.int32()) // 32bit signed integer
 
 
 ### sleep(ms)
-Returns a promise that resolved aber a given number of milliseconds.
+Returns a promise that resolved after a given number of milliseconds.  
 ```javascript
 function sleep(ms: number): Promise<void>
 ```
 Example:
 ```javascript
-await sleep(500);
+await _.sleep(500);
 ```
 [[Top](#utils)]
 
@@ -171,17 +170,18 @@ const localStorage: {
 ```
 Example:
 ```javascript
-utils.localStorage.setItem('hello', 'world');
-const value = utils.localStorage.getItem('hello');
+_.localStorage.setItem('hello', 'world');
+const value = _.localStorage.getItem('hello');
 console.log(value);
 ```
 [[Top](#utils)]
 
 
-### _console
-Provides access to the normal window.console. Useful for debugging in blocking code or when logging big/many objects.
+### console
+Provides access to the normal window.console. Useful for debugging in blocking code or when logging big/many objects.  
+
 Example:
 ```javascript
-utils._console.warn('something went wrong...');
+_.console.warn('something went wrong...');
 ```
 [[Top](#utils)]
