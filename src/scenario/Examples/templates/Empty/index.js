@@ -1,10 +1,11 @@
 // import the scenario module
 import * as $ from 'project/scenario.js';
 
-export function start(){
+
+export async function start(){
     // do something...
 }
 
-export function train(){
+export async function train(){
     // do something or delete...
 }

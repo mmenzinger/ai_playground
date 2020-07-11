@@ -27,7 +27,7 @@ class C4fEditorIframe extends LitElement {
     render() {
         this.#firstErrorUpdate = true;
         const theme = settingsStore.get('editor-theme', 'vs');
-        const wrap = settingsStore.get('editor-wordwrap', true);
+        const wrap = settingsStore.get('editor-wordwrap', false);
         return html`
             <iframe id="editor" src="monaco.html"></iframe>
             <ul id="menu">

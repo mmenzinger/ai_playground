@@ -32,10 +32,31 @@
     margin: 0.25em 0;
 }
 
-header{
+#control{
+    display: flex;
+}
+#settings li{
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+#settings > ul{
     display: flex;
 }
 
 button{
     margin: 0.25em;
+}
+
+
+#video{
+    display: none;
+    position: absolute;
+    top: 1.5em;
+    left: 0.5em;
+    max-width: 10em;
+    max-height: 10em;
+}
+#video_container:hover > #camera:checked ~ #video{
+    display: block;
 }

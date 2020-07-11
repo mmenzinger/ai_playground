@@ -1,2 +1,2 @@
 export declare const tf: any;
-export default tf;
+export declare const facemesh: any;

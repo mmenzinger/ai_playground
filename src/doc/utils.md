@@ -15,6 +15,7 @@ import * as _ from 'lib/utils.js';
     - [storeJson(path, data)](#storejsonpath-data)
     - [loadJson(path)](#loadjsonpath)
     - [getFileContent(path)](#getfilecontentpath)
+    - [onVideoFrameUpdate(callback)](#onvideoframeupdatecallback)
     - [seedRandom(seed)](#seedrandomseed)
     - [sleep(ms)](#sleepms)
     - [localStorage](#localstorage)
@@ -120,6 +121,23 @@ const data = await _.loadJson('project/myFile.json');
 Loads and returns the content of a file as string.
 ```javascript
 function getFileContent(path: string): Promise<any>;
+```
+[[Top](#utils)]
+
+
+### onVideoFrameUpdate(callback)
+Calls the given function whenever a camera frame is received.  
+Requires a working camera.
+```javascript
+function onVideoFrameUpdate(callback: (data: ImageBitmap) => void): void;
+```
+Example:
+```javascript
+const canvas = _.getCanvas();
+const ctx = canvas.getContext('2d');
+_.onVideoFrameUpdate((data) => {
+    ctx.drawImage(data, 0, 0);
+});
 ```
 [[Top](#utils)]
 

@@ -91,7 +91,8 @@ export class Sandbox{
     }
 
     async sendMessage(msg: any, transfer: any[] = []){
-        return messageWithResult(msg, null, this.#worker, transfer);
+        if(this.#worker)
+            return messageWithResult(msg, null, this.#worker, transfer);
     }
     
     terminate() {

@@ -81,7 +81,7 @@ module.exports = {
                 ],
             },
             {
-                test: /\.(png|jpg)$/,
+                test: /\.(png|jpg|gif)$/,
                 include: path.join(__dirname, 'src/scenario/'),
                 use: [
                     {

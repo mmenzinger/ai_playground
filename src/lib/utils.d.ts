@@ -21,3 +21,6 @@ export declare function setMessages(html: string): Promise<void>;
 export declare function addMessage(html: string): Promise<void>;
 export declare function loadImages(paths: string[]): Promise<void>;
 export declare function getImage(name: string): ImageBitmap | undefined;
+
+export declare function onVideoFrameUpdate(callback: (data: ImageBitmap) => void): void;
+export declare function require(url: string): Promise<any>

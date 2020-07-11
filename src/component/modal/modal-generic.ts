@@ -80,7 +80,6 @@ export class ModalGeneric extends LazyElement {
             const inputElements = root.querySelectorAll('input');
             for(const input of inputElements){
                 input.onkeydown = (e: KeyboardEvent) => {
-                    console.log(e.key)
                     if(['Escape', 'Enter'].includes(e.key)){
                         this.onKeyDown(e.key);
                         e.preventDefault();

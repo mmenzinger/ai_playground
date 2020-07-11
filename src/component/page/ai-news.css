@@ -22,3 +22,9 @@ footer{
 a{
     text-decoration: underline;
 }
+
+ul{
+    margin: 1em 0;
+    text-align: left;
+    list-style-type: square;
+}

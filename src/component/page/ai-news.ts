@@ -8,11 +8,13 @@ import sharedStyles from '@shared-styles';
 import style from './ai-news.css';
 
 import welcome from '@page/news/welcome';
+import update_2020_07_11 from '@page/news/update_2020_07_11';
 
-export const NEWS_VERSION = 1;
+export const NEWS_VERSION = 2;
 
 const NEWS = {
     1: welcome,
+    2: update_2020_07_11,
 }
 
 class AiNews extends LazyElement {

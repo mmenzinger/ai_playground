@@ -3,8 +3,24 @@ import { MessageType, JSONMessage, HtmlMessage } from '@worker/types';
 
 import seedrandom from 'seedrandom';
 
+
 export function seedRandom(seed: string){
     return seedrandom(seed);
+}
+
+export async function require(url: string, context = {}, parse = (content: string) => content ): Promise<any>{
+    const body = await fetch(url);
+    if (body.status !== 200)
+        throw Error(`could not open file '${url}'`)
+    const content = parse(await body.text());
+    //console.log(content);
+    //const obj = eval(`(function(){${content}})();`)();
+    function evalInContext(){
+        eval(`${content}`);
+    }
+    evalInContext.call(context);
+    
+    return context;
 }
 
 /***********************************************************************************************
@@ -164,4 +180,9 @@ export async function loadImages(paths: string[]): Promise<void> {
 
 export function getImage(name: string): ImageBitmap | undefined{
     return images.get(name);
+}
+
+export function onVideoFrameUpdate(callback: (data: ImageBitmap) => void){
+    // @ts-ignore
+    self.__onVideoFrameUpdate = callback;
 }

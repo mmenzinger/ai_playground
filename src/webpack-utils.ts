@@ -33,19 +33,16 @@ export function getScenarios(): {[key:string]: ScenarioTemplates} {
             }
             if(!folder){
                 // @ts-ignore
-                scenarios[type].files.push({
-                    name: filename,
-                    content: require(`@src/scenario/${type}/${filename}`).default,
-                })
+                const raw = require(`@src/scenario/${type}/${filename}`).default;
+                scenarios[type].files.push(
+                    getFile(filename, raw)
+                )
             }
             if(folder === 'assets'){
                 const raw = require(`@src/scenario/${type}/${folder}/${filename}`).default;
-                const [match, contentType, base64] = raw.match(/^data:(.+);base64,(.*)$/);
-                // @ts-ignore
-                scenarios[type].files.push({
-                    name: filename,
-                    content: base64toBlob(base64),
-                })
+                scenarios[type].files.push(
+                    getFile(filename, raw)
+                )
             }
 
             if(folder && folder !== 'assets'){
@@ -55,16 +52,31 @@ export function getScenarios(): {[key:string]: ScenarioTemplates} {
                     scenario: type,
                     files: [],
                 }
+
+                
+                const raw = require(`@src/scenario/${path.substring(2)}`).default;
                 // @ts-ignore
-                scenarios[type][folder][name].files.push({
-                    name: filename,
-                    content: require(`@src/scenario/${path.substring(2)}`).default,
-                });
+                scenarios[type][folder][name].files.push(
+                    getFile(filename, raw)
+                );
             }
         }
     });
 
     return scenarios;
+}
+
+function getFile(filename: string, raw: any): File{
+    let content = raw;
+    if(/\.(png|jpe?g|gif)$/.test(filename)){
+        const [match, contentType, base64] = raw.match(/^data:(.+);base64,(.*)$/);
+        content = base64toBlob(base64);
+    }
+    // @ts-ignore
+    return {
+        name: filename,
+        content,
+    }
 }
 
 export function getTemplates() {

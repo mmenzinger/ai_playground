@@ -16,6 +16,7 @@ export enum MessageType {
     CALL,
     EVENT,
     HTML,
+    VIDEO,
 }
 
 export enum Functions {
@@ -56,4 +57,9 @@ export interface HtmlMessage {
     type: MessageType.HTML,
     action: 'add' | 'set',
     html: string,
+}
+
+export interface VideoMessage {
+    type: MessageType.VIDEO,
+    bitmap: ImageBitmap,
 }

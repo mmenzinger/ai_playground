@@ -1,7 +1,7 @@
 import { serialize } from '@util';
 import StackTrace from 'stacktrace-js';
 import { Caller, LogType } from '@store/types';
-import { Message, MessageType, CallMessage, EventMessage, LogMessage } from '@worker/types';
+import { Message, MessageType, CallMessage, EventMessage, LogMessage, VideoMessage } from '@worker/types';
 
 interface Scope extends WorkerGlobalScope{
     __console: Console,
@@ -101,6 +101,7 @@ async function getCaller(arg1?: any): Promise<Caller | undefined> {
 /***********************************************************************************************
  *  message handling
  */
+let videoFrameUpdateBusy = false;
 onmessage = async m => {
     const msg: Message = m.data;
     switch (msg.type) {
@@ -137,6 +138,23 @@ onmessage = async m => {
                 const data = (msg as EventMessage);
                 if((self as any)[data.callbackName] instanceof Function){
                     (self as any)[data.callbackName](data.data);
+                }
+            }
+            catch(error){
+                console.error(error);
+            }
+            break;
+        }
+        case MessageType.VIDEO: {
+            try{
+                const data = (msg as VideoMessage);
+                if((self as any)['__onVideoFrameUpdate'] instanceof Function && !videoFrameUpdateBusy){
+                    videoFrameUpdateBusy = true;
+                    (self as any)['__onVideoFrameUpdate'](data.bitmap).then(() => {
+                        videoFrameUpdateBusy = false;
+                    }).catch((error: any) => {
+                        console.error(error);
+                    });
                 }
             }
             catch(error){

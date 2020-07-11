@@ -2,11 +2,12 @@ import { html } from 'lit-element';
 import { MobxLitElement } from '@adobe/lit-mobx';
 import projectStore from '@store/project-store';
 import { throttle } from 'lodash-es';
+import { autorun } from 'mobx';
 
 import '@element/c4f-console';
 import { Sandbox } from '@sandbox';
 import { LogType } from '@store/types';
-import { MessageType, EventMessage } from '@worker/types';
+import { MessageType, EventMessage, VideoMessage } from '@worker/types';
 
 // @ts-ignore
 import sharedStyles from '@shared-styles';
@@ -17,6 +18,8 @@ import style from './ai-simulator.css';
 class AiSimulator extends MobxLitElement {
     #sandbox = new Sandbox();
     #checkCanvasInterval: NodeJS.Timeout | undefined = undefined;
+    #cameraStream: MediaStream | null = null;
+    #sendImageData: (() => void) | null = null;
 
     static get styles() {
         return [
@@ -31,23 +34,39 @@ class AiSimulator extends MobxLitElement {
     }
 
     render() {
-        const project = projectStore.activeProject;
-        if (project) {
-            return html`
-                <div id="wrapper">
-                    <header>
+        return html`
+            <div id="wrapper">
+                <header>
+                    <section id="control">
                         <button class="ok" @click=${this.simRun}>start&nbsp;/&nbsp;restart</button>
                         <button class="warning" @click=${this.simTrain}>call&nbsp;train</button>
                         <button class="error" @click=${this.simTerminate}>terminate</button>
-                    </header>
-                    <div id="display"></div>
-                    <footer id="messages"></footer>
-                </div>
-            `;
-        }
-        else {
-            return html``;
-        }
+                    </section>
+                    <section id="settings">
+                        <ul>
+                            <li id="video_container">
+                                <input id="camera" type="checkbox" @click=${this.toggleCamera}>
+                                <label for="camera">Camera</label>
+                                <video id="video" poster="assets/interface/loading.gif"></video>
+                            </li>
+                        </ul>
+                    </section>
+                </header>
+                <div id="display"></div>
+                <footer id="messages"></footer>
+            </div>
+        `;
+    }
+
+    firstUpdated(){
+        autorun(_ => {
+            if(projectStore.activeProject){
+                this.simRun();
+            }
+            else{
+                this.simTerminate();
+            }
+        })
     }
 
     async simRun() {
@@ -84,12 +103,6 @@ class AiSimulator extends MobxLitElement {
         console.warn(msg);
     }
 
-    async updated() {
-        if(projectStore.activeProject){
-            this.simRun();
-        }
-    }
-
     updateMessages(action: 'set' | 'add', html: string){
         const messages = this.shadowRoot?.getElementById('messages') as HTMLDivElement;
         if(messages){
@@ -106,7 +119,6 @@ class AiSimulator extends MobxLitElement {
 
     async getCanvas() {
         return new Promise<OffscreenCanvas>((resolve, _) => {
-            
             const display = this.shadowRoot?.getElementById('display') as HTMLDivElement;
             let canvas = this.shadowRoot?.getElementById('canvas') as HTMLCanvasElement;
             if (canvas) {
@@ -141,6 +153,63 @@ class AiSimulator extends MobxLitElement {
                 }
             }, 100);
         });
+    }
+
+    async startStream(video: HTMLVideoElement): Promise<void> {
+        if(!this.#cameraStream){
+            const stream = await new Promise((resolve: (stream: MediaStream) => void, reject: any) => {
+                navigator.getUserMedia({video:true}, resolve, reject);
+            });
+
+            const [track] = stream.getVideoTracks();
+            const imageCapture = new ImageCapture(track);
+
+            this.#sendImageData = () => {
+                imageCapture.grabFrame().then((imageBitmap: ImageBitmap) => {
+                    const msg: VideoMessage = {
+                        type: MessageType.VIDEO,
+                        bitmap: imageBitmap
+                    };
+                    this.#sandbox.sendMessage(msg, [imageBitmap]);
+                })
+                .catch((error: any) => {
+                    //console.warn(error);
+                });
+                
+                if(this.#sendImageData){
+                    requestAnimationFrame(this.#sendImageData);
+                }
+            };
+          
+            video.onplay = () => {
+                if(this.#sendImageData){
+                    requestAnimationFrame(this.#sendImageData);
+                }
+            };
+
+            video.srcObject = stream;
+            this.#cameraStream = stream;
+        }
+        video.play();
+    }
+
+    async stopStream(video: HTMLVideoElement): Promise<void> {
+        if(this.#cameraStream){
+            this.#cameraStream.getTracks().forEach(track => track.stop());
+            this.#cameraStream = null;
+        }
+        video.srcObject = null;
+    }
+
+    async toggleCamera(_: MouseEvent){
+        const video = this.shadowRoot?.getElementById('video') as HTMLVideoElement;
+        const camera = this.shadowRoot?.getElementById('camera') as HTMLInputElement;
+        if(camera.checked){
+            await this.startStream(video);
+        }
+        else{
+            await this.stopStream(video);
+        }
     }
 
     getMouseEventMessage(event: MouseEvent, target: HTMLElement, callbackName: string) {

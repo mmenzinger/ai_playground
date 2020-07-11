@@ -9,17 +9,19 @@ import JSZip from 'jszip';
 // New Project
 //------------------------------------------------------------------------------
 export function newProjectTemplate(scenarioTemplates: { [key: string]: ScenarioTemplates }): ModalTemplate {
-    const scenarios = Object.values(scenarioTemplates).map(scenario => html`<option value="${scenario.name}">${Object.values(scenario.templates)[0].name}</option>`);
-    const firstScenario = Object.values(scenarioTemplates)[0];
-    const firstTemplate = Object.values(firstScenario.templates)[0];
-
+    const scenarios = Object.values(scenarioTemplates).map(scenario => html`<option value="${scenario.name}">${Object.values(scenario.name)}</option>`);
+    
     let selectedScenarioIndex = 1;
     let selectedTemplateIndex = 0;
+    const firstScenario = Object.values(scenarioTemplates)[selectedScenarioIndex];
+    const firstTemplate = Object.values(firstScenario.templates)[selectedTemplateIndex];
 
     function updateTemplates(templateSelect: HTMLSelectElement, scenario: string) {
-        const templates = Object.entries(scenarioTemplates[scenario].templates).map(([key, _]) => `<option value="${key}">Default</option>`).join('');
-        const examples = Object.entries(scenarioTemplates[scenario].examples).map(([key, example]) => `<option value="${key}">Example: ${example.name}</option>`).join('');
-        templateSelect.innerHTML = templates + examples;
+        const templates = Object.entries(scenarioTemplates[scenario].templates)
+            .sort((a, b) => a[1].name.localeCompare(b[1].name))
+            .map(([key, template]) => `<option value="${key}">${template.name}</option>`)
+            .join('');
+        templateSelect.innerHTML = templates;
     }
 
     return {
