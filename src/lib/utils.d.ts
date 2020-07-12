@@ -23,4 +23,4 @@ export declare function loadImages(paths: string[]): Promise<void>;
 export declare function getImage(name: string): ImageBitmap | undefined;
 
 export declare function onVideoFrameUpdate(callback: (data: ImageBitmap) => void): void;
-export declare function require(url: string): Promise<any>
+//export declare function includeUrl(url: string, context = {}, parse = (content: string) => content ): Promise<any>;

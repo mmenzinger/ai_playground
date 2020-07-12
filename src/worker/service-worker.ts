@@ -42,6 +42,7 @@ if (PRODUCTION) {
             cacheName: 'cors-cache',
             plugins: [
                 new ExpirationPlugin({
+                    // keep for 1 month
                     maxAgeSeconds: 30 * 7 * 24 * 60 * 60,
                 }),
             ],

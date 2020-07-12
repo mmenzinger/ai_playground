@@ -102,6 +102,12 @@ import tProlog from '!!raw-loader!@lib/prolog.d.ts';
 // @ts-ignore
 import tTensorflow from '!!raw-loader!@lib/tensorflow.d.ts';
 
+window.addEventListener("unhandledrejection", function(promiseRejectionEvent) { 
+    // handle error here, for example log   
+    console.log(parent)
+    console.warn('this error most likely comes from using an invalid import');
+});
+
 // fix for monaco language keywords, see https://github.com/microsoft/monaco-editor/issues/1423 
 interface MonarchLanguageConfiguration extends monaco.languages.IMonarchLanguage {
     keywords: string[];

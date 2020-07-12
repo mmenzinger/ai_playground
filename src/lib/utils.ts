@@ -8,13 +8,10 @@ export function seedRandom(seed: string){
     return seedrandom(seed);
 }
 
-export async function require(url: string, context = {}, parse = (content: string) => content ): Promise<any>{
+export async function includeUrl(url: string, context = {}, parse = (content: string) => content ): Promise<any>{
     const body = await fetch(url);
-    if (body.status !== 200)
-        throw Error(`could not open file '${url}'`)
     const content = parse(await body.text());
-    //console.log(content);
-    //const obj = eval(`(function(){${content}})();`)();
+    
     function evalInContext(){
         eval(`${content}`);
     }

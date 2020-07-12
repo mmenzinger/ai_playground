@@ -3,6 +3,8 @@ import { facemesh } from 'lib/tensorflow.js';
 
 
 export async function start() {
+    console.log('starting face detection - make sure the camera is working and activated');
+
     // load pretrained model
     const model = await facemesh.load();
 

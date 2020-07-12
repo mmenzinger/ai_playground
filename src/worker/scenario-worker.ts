@@ -150,7 +150,16 @@ onmessage = async m => {
                 const data = (msg as VideoMessage);
                 if((self as any)['__onVideoFrameUpdate'] instanceof Function && !videoFrameUpdateBusy){
                     videoFrameUpdateBusy = true;
-                    (self as any)['__onVideoFrameUpdate'](data.bitmap).then(() => {
+                    new Promise(async (resolve, reject) => {
+                        try{
+                            await (self as any)['__onVideoFrameUpdate'](data.bitmap);
+                            resolve();
+                        }
+                        catch(error){
+                            reject(error);
+                        }
+                        
+                    }).then(() => {
                         videoFrameUpdateBusy = false;
                     }).catch((error: any) => {
                         console.error(error);
