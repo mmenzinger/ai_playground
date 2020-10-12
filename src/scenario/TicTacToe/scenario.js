@@ -341,29 +341,29 @@ function drawO(ctx, size, row, col, style = '#f00'){
 //------------------------------------------------------------------------------
 async function getUserUpdate(state, actions){
     return new Promise((resolve, reject) => {
-        self.onmousemove = (data) => {
-            const size = Math.min(data.width, data.height);
-            const row = Math.floor(data.y * 3 / size);
-            const col = Math.floor(data.x * 3 / size);
+        _.onMouseMove((event) => {
+            const size = Math.min(event.width, event.height);
+            const row = Math.floor(event.y * 3 / size);
+            const col = Math.floor(event.x * 3 / size);
             if(row < 3 && col < 3){
                 drawState(state, {row, col});
             }
             else{
                 drawState(state);
             }
-        }
+        });
 
-        self.onmousedown = (data) => {
-            const size = Math.min(data.width, data.height);
-            const row = Math.floor(data.y * 3 / size);
-            const col = Math.floor(data.x * 3 / size);
+        _.onMouseDown((event) => {
+            const size = Math.min(event.width, event.height);
+            const row = Math.floor(event.y * 3 / size);
+            const col = Math.floor(event.x * 3 / size);
             const player = (state >>> ((row*3 + col)*2)) & 0b11;
             if(player === EPlayer.None && row < 3 && col < 3){
-                self.onmousemove = undefined;
-                self.onmousedown = undefined;
+                _.onMouseMove();
+                _.onMouseDown();
                 const action = createAction(EPlayer.Human, row, col);
                 resolve(action);
             }
-        }
+        });
     });
 }

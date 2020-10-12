@@ -3,9 +3,9 @@ const webpack = require('webpack');
 const CopyPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const FaviconsWebpackPlugin = require('favicons-webpack-plugin')
-// const { InjectManifest } = require('workbox-webpack-plugin');
 const EsmWebpackPlugin = require('@purtuga/esm-webpack-plugin');
 const glob = require('glob');
+const jsdoc2md = require('jsdoc-to-markdown')
 
 const staticFiles = [
     { from: './src/iframe/*.html', to: '[name].[ext]' },
@@ -116,19 +116,6 @@ module.exports = {
             template: 'src/index.ejs',
             chunks: ['app'],
         }),
-        // new PreloadWebpackPlugin({
-        //     rel: 'prefetch',
-        //     include: 'allAssets',
-        // }),
-        // new InjectManifest({
-        //     swSrc: './src/worker/service-worker.ts',
-        //     additionalManifestEntries: [
-        //         {url: 'scenario/util.js', revision: null},
-        //         {url: 'lib/prolog.js', revision: null},
-        //         {url: 'lib/tensorflow.js', revision: null},
-        //     ],
-        //     maximumFileSizeToCacheInBytes: 50 * 1024 * 1024, // monaco has huge file sizes uncompressed...
-        // }),
         new FaviconsWebpackPlugin({
             logo: './assets/logo.png',
             cache: true,

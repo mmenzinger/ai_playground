@@ -15,9 +15,12 @@ import sharedStyles from '@shared-styles';
 import style from './ai-simulator.css';
 
 
+const NUM_CANVASES = 3;
+
+
 class AiSimulator extends MobxLitElement {
     #sandbox = new Sandbox();
-    #checkCanvasInterval: NodeJS.Timeout | undefined = undefined;
+    #checkCanvasInterval: (number | undefined)[] = new Array(NUM_CANVASES);
     #cameraStream: MediaStream | null = null;
     #sendImageData: (() => void) | null = null;
 
@@ -118,40 +121,53 @@ class AiSimulator extends MobxLitElement {
     }
 
     async getCanvas() {
-        return new Promise<OffscreenCanvas>((resolve, _) => {
+        return new Promise<OffscreenCanvas[]>((resolve, _) => {
             const display = this.shadowRoot?.getElementById('display') as HTMLDivElement;
-            let canvas = this.shadowRoot?.getElementById('canvas') as HTMLCanvasElement;
-            if (canvas) {
-                display.removeChild(canvas);
-            }
-            canvas = document.createElement('canvas');
-            canvas.id = 'canvas';
-            display.appendChild(canvas);
-            canvas.onmousemove = throttle(event => {
-                const msg = this.getMouseEventMessage(event, canvas, 'onmousemove');
-                this.#sandbox.sendMessage(msg);
-            }, 100);
-            canvas.onmousedown = (event) => {
-                const msg = this.getMouseEventMessage(event, canvas, 'onmousedown');
-                this.#sandbox.sendMessage(msg);
-            }
-            canvas.onmouseup = event => {
-                const msg = this.getMouseEventMessage(event, canvas, 'onmouseup');
-                this.#sandbox.sendMessage(msg);
+            let canvases: Promise<HTMLCanvasElement>[] = new Array(NUM_CANVASES);
+            for(let i = 0; i < NUM_CANVASES; i++){
+                let canvas = this.shadowRoot?.getElementById(`canvas${i}`) as HTMLCanvasElement;
+                if (canvas) {
+                    display.removeChild(canvas);
+                }
+                canvas = document.createElement('canvas');
+                canvas.id = `canvas${i}`;
+                canvas.classList.add('layer');
+                display.appendChild(canvas);
+                
+                canvases[i] = new Promise<HTMLCanvasElement>((resolve, _) => {
+                    if(this.#checkCanvasInterval[i]){
+                        clearInterval(this.#checkCanvasInterval[i]);
+                    }
+                    this.#checkCanvasInterval[i] = window.setInterval(() => {
+                        if(canvas.clientWidth > 0 && canvas.clientHeight > 0 && this.#checkCanvasInterval){
+                            canvas.width = canvas.clientWidth;
+                            canvas.height = canvas.clientHeight;
+                            clearInterval(this.#checkCanvasInterval[i]);
+                            this.#checkCanvasInterval[i] = undefined;
+                            resolve(canvas);
+                        }
+                    }, 100);
+                });
             }
 
-            if(this.#checkCanvasInterval){
-                clearInterval(this.#checkCanvasInterval);
-            }
-            this.#checkCanvasInterval = setInterval(() => {
-                if(canvas.clientWidth > 0 && canvas.clientHeight > 0 && this.#checkCanvasInterval){
-                    canvas.width = canvas.clientWidth;
-                    canvas.height = canvas.clientHeight;
-                    clearInterval(this.#checkCanvasInterval);
-                    this.#checkCanvasInterval = undefined;
-                    resolve(canvas.transferControlToOffscreen());
+            Promise.all(canvases).then(canvases => {
+                if(canvases.length){
+                    const canvas = canvases[canvases.length-1];
+                    canvas.onmousemove = throttle(event => {
+                        const msg = this.getMouseEventMessage(event, canvas, 'onmousemove');
+                        this.#sandbox.sendMessage(msg);
+                    }, 100);
+                    canvas.onmousedown = (event) => {
+                        const msg = this.getMouseEventMessage(event, canvas, 'onmousedown');
+                        this.#sandbox.sendMessage(msg);
+                    }
+                    canvas.onmouseup = event => {
+                        const msg = this.getMouseEventMessage(event, canvas, 'onmouseup');
+                        this.#sandbox.sendMessage(msg);
+                    }
                 }
-            }, 100);
+                resolve(canvases.map(canvas => canvas.transferControlToOffscreen()));
+            });
         });
     }
 

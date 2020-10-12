@@ -10,7 +10,7 @@ export declare const localStorage: {
     clear(): void,
 }
 export declare const console: Console;
-export declare function getCanvas(): OffscreenCanvas;
+export declare function getCanvas(id?: 0 | 1 | 2): OffscreenCanvas;
 export declare function seedRandom(seed?: string): {
     (): number,
     quick(): number,
@@ -24,3 +24,7 @@ export declare function getImage(name: string): ImageBitmap | undefined;
 
 export declare function onVideoFrameUpdate(callback: (data: ImageBitmap) => void): void;
 //export declare function includeUrl(url: string, context = {}, parse = (content: string) => content ): Promise<any>;
+
+export declare function onMouseDown(callback: (e?: MouseEvent) => void): void;
+export declare function onMouseMove(callback: (e?: MouseEvent) => void): void;
+export declare function onMouseUp(callback: (e?: MouseEvent) => void): void;

@@ -111,7 +111,7 @@ onmessage = async m => {
                 if(!data.file){
                     data.file = '/project/index.js';
                 }
-                (self as any).__canvas = data.canvas;
+                (self as any).__canvases = data.canvases;
                 const [util, index] = await Promise.all([
                     // @ts-ignore
                     import(/* webpackIgnore: true */ '/lib/utils.js'),

@@ -68,8 +68,11 @@ class LocalDB {
 
     async saveFileContent(id: number, content: string | Blob, lastChange: number = Date.now()): Promise<void> {
         const records: number = await this.#files.update(id, {content, lastChange});
-        if(records === 0)
+        if(records === 0){
+            // TODO: remove debug output
+            console.error(`could not save file ${id}`, {content, lastChange});
             throw new LocalDBError(`could not save file ${id}`);
+        }
     }
 
     async saveFileState(id: number, state: any, lastChange: number = Date.now()): Promise<void> {

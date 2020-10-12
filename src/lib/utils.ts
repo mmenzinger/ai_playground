@@ -129,8 +129,8 @@ export const console = __console;
 /***********************************************************************************************
  *  gui interaction
  */
-export function getCanvas(): OffscreenCanvas{
-    return (self as any).__canvas;
+export function getCanvas(id: 0 | 1 | 2 = 0): OffscreenCanvas{
+    return (self as any).__canvases[id];
 }
 
 export async function sleep(ms: number): Promise<void>{
@@ -182,4 +182,16 @@ export function getImage(name: string): ImageBitmap | undefined{
 export function onVideoFrameUpdate(callback: (data: ImageBitmap) => void){
     // @ts-ignore
     self.__onVideoFrameUpdate = callback;
+}
+
+export function onMouseDown(callback: (e?: MouseEvent) => void){
+    self.onmousedown = callback;
+}
+
+export function onMouseMove(callback: (e?: MouseEvent) => void){
+    self.onmousemove = callback;
+}
+
+export function onMouseUp(callback: (e?: MouseEvent) => void){
+    self.onmouseup = callback;
 }

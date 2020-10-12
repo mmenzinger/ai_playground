@@ -40,9 +40,9 @@ import 'monaco-editor/esm/vs/editor/contrib/wordOperations/wordOperations.js';
 // import 'monaco-editor/esm/vs/editor/standalone/browser/accessibilityHelp/accessibilityHelp.js';
 // import 'monaco-editor/esm/vs/editor/standalone/browser/inspectTokens/inspectTokens.js';
 // import 'monaco-editor/esm/vs/editor/standalone/browser/iPadShowKeyboard/iPadShowKeyboard.js';
-import 'monaco-editor/esm/vs/editor/standalone/browser/quickOpen/quickOutline.js';
+// import 'monaco-editor/esm/vs/editor/standalone/browser/quickOpen/quickOutline.js';
 // import 'monaco-editor/esm/vs/editor/standalone/browser/quickOpen/gotoLine.js';
-import 'monaco-editor/esm/vs/editor/standalone/browser/quickOpen/quickCommand.js';
+// import 'monaco-editor/esm/vs/editor/standalone/browser/quickOpen/quickCommand.js';
 // import 'monaco-editor/esm/vs/editor/standalone/browser/toggleHighContrast/toggleHighContrast.js';
 
 // (2) Desired languages:
@@ -101,6 +101,8 @@ import tUtil from '!!raw-loader!@lib/utils.d.ts';
 import tProlog from '!!raw-loader!@lib/prolog.d.ts';
 // @ts-ignore
 import tTensorflow from '!!raw-loader!@lib/tensorflow.d.ts';
+// @ts-ignore
+import monacoStyle from '!!lit-css-loader!monaco-editor/min/vs/editor/editor.main.css';
 
 window.addEventListener("unhandledrejection", function(promiseRejectionEvent) { 
     // handle error here, for example log   
@@ -163,6 +165,7 @@ monaco.languages.typescript.javascriptDefaults.setCompilerOptions({
     checkJs: true,
     esModuleInterop: true,
     module: monaco.languages.typescript.ModuleKind.ESNext,
+    lib: ['esnext', 'webworker'],
     paths: {
         "@/*": ["./"]
     },
@@ -201,6 +204,11 @@ monaco.languages.setMonarchTokensProvider('prolog', {
         ]
     }
 } as MonarchLanguageConfiguration);
+
+
+// const style = document.createElement('style');
+// document.head.appendChild(style);
+// style.appendChild(document.createTextNode(monacoStyle));
 
 
 const container = document.getElementById('editor') as HTMLElement;

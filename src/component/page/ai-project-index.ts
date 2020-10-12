@@ -78,9 +78,9 @@ class AiProjectIndex extends LazyElement {
             const modal = await appStore.showModal(Modals.GENERIC, newProjectTemplate(scenarios));
             const scenario = scenarios[modal.scenario];
             let template = scenario.templates[modal.template];
-            if(!template)
-                template = scenario.examples[modal.template];
-            template.files.push(...scenario.files);
+            if(template.scenario){
+                template.files.push(...scenarios[template.scenario].files);
+            }
             await projectStore.createProject(modal.name, template.scenario, template.files);
             this._projects = await db.getProjects();
         }

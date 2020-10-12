@@ -7,7 +7,7 @@ import * as _ from 'lib/utils.js';
 ## Table of Contents
 1. [Introduction](#introduction)
 2. [Exports](#exports)
-    - [getCanvas()](#getcanvas)
+    - [getCanvas(id)](#getcanvasid)
     - [loadImages(paths)](#loadimagespaths)
     - [getImage(name)](#getimagename)
     - [setMessages(html)](#setmessageshtml)
@@ -16,6 +16,9 @@ import * as _ from 'lib/utils.js';
     - [loadJson(path)](#loadjsonpath)
     - [getFileContent(path)](#getfilecontentpath)
     - [onVideoFrameUpdate(callback)](#onvideoframeupdatecallback)
+    - [onMouseDown(callback)](#onmousedowncallback)
+    - [onMouseMove(callback)](#onmousemovecallback)
+    - [onMouseUp(callback)](#onmouseupcallback)
     - [seedRandom(seed)](#seedrandomseed)
     - [sleep(ms)](#sleepms)
     - [localStorage](#localstorage)
@@ -32,10 +35,10 @@ The util.js library provides a mixture of useful functions, ranging from debuggi
 ## Exports
 
 
-### getCanvas()
-Returns the main [HTML canvas](https://www.w3schools.com/html/html5_canvas.asp) as an OffscreenCanvas. This function is mainly used inside of scenarios to provide graphical feedback.
+### getCanvas(id)
+Returns a [HTML canvas](https://www.w3schools.com/html/html5_canvas.asp) as an OffscreenCanvas. This function is mainly used inside of scenarios to provide graphical feedback. There are three layers available 0 (back), 1 and 2 (front).
 ```javascript
-function getCanvas(): OffscreenCanvas;
+function getCanvas(id: 0 | 1 | 2): OffscreenCanvas;
 ```
 [[Top](#utils)]
 
@@ -137,6 +140,48 @@ const canvas = _.getCanvas();
 const ctx = canvas.getContext('2d');
 _.onVideoFrameUpdate((data) => {
     ctx.drawImage(data, 0, 0);
+});
+```
+[[Top](#utils)]
+
+
+### onMouseDown(callback)
+Calls the given function whenever the mouse is pressed.  
+```javascript
+function onMouseDown(callback: (e?: MouseEvent) => void): void;
+```
+Example:
+```javascript
+_.onMouseDown((e) => {
+    console.log(`mouse click on ${e.x}, ${e.y}`);
+});
+```
+[[Top](#utils)]
+
+
+### onMouseMove(callback)
+Calls the given function whenever the mouse is moved.  
+```javascript
+function onMouseMove(callback: (e?: MouseEvent) => void): void;
+```
+Example:
+```javascript
+_.onMouseMove((e) => {
+    console.log(`mouse move on ${e.x}, ${e.y}`);
+});
+```
+[[Top](#utils)]
+
+
+### onMouseUp(callback)
+Calls the given function whenever the mouse is released.  
+```javascript
+function onMouseUp(callback: (e?: MouseEvent) => void): void;
+```
+Example:
+```javascript
+_.onMouseUp((e) => {
+    console.log(`mouse release on ${e.x}, ${e.y}`);
 });
 ```
 [[Top](#utils)]

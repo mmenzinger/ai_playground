@@ -16,9 +16,16 @@ export type ScenarioTemplates = {
 export function getScenarios(): {[key:string]: ScenarioTemplates} {
     const rc = require.context('@src/scenario', true, /\.[a-z]+$/i);
     const paths = rc.keys().filter(path => new RegExp(`/[^/]+/`).test(path));
-    const scenarios: {[key:string]: ScenarioTemplates} = {};
+    const scenarios: {[key:string]: ScenarioTemplates} = {
+        Examples: {
+            name: 'Examples',
+            templates: {},
+            examples: {},
+            files: [],
+        },
+    };
     paths.forEach(path => {
-        const match = path.match(new RegExp(`^\./([^/]+)/?(templates|examples|assets)?/?([^/]+)?/([^/]+)$`));
+        const match = path.match(new RegExp(`^\./([^/~]+)/?(templates|examples|assets)?/?([^/]+)?/([^/]+)$`));
         if(match){
             const type = match[1];
             const folder = match[2];
@@ -44,6 +51,17 @@ export function getScenarios(): {[key:string]: ScenarioTemplates} {
                     getFile(filename, raw)
                 )
             }
+            if(folder === 'examples'){
+                scenarios.Examples.templates[name] = scenarios.Examples.templates[name] || {
+                    name: name,
+                    scenario: type,
+                    files: [],
+                }
+                const raw = require(`@src/scenario/${path.substring(2)}`).default;
+                scenarios.Examples.templates[name].files.push(
+                    getFile(filename, raw)
+                );
+            }
 
             if(folder && folder !== 'assets'){
                 // @ts-ignore
@@ -61,8 +79,24 @@ export function getScenarios(): {[key:string]: ScenarioTemplates} {
                 );
             }
         }
+        else{
+            const match = path.match(new RegExp(`^\./~Examples/([^/]+)/([^/]+)$`));
+            if(match){
+                const name = match[1];
+                const filename = match[2];
+                
+                scenarios.Examples.templates[name] = scenarios.Examples.templates[name] || {
+                    name: name,
+                    scenario: undefined,
+                    files: [],
+                }
+                const raw = require(`@src/scenario/${path.substring(2)}`).default;
+                scenarios.Examples.templates[name].files.push(
+                    getFile(filename, raw)
+                );
+            }
+        }
     });
-
     return scenarios;
 }
 

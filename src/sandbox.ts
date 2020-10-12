@@ -79,15 +79,15 @@ export class Sandbox{
         }, null, registration.active);
     }
     
-    async call (file: string, functionName: string, canvas: OffscreenCanvas) {
+    async call (file: string, functionName: string, canvases: OffscreenCanvas[]) {
         await this.simSetup();
         const msg: CallMessage = {
             type: MessageType.CALL,
             file: file,
             functionName,
-            canvas,
+            canvases,
         }
-        await messageWithResult(msg, null, this.#worker, [canvas]);
+        await messageWithResult(msg, null, this.#worker, [...canvases]);
     }
 
     async sendMessage(msg: any, transfer: any[] = []){

@@ -1,11 +1,11 @@
 import { messageWithResult } from '@util';
 import { Log } from '@store/types';
 
-export function call(functionName: string, canvas: OffscreenCanvas){
+export function call(functionName: string, canvases: OffscreenCanvas[]){
     const msg: CallMessage = {
         type: MessageType.CALL,
         functionName,
-        canvas,
+        canvases,
     };
     return messageWithResult(msg);
 }
@@ -44,7 +44,7 @@ export interface CallMessage {
     type: MessageType.CALL,
     file?: string,
     functionName: string,
-    canvas: OffscreenCanvas,
+    canvases: OffscreenCanvas[],
 }
 
 export interface EventMessage {

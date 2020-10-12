@@ -9,12 +9,14 @@ import style from './ai-news.css';
 
 import welcome from '@page/news/welcome';
 import update_2020_07_11 from '@page/news/update_2020_07_11';
+import update_2020_10_12 from '@page/news/update_2020_10_12';
 
-export const NEWS_VERSION = 2;
+export const NEWS_VERSION = 3;
 
 const NEWS = {
     1: welcome,
     2: update_2020_07_11,
+    3: update_2020_10_12,
 }
 
 class AiNews extends LazyElement {
