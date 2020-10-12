@@ -1,4 +1,4 @@
-(window.webpackJsonpLIB=window.webpackJsonpLIB||[]).push([[20],{256:function(e,t,n){"use strict";n.r(t);var i=n(35),a=n(88),o=n(70),s=i.b`:host{
+(window.webpackJsonpLIB=window.webpackJsonpLIB||[]).push([[20],{396:function(e,t,n){"use strict";n.r(t);var i=n(95),a=n(230),o=n(201),s=i.b`:host{
     padding: 0.5em;
     text-align: center;
 }
