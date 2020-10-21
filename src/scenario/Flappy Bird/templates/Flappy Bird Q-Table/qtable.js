@@ -123,7 +123,6 @@ export class QTable{
     async render(observationsToState, rows = 20, cols = 15) {
         return new Promise((resolve, _) => {
             requestAnimationFrame(() => {
-                console.log(scale);
                 ctx.setTransform(scale, 0, 0, scale, $.CANVAS_WIDTH*scale, $.CANVAS_HEIGHT*scale);
                 ctx.clearRect(0, 0, $.CANVAS_WIDTH, $.CANVAS_HEIGHT);
                 const dx = $.CANVAS_WIDTH / cols;
