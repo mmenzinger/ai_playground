@@ -5,10 +5,10 @@ import { Message, MessageType, CallMessage, EventMessage, LogMessage, VideoMessa
 
 interface Scope extends WorkerGlobalScope{
     __console: Console,
-    storeJson: (path: string, data: any) => Promise<any>,
-    loadJson: (path: string) => Promise<any>,
-    getFileContent: (path: string) => Promise<string>,
-    window: any;
+    // storeJson: (path: string, data: any) => Promise<any>,
+    // loadJson: (path: string) => Promise<any>,
+    // getFileContent: (path: string) => Promise<string>,
+    // window: any;
 }
 declare var self: Scope & typeof globalThis;
 
