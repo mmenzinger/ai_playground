@@ -107,12 +107,17 @@ class AiProjectIndex extends LazyElement {
             const modal = await appStore.showModal(Modals.GENERIC, downloadProjectTemplate(project));
             const zip = new JSZip();
             const projectFolder = zip.folder('project');
+            if(!projectFolder)
+                throw Error("zip error creating folder 'project");
+
             const projectFiles = await db.getProjectFiles(project.id);
             for(const file of projectFiles){
                 projectFolder.file(file.name, file.content || '');
             }
             if(modal.globals){
                 const globalFolder = zip.folder('global');
+                if(!globalFolder)
+                    throw Error("zip error creating folder 'global'");
                 const globalFiles = await db.getProjectFiles(0);
                 for(const file of globalFiles){
                     globalFolder.file(file.name, file.content || '');

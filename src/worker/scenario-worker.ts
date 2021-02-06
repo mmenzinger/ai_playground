@@ -153,7 +153,7 @@ onmessage = async m => {
                     new Promise(async (resolve, reject) => {
                         try{
                             await (self as any)['__onVideoFrameUpdate'](data.bitmap);
-                            resolve();
+                            resolve(null);
                         }
                         catch(error){
                             reject(error);

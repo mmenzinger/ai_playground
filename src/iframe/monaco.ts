@@ -167,7 +167,7 @@ monaco.languages.typescript.javascriptDefaults.setCompilerOptions({
     module: monaco.languages.typescript.ModuleKind.ESNext,
     lib: ['esnext', 'webworker'],
     paths: {
-        "@/*": ["./"]
+        "@/*": ["./"],
     },
     baseUrl: './',
 });

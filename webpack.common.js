@@ -15,6 +15,7 @@ const staticFiles = [
     { from: 'node_modules/jstree/dist/themes/default/32px.png', to: 'jstree/32px.png' },
     { from: 'node_modules/jstree/dist/themes/default/throbber.gif', to: 'jstree/throbber.gif' },
     { from: 'node_modules/jquery/dist/jquery.min.js', to: 'jstree/jquery.min.js' },
+    { from: 'node_modules/@tensorflow/tfjs-core/dist/'}
 ];
 
 const alias = {
@@ -34,7 +35,6 @@ const alias = {
     '@scenario': path.join(__dirname, 'src/scenario'),
 
     'node_modules': path.join(__dirname, 'node_modules'),
-    'mobx': path.join(__dirname + '/node_modules/mobx/lib/mobx.es6.js'),
 };
 
 module.exports = {

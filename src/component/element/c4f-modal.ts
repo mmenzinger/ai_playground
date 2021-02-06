@@ -2,6 +2,7 @@ import { html } from 'lit-element';
 import { MobxLitElement } from '@adobe/lit-mobx';
 import appStore from '@store/app-store';
 import { ModalGeneric } from '@modal/modal-generic';
+import { toJS } from 'mobx';
 
 // @ts-ignore
 import sharedStyles from '@shared-styles';
@@ -23,11 +24,11 @@ class C4fModal extends MobxLitElement {
     }
 
     render() {
-        let template = appStore.modal?.template;
+        const open = appStore.modalOpen;
         return html`
-            <div id="background" ?active="${appStore.modal !== null}">
+            <div id="background" ?active="${open}">
                 <div id="content">
-                    <modal-generic id="${Modals.GENERIC}" class="modal" ?active="${template === Modals.GENERIC}"></modal-generic>
+                    <modal-generic id="${Modals.GENERIC}" class="modal" ?active="${open}"></modal-generic>
                 </div>
             </div>
         `;

@@ -1,4 +1,4 @@
-import { observable, action, autorun, runInAction, toJS, trace } from 'mobx';
+import { observable, action, makeObservable, autorun, runInAction, toJS, trace } from 'mobx';
 import db from '@localdb';
 import { throttle } from 'lodash-es';
 import settingsStore from '@store/settings-store';
@@ -6,18 +6,36 @@ import settingsStore from '@store/settings-store';
 import type { File, Project, ProjectErrors, Caller, Log, LogType, IPosition } from '@store/types';
 
 class ProjectStore {
-    @observable activeProject: Project | null = null;
-    @observable activeFile: File | null = null;
-    @observable log: Log[] = [];
-    @observable lastFileTreeChange: number = 0;
+    activeProject: Project | null = null;
+    activeFile: File | null = null;
+    log: Log[] = [];
+    lastFileTreeChange: number = 0;
 
     #logThrottle: () => void;
     #logQueue: Log[] = [];
     //#saveFileDebounce: (fileId: number, content: string, state: any, errors: FileError[]) => void;
     //#saveFileStateDebounce: (fileId: number, state: any) => void;
 
-
     constructor() {
+        makeObservable(this, {
+            activeProject: observable,
+            activeFile: observable,
+            log: observable,
+            lastFileTreeChange: observable,
+            openProject: action,
+            closeProject: action,
+            updateProjectErrors: action,
+            openFile: action,
+            openVirtualFile: action,
+            closeFile: action,
+            createFile: action,
+            deleteFile: action,
+            saveFileContent: action,
+            saveFileState: action,
+            renameFile: action,
+            clearLog: action,
+        });
+
         this.#logThrottle = throttle(() => {
             const queueLength = settingsStore.get('log_queue_length', 500);
             runInAction(() => {
@@ -39,7 +57,6 @@ class ProjectStore {
     /**********************************************************************************+
      * Project 
      */
-    @action 
     async openProject(id: number) : Promise<Project> {
         const project = await db.getProject(id);
         let file: File | null = null;
@@ -67,7 +84,6 @@ class ProjectStore {
         return project;
     }
 
-    @action
     async closeProject(): Promise<void> {
         this.activeProject = null;
         this.activeFile = null;
@@ -77,7 +93,6 @@ class ProjectStore {
         return await db.createProject(name, scenario, files);
     }
 
-    @action
     async updateProjectErrors(id: number, projectErrors: ProjectErrors): Promise<void> {
         let errors: ProjectErrors = {};
         if (this.activeProject && this.activeProject.id === id && this.activeProject.errors) {
@@ -116,7 +131,6 @@ class ProjectStore {
     /**********************************************************************************+
      * File 
      */
-    @action
     async openFile(id: number, scrollTo?: IPosition): Promise<File> {
         if (this.activeFile) {
             await this.flushFile();
@@ -146,7 +160,6 @@ class ProjectStore {
         return file;
     }
 
-    @action
     async openVirtualFile(file: File): Promise<File> {
         if (this.activeFile) {
             await this.flushFile();
@@ -158,12 +171,10 @@ class ProjectStore {
         return file;
     }
 
-    @action
     async closeFile(): Promise<void> {
         this.activeFile = null;
     }
 
-    @action
     async createFile(name: string, projectId: number = 0, content: string | Blob = ''): Promise<number> {
         const id: number = await db.createFile(projectId, name, content);
 
@@ -173,7 +184,6 @@ class ProjectStore {
         return id;
     }
 
-    @action
     async deleteFile(id: number): Promise<void> {
         if (this.activeFile && this.activeFile.id === id)
             await this.closeFile();
@@ -184,7 +194,6 @@ class ProjectStore {
         });
     }
 
-    @action
     async saveFileContent(id: number, content: string): Promise<void> {
         await db.saveFileContent(id, content);
         runInAction(() => {
@@ -194,7 +203,6 @@ class ProjectStore {
         })
     }
 
-    @action
     async saveFileState(id: number, state: any): Promise<void> {
         await db.saveFileState(id, state);
         runInAction(() => {
@@ -208,7 +216,6 @@ class ProjectStore {
         //this.#saveFileDebounce.flush();
     }
 
-    @action
     async renameFile(id: number, name: string): Promise<void> {
         await db.renameFile(id, name);
         runInAction(() => {
@@ -247,7 +254,6 @@ class ProjectStore {
         this.#logThrottle();
     }
 
-    @action
     async clearLog(): Promise<void> {
         this.log = [];
     }

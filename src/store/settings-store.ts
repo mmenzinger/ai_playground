@@ -1,11 +1,17 @@
-import { observable, action, autorun, toJS } from 'mobx';
+import { observable, action, autorun, toJS, makeObservable } from 'mobx';
 
 const STORAGE_KEY = 'settings';
 
 class SettingsStore{
-    @observable data = JSON.parse(window.localStorage.getItem(STORAGE_KEY) || '{}');
+    data = JSON.parse(window.localStorage.getItem(STORAGE_KEY) || '{}');
 
-    @action
+    constructor(){
+        makeObservable(this, {
+            data: observable,
+            set: action,
+        });
+    }
+
     set(key: string, value: any){
         this.data[key] = value;
         window.localStorage.setItem(STORAGE_KEY, JSON.stringify(this.data))

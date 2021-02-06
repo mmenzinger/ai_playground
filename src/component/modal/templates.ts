@@ -102,7 +102,7 @@ export function uploadProjectTemplate(): ModalTemplate {
             reader.readAsArrayBuffer((fileSelectElement.files)[0]);
         });
         zip = await JSZip.loadAsync(zipFile);
-        settings = JSON.parse(await zip.file('settings.json').async('text'));
+        settings = JSON.parse(await zip.file('settings.json')?.async('text') || '');
         nameElement.value = settings.name;
     }
 
@@ -164,7 +164,7 @@ export function uploadProjectTemplate(): ModalTemplate {
                 const name = fields.name as string;
 
                 const projectFilesPromises: Promise<File>[] = [];
-                zip.folder('project').forEach((filename, file) => {
+                zip.folder('project')?.forEach((filename, file) => {
                     projectFilesPromises.push(new Promise((resolve, _) => {
                         let filetype: 'text'|'blob' = 'text';
                         if(/\.(png|jpe?g)$/.test(file.name)){
@@ -183,7 +183,7 @@ export function uploadProjectTemplate(): ModalTemplate {
 
                 const globalFilesPromises: Promise<File>[] = [];
                 if (globals) {
-                    zip.folder('global').forEach((filename, file) => {
+                    zip.folder('global')?.forEach((filename, file) => {
                         globalFilesPromises.push(new Promise((resolve, _) => {
                             let filetype: 'text'|'blob' = 'text';
                             if(/\.(png|jpe?g)$/.test(file.name)){

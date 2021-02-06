@@ -1,4 +1,4 @@
-import { observable, action, autorun, toJS, runInAction } from 'mobx';
+import { observable, action, autorun, toJS, runInAction, makeObservable } from 'mobx';
 import settingsStore from '@store/settings-store';
 import projectStore from '@store/project-store';
 import { Defer } from '@util';
@@ -9,14 +9,31 @@ import { Modal } from '@store/types';
 import { NEWS_VERSION } from '@page/ai-news';
 
 class AppStore {
-    @observable page = '';
-    @observable params: string[][] = [];
-    @observable offline = false;
-    @observable modal: Modal | null = null;
-    @observable reportOpen = false;
+    page = '';
+    params: string[][] = [];
+    offline = false;
+    modal: Modal | null = null;
+    modalOpen = false;
+    reportOpen = false;
 
-    @action
-    async navigate(_: string, search: string): Promise<void> {
+    constructor(){
+        makeObservable(this, {
+            page: observable,
+            params: observable,
+            offline: observable,
+            modalOpen: observable,
+            reportOpen: observable,
+            navigate: action,
+            updateOfflineStatus: action,
+            showModal: action,
+            resolveModal: action,
+            rejectModal: action,
+            openReport: action,
+            closeReport: action,
+        });
+    }
+
+    async navigate(_path: string, _search: string): Promise<void> {
         let page = 'index';
         let params: string[][] = [];
         try {
@@ -71,47 +88,48 @@ class AppStore {
         })
     }
 
-    @action
     async updateOfflineStatus(offline: boolean): Promise<void> {
         this.offline = offline;
     }
 
-    @action
     async showModal(template: Modals, data: ModalTemplate): Promise<any> {
         // lazy load modal ${template}
         await import(`@modal/modal-${template}`);
 
+
         const result = new Defer<any>();
+        if (this.modal) {
+            this.modal.result.reject(Error("Previous modal not closed!"));
+        }
+        this.modal = { template, data, result }
         runInAction(() => {
-            if (this.modal) {
-                this.modal.result.reject(Error("Previous modal not closed!"));
-            }
-            this.modal = { template, data, result }
+            this.modalOpen = true;
         });
+        
         return result.promise;
     }
 
-    @action
     async resolveModal(data: any) {
         if (this.modal) {
             this.modal.result.resolve(data);
             this.modal = null;
+            this.modalOpen = false;
         }
     }
 
-    @action
     async rejectModal(data: any) {
         if (this.modal) {
             this.modal.result.reject(data);
             this.modal = null;
+            this.modalOpen = false;
         }
     }
 
-    @action openReport() {
+    openReport() {
         this.reportOpen = true;
     }
 
-    @action closeReport() {
+    closeReport() {
         this.reportOpen = false;
     }
 }

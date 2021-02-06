@@ -2,6 +2,7 @@
 
 ```javascript
 import { tf, facemesh, ... } from 'lib/tensorflow.js';
+https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@2.0.0/dist/tf.min.js
 ```
 
 While the whole [tensorflowjs](https://www.tensorflow.org/js) library is available using the tf namespace, there is currently no editor integration (autocompletion etc...). It is on the Todo list, but there is no estimate when it will be done.

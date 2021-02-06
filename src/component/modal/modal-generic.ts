@@ -2,6 +2,7 @@ import { html, TemplateResult } from 'lit-element';
 import appStore from '@store/app-store';
 import { LazyElement } from '@element/lazy-element';
 import { ModalAbort } from '@element/c4f-modal';
+import { toJS } from 'mobx';
 
 // @ts-ignore
 import sharedStyles from '@shared-styles';
