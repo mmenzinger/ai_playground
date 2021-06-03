@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>AI - Coding4Fun</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta
+            name="description"
+            content="Coding4Fun Educational Artificial Intelligence Platform"
+        />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <script src="/app.js" defer></script>
+        <script>
+            // Load and register pre-caching Service Worker
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function () {
+                    navigator.serviceWorker.register('/service-worker.js');
+                });
+            }
+            onload = () => {
+                try {
+                    if ('serviceWorker' in navigator) {
+                        navigator.serviceWorker.register('/service-worker.js');
+                    } else {
+                        throw Error(`could not create service worker`);
+                    }
+                } catch (error) {
+                    document.getElementById('app').style.display = 'none';
+                    document.getElementById('notSupported').style.display =
+                        'block';
+                    const ul = document.getElementById('missing');
+                    const li = document.createElement('li');
+                    li.innerText = error.message;
+                    ul.appendChild(li);
+                }
+            };
+        </script>
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=Roboto&family=Roboto+Mono&family=Roboto+Slab&display=swap');
+
+            /* :root {
+                --color-background-primary: #fff;
+                --color-background-secondary: #eee;
+                --color-background-tertiary: #ddd;
+                --color-highlight: #f82;
+                --color-warning: #ffa;
+                --color-border: #aaa;
+                --color-border-secondary: #ccc;
+                --color-text: #333;
+                --color-text-weak: #888;
+                --color-shadow: rgba(0, 0, 0, 0.25);
+
+                --font-serif: 'Roboto Slab', serif;
+                --font-sans-serif: 'Roboto', sans-serif;
+                --font-monospace: 'Roboto Mono', monospace;
+            } */
+        </style>
+    </head>
+
+    <body>
+        <div id="output"></div>
+        <div id="notSupported" style="display: none">
+            <p>
+                Your browser does not provide the following required features:
+            </p>
+            <ul id="missing"></ul>
+            <p>
+                Currently only modern versions of Chromium-based browsers like
+                <a href="https://www.google.com/chrome">Google Chrome</a> and
+                <a href="https://www.microsoft.com/en-us/edge"
+                    >Microsoft Edge</a
+                >
+                provide all necessary features.
+            </p>
+        </div>
+        <noscript>
+            This as a website about programming JavaScript. It can not function
+            with JavaScript disabled... To continue enable JavaScript and
+            reload.
+        </noscript>
+    </body>
+</html>

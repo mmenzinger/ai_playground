@@ -1,6 +1,4 @@
 import { editor } from 'monaco-editor';
-import { Modals } from '@element/c4f-modal';
-import { ModalTemplate } from '@modal/modal-generic';
 
 export type { IPosition } from 'monaco-editor';
 
@@ -51,9 +49,3 @@ export type Project = {
     openFileId?: number,
     errors?: ProjectErrors,
 };
-
-export type Modal = {
-    template: Modals,
-    data: ModalTemplate,
-    result: any,
-}

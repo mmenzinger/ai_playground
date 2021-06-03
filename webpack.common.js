@@ -2,20 +2,36 @@ const path = require('path');
 const webpack = require('webpack');
 const CopyPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const FaviconsWebpackPlugin = require('favicons-webpack-plugin')
+const FaviconsWebpackPlugin = require('favicons-webpack-plugin');
 const EsmWebpackPlugin = require('@purtuga/esm-webpack-plugin');
 const glob = require('glob');
-const jsdoc2md = require('jsdoc-to-markdown')
+const jsdoc2md = require('jsdoc-to-markdown');
 
 const staticFiles = [
+    { from: './src/index.html' },
     { from: './src/iframe/*.html', to: '[name].[ext]' },
-    { from: 'assets', to: 'assets' },
-    { from: 'node_modules/jstree/dist/jstree.min.js', to: 'jstree/jstree.min.js' },
-    { from: 'node_modules/jstree/dist/themes/default/style.min.css', to: 'jstree/jstree.min.css' },
-    { from: 'node_modules/jstree/dist/themes/default/32px.png', to: 'jstree/32px.png' },
-    { from: 'node_modules/jstree/dist/themes/default/throbber.gif', to: 'jstree/throbber.gif' },
-    { from: 'node_modules/jquery/dist/jquery.min.js', to: 'jstree/jquery.min.js' },
-    { from: 'node_modules/@tensorflow/tfjs-core/dist/'}
+    { from: './public/assets', to: 'assets' },
+    {
+        from: 'node_modules/jstree/dist/jstree.min.js',
+        to: 'jstree/jstree.min.js',
+    },
+    {
+        from: 'node_modules/jstree/dist/themes/default/style.min.css',
+        to: 'jstree/jstree.min.css',
+    },
+    {
+        from: 'node_modules/jstree/dist/themes/default/32px.png',
+        to: 'jstree/32px.png',
+    },
+    {
+        from: 'node_modules/jstree/dist/themes/default/throbber.gif',
+        to: 'jstree/throbber.gif',
+    },
+    {
+        from: 'node_modules/jquery/dist/jquery.min.js',
+        to: 'jstree/jquery.min.js',
+    },
+    { from: 'node_modules/@tensorflow/tfjs-core/dist/' },
 ];
 
 const alias = {
@@ -26,26 +42,28 @@ const alias = {
     '@util': path.join(__dirname, 'src/util'),
     '@lib': path.join(__dirname, 'src/lib'),
     '@sandbox': path.join(__dirname, 'src/sandbox'),
-    '@shared-styles': path.join(__dirname, 'src/component/shared-styles.css'),
-    '@component': path.join(__dirname, 'src/component'),
+    '@shared-styles': path.join(__dirname, 'src/components/shared-styles.css'),
+    '@components': path.join(__dirname, 'src/components'),
     '@worker': path.join(__dirname, 'src/worker'),
-    '@modal': path.join(__dirname, 'src/component/modal'),
-    '@element': path.join(__dirname, 'src/component/element'),
-    '@page': path.join(__dirname, 'src/component/page'),
+    '@modal': path.join(__dirname, 'src/components/modal'),
+    '@elements': path.join(__dirname, 'src/components/elements'),
+    '@pages': path.join(__dirname, 'src/components/pages'),
     '@scenario': path.join(__dirname, 'src/scenario'),
 
-    'node_modules': path.join(__dirname, 'node_modules'),
+    node_modules: path.join(__dirname, 'node_modules'),
 };
 
 module.exports = {
     entry: {
-        'app': './src/component/ai-app',
+        // 'app': './src/component/ai-app',
+        app: './src/index.tsx',
         'scenario-worker': './src/worker/scenario-worker',
-        'monaco': './src/iframe/monaco',
-        'jstree': './src/iframe/jstree',
+        monaco: './src/iframe/monaco',
+        jstree: './src/iframe/jstree',
         'monaco/editor-worker': 'monaco-editor/esm/vs/editor/editor.worker',
         'monaco/json-worker': 'monaco-editor/esm/vs/language/json/json.worker',
-        'monaco/ts-worker': 'monaco-editor/esm/vs/language/typescript/ts.worker',
+        'monaco/ts-worker':
+            'monaco-editor/esm/vs/language/typescript/ts.worker',
         'lib/utils': './src/lib/utils',
         'lib/prolog': './src/lib/prolog',
         'lib/tensorflow': './src/lib/tensorflow',
@@ -59,17 +77,17 @@ module.exports = {
 
     resolve: {
         alias,
-        extensions: ['.ts', '.js', '.mjs'],
+        extensions: ['.ts', '.js', '.mjs', '.tsx', '.jsx'],
     },
 
     module: {
         rules: [
             {
-                test: /\.(ts|js|mjs)$/,
+                test: /\.(ts|js|mjs)x?$/,
                 exclude: /node_modules/,
                 use: {
                     loader: 'babel-loader',
-                }
+                },
             },
             {
                 test: /\.(js|pl|md|json)$/,
@@ -91,13 +109,26 @@ module.exports = {
             },
             {
                 test: /\.css$/,
-                include: /node_modules\/monaco-editor/,
+                include: /node_modules/,
                 loader: ['style-loader', 'css-loader'],
             },
             {
                 test: /\.css$/,
-                exclude: /node_modules\/monaco-editor/,
-                loader: 'lit-css-loader',
+                include: path.join(__dirname, 'src/'),
+                loader: [
+                    'style-loader',
+                    {
+                        loader: '@teamsupercell/typings-for-css-modules-loader',
+                        options: {
+                            banner:
+                                '// autogenerated by typings-for-css-modules-loader.\n// Do not change this file manually!\n',
+                        },
+                    },
+                    {
+                        loader: 'css-loader',
+                        options: { modules: true },
+                    },
+                ],
             },
             {
                 test: /\.(jpe?g|png|gif|svg|ttf)$/i,
@@ -107,17 +138,17 @@ module.exports = {
                     name: '/assets/[name].[ext]',
                 },
             },
-        ]
+        ],
     },
 
     plugins: [
         new CopyPlugin(staticFiles),
-        new HtmlWebpackPlugin({
-            template: 'src/index.ejs',
-            chunks: ['app'],
-        }),
+        // new HtmlWebpackPlugin({
+        //     template: 'src/index.ejs',
+        //     chunks: ['app'],
+        // }),
         new FaviconsWebpackPlugin({
-            logo: './assets/logo.png',
+            logo: './public/assets/logo.png',
             cache: true,
             //publicPath: '/',
             inject: true,
@@ -132,7 +163,7 @@ module.exports = {
                     appleIcon: false,
                     appleStartup: false,
                     coast: false,
-                    yandex: false
+                    yandex: false,
                 },
             },
         }),
@@ -140,7 +171,7 @@ module.exports = {
             exclude(fileName, chunck) {
                 // exclude all non library files
                 return !/^lib\/.+.\.js$/i.test(fileName);
-            }
+            },
         }),
     ],
 
@@ -155,6 +186,6 @@ module.exports = {
             children: false,
             maxModules: 0,
         },
-        clientLogLevel: "warning",
+        clientLogLevel: 'warning',
     },
 };

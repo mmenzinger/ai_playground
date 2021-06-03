@@ -1,5 +1,6 @@
 {
     "compilerOptions": {
+        "jsx": "react",
         "module": "esnext",
         "target": "esnext",
         "sourceMap": true,
@@ -42,7 +43,7 @@
                 "sandbox"
             ],
             "@shared-styles": [
-                "component/shared-styles.css"
+                "components/shared-styles.css"
             ],
             "@src/*": [
                 "*"
@@ -56,17 +57,17 @@
             "@lib/*": [
                 "lib/*"
             ],
-            "@page/*": [
-                "component/page/*"
+            "@pages/*": [
+                "components/pages/*"
             ],
             "@iframe/*": [
                 "iframe/*"
             ],
-            "@component/*": [
-                "component/*"
+            "@components/*": [
+                "components/*"
             ],
-            "@element/*": [
-                "component/element/*"
+            "@elements/*": [
+                "components/elements/*"
             ],
             "@scenario/*": [
                 "scenario/*"
@@ -75,7 +76,7 @@
                 "worker/*"
             ],
             "@modal/*": [
-                "component/modal/*"
+                "components/modal/*"
             ],
         }
     },

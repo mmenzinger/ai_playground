@@ -1,0 +1,26 @@
+.projectList{
+    display: flex;
+    flex-wrap: wrap;
+}
+.project{
+    width: 10rem;
+    margin: 0.5rem;
+}
+.project Button > img{
+    max-width: 1rem;
+    max-height: 1rem;
+}
+.project:hover{
+    cursor: pointer;
+    box-shadow: 0.1rem 0.1rem 0.2rem black;
+    position:relative;
+    top: -0.05rem;
+    left: -0.05rem;
+}
+.project :global(.card-body){
+    padding: 0.5rem;
+}
+.project :global(.card-footer){
+    padding: 0.5rem;
+    text-align: end;
+}
