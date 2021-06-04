@@ -1,0 +1,40 @@
+.animation .rc-tree-treenode {
+    display: flex;
+}
+.animation .rc-tree-treenode .rc-tree-indent {
+    position: relative;
+    align-self: stretch;
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: stretch;
+}
+.animation .rc-tree-treenode .rc-tree-indent .rc-tree-indent-unit {
+    position: relative;
+    height: 100%;
+}
+.animation .rc-tree-treenode .rc-tree-indent .rc-tree-indent-unit::before {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    border-right: 1px solid blue;
+    left: 50%;
+    content: '';
+}
+.animation .rc-tree-treenode .rc-tree-indent .rc-tree-indent-unit-end::before {
+    display: none;
+}
+.animation .rc-tree-treenode .rc-tree-switcher-noop::before {
+    content: '';
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    background: red;
+    border-radius: 100%;
+}
+.rc-tree-child-tree {
+    display: block;
+}
+.node-motion {
+    transition: all 0.3s;
+    overflow-y: hidden;
+}

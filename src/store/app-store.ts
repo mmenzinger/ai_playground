@@ -11,7 +11,6 @@ class AppStore {
     params: string[][] = [];
     offline = false;
     modal: ModalObject | null = null;
-    modalOpen = false;
     reportOpen = false;
 
     constructor(){
@@ -19,13 +18,14 @@ class AppStore {
             page: observable,
             params: observable,
             offline: observable,
-            modalOpen: observable,
+            modal: observable,
             reportOpen: observable,
             // navigate: action,
             updateOfflineStatus: action,
-            // showModal: action,
+            showModal: action,
             resolveModal: action,
             rejectModal: action,
+            updateModalResult: action,
             openReport: action,
             closeReport: action,
         });
@@ -91,35 +91,31 @@ class AppStore {
     }
 
     async showModal(template: ModalTemplate): Promise<any> {
-        // lazy load modal ${template}
-        // await import(`@modal/modal-${template}`);
-
-
-        const result = new Defer<any>();
+        const defer = new Defer<any>();
         if (this.modal) {
-            this.modal.result.reject(Error("Previous modal not closed!"));
+            this.modal.defer.reject(Error("Previous modal not closed!"));
         }
-        this.modal = { template, result }
-        runInAction(() => {
-            this.modalOpen = true;
-        });
-        
-        return result.promise;
+        this.modal = { template, defer }
+        return defer.promise;
     }
 
-    resolveModal(data: any | undefined) {
+    resolveModal(data?: any) {
         if (this.modal) {
-            this.modal.result.resolve(data);
+            this.modal.defer.resolve(data || toJS(this.modal.result));
             this.modal = null;
-            this.modalOpen = false;
         }
     }
 
-    rejectModal(data: any) {
+    rejectModal(data?: any) {
         if (this.modal) {
-            this.modal.result.reject(data);
+            this.modal.defer.reject(data || toJS(this.modal.result));
             this.modal = null;
-            this.modalOpen = false;
+        }
+    }
+
+    updateModalResult(result: any){
+        if(this.modal){
+            this.modal.result = result;
         }
     }
 

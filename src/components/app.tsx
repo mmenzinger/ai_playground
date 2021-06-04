@@ -6,12 +6,12 @@ import {
     Switch,
     Route,
     Redirect,
-    useLocation,
 } from 'react-router-dom';
 
 import Header from './pages/header';
 import Modal from './elements/modal';
 import ProjectIndex from './pages/project-index';
+import { Project } from './pages/project';
 
 // import './global-style.css';
 
@@ -31,14 +31,11 @@ export class App extends Component<{}> {
                     <Route path="/impressum">
                         <p>impressum</p>
                     </Route>
-                    <Route path="/project/:id">
-                        <p>project</p>
-                    </Route>
-                    <Route path="/projects">
-                        <ProjectIndex />
+                    <Route path="/project/:id/:name">
+                        <Project />
                     </Route>
                     <Route path="/">
-                        <Redirect to="/projects" />
+                        <ProjectIndex />
                     </Route>
                 </Switch>
             </Router>

@@ -1,174 +1,116 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Form, Row, Col } from 'react-bootstrap';
-import { getScenarios, ScenarioTemplates } from '@src/webpack-utils';
+import { ScenarioTemplates } from '@src/webpack-utils';
 import appStore from '@src/store/app-store';
 
-type State = {
-    scenarios: JSX.Element[];
-    templates: JSX.Element[];
+type NewProjectModalResult = {
     scenario: string;
     template: string;
     name: string;
 };
 
-type ReturnValue = {
-    scenario: string;
-    template: string;
-    name: string;
-};
-
-type Props = {
+function NewProjectModal(props: {
     scenarios: { [key: string]: ScenarioTemplates };
-    callback: (data: any) => void;
-};
+}) {
+    const scenarios = getScenarios(props.scenarios);
 
-class NewProjectModal extends Component<Props> {
-    static defaultProps = {
-        scenarios: {},
-        callback: () => {},
-    };
+    const [scenario, setScenario] = useState(scenarios[0].key as string);
+    const [templates, setTemplates] = useState(
+        getTemplates(props.scenarios, scenario)
+    );
+    const [template, setTemplate] = useState(templates[0].key as string);
+    const [name, setName] = useState(template);
 
-    state: State = {
-        scenarios: [<></>],
-        templates: [<></>],
-        scenario: '',
-        template: '',
-        name: '',
-    };
+    useEffect(() => {
+        setTemplates(getTemplates(props.scenarios, scenario));
+    }, [scenario]);
 
-    constructor(props: Props) {
-        super(props);
+    useEffect(() => {
+        setTemplate(templates[0].key as string);
+    }, [templates]);
 
-        const scenarios = Object.values(this.props.scenarios).map(
-            (scenario) => (
-                <option value={scenario.name} key={scenario.name}>
-                    {Object.values(scenario.name)}
-                </option>
-            )
-        );
-        const scenario = Object.values(this.props.scenarios)[0].name;
-        const templates = this.getTemplates(scenario);
-        const template = templates[0].key as string;
-        const name = template;
+    useEffect(() => {
+        setName(template);
+    }, [template]);
 
-        this.state = { scenarios, templates, scenario, template, name };
-        this.updateResult({ scenario, template, name });
-    }
+    useEffect(() => {
+        appStore.updateModalResult({ scenario, template, name });
+    });
 
-    render() {
-        console.log(this.state.scenarios);
-        console.log(this.state.templates);
-        return (
-            <Form>
-                <Form.Group as={Row} controlId="scenario">
-                    <Form.Label column sm="2">
-                        Scenario
-                    </Form.Label>
-                    <Col sm="10">
-                        <Form.Control
-                            as="select"
-                            onChange={this.onChangeScenario.bind(this)}
-                            value={this.state.scenario}
-                        >
-                            {this.state.scenarios}
-                        </Form.Control>
-                    </Col>
-                </Form.Group>
-                <Form.Group as={Row} controlId="template">
-                    <Form.Label column sm="2">
-                        Template
-                    </Form.Label>
-                    <Col sm="10">
-                        <Form.Control
-                            as="select"
-                            onChange={this.onChangeTemplate.bind(this)}
-                            value={this.state.template}
-                        >
-                            {this.state.templates}
-                        </Form.Control>
-                    </Col>
-                </Form.Group>
-                <Form.Group as={Row} controlId="template">
-                    <Form.Label column sm="2">
-                        Name
-                    </Form.Label>
-                    <Col sm="10">
-                        <Form.Control
-                            type="text"
-                            onChange={this.onChangeName.bind(this)}
-                            value={this.state.name}
-                        />
-                    </Col>
-                </Form.Group>
-            </Form>
-        );
-    }
-
-    getTemplates(scenario: string) {
-        return Object.entries(getScenarios()[scenario].templates)
-            .sort((a, b) => a[1].name.localeCompare(b[1].name))
-            .map(([key, template]) => (
-                <option value={key} key={key}>
-                    {template.name}
-                </option>
-            ));
-    }
-
-    updateResult(obj: {}) {
-        this.props.callback(obj);
-    }
-
-    onChangeScenario(event: any) {
-        const templates = this.getTemplates(event.target.value);
-        const template = templates[0].key as string;
-        const scenario = event.target.value;
-        const name = template;
-        this.setState({
-            scenario,
-            templates,
-            template,
-            name,
-        });
-        this.updateResult({ scenario, template, name });
-    }
-
-    onChangeTemplate(event: any) {
-        const template = event.target.value;
-        const name = template;
-        this.setState({ template, name });
-        this.updateResult({ template, name });
-    }
-
-    onChangeName(event: any) {
-        const name = event.target.value;
-        this.setState({ name });
-        this.updateResult({ name });
-    }
+    return (
+        <Form>
+            <Form.Group as={Row} controlId="scenario">
+                <Form.Label column sm="2">
+                    Scenario
+                </Form.Label>
+                <Col sm="10">
+                    <Form.Control
+                        as="select"
+                        onChange={(e) => setScenario(e.target.value)}
+                        value={scenario}
+                    >
+                        {scenarios}
+                    </Form.Control>
+                </Col>
+            </Form.Group>
+            <Form.Group as={Row} controlId="template">
+                <Form.Label column sm="2">
+                    Template
+                </Form.Label>
+                <Col sm="10">
+                    <Form.Control
+                        as="select"
+                        onChange={(e) => setTemplate(e.target.value)}
+                        value={template}
+                    >
+                        {templates}
+                    </Form.Control>
+                </Col>
+            </Form.Group>
+            <Form.Group as={Row} controlId="name">
+                <Form.Label column sm="2">
+                    Name
+                </Form.Label>
+                <Col sm="10">
+                    <Form.Control
+                        type="text"
+                        onChange={(e) => setName(e.target.value)}
+                        value={name}
+                    />
+                </Col>
+            </Form.Group>
+        </Form>
+    );
 }
 
-export default async function showNewProjectModal(scenarios: {
-    [key: string]: ScenarioTemplates;
-}): Promise<ReturnValue> {
-    let result = {
-        scenario: '',
-        template: '',
-        name: '',
-    };
+function getScenarios(scenarios: { [key: string]: ScenarioTemplates }) {
+    return Object.values(scenarios).map((scenario) => (
+        <option value={scenario.name} key={scenario.name}>
+            {Object.values(scenario.name)}
+        </option>
+    ));
+}
 
-    // TODO: remove indirection and just use appStore defer for value transfer
-    await appStore.showModal({
+function getTemplates(
+    scenarios: { [key: string]: ScenarioTemplates },
+    scenario: string
+) {
+    return Object.entries(scenarios[scenario].templates)
+        .sort((a, b) => a[1].name.localeCompare(b[1].name))
+        .map(([key, template]) => (
+            <option value={key} key={key}>
+                {template.name}
+            </option>
+        ));
+}
+
+export async function showNewProjectModal(scenarios: {
+    [key: string]: ScenarioTemplates;
+}): Promise<NewProjectModalResult> {
+    return await appStore.showModal({
         title: 'New Project',
         submit: 'Create',
         cancel: 'Cancel',
-        body: (
-            <NewProjectModal
-                scenarios={scenarios}
-                callback={(data) => {
-                    result = { ...result, ...data };
-                }}
-            />
-        ),
+        body: <NewProjectModal scenarios={scenarios} />,
     });
-
-    return result;
 }

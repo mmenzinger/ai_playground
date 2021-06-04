@@ -1,13 +1,14 @@
-.navbar{
-  border-bottom: 1px solid #aaa;
+.navbar {
+    border-bottom: 1px solid #aaa;
+    padding: 0;
 }
-.logo{
-  margin: -0.5em 1em -0.5em 0;
-  width: 3em;
+.logo {
+    margin: -0.5rem 0.5rem -0.5rem 0.5rem;
+    width: 3em;
 }
-.breadcrumb{
-  flex: 1;
+.breadcrumb {
+    flex: 1;
 }
-.breadcrumb :global(.breadcrumb){
-  margin: 0;
+.breadcrumb :global(.breadcrumb) {
+    margin: 0;
 }

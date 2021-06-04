@@ -1,8 +1,9 @@
-import { Modal, Button } from 'react-bootstrap';
-import React, { Component } from 'react';
-import { reaction } from 'mobx';
+import React, { useState, useEffect } from 'react';
+import { Modal as ReactModal, Button } from 'react-bootstrap';
+import { autorun } from 'mobx';
 
 import appStore from '@store/app-store';
+import { Defer } from '@util';
 
 export class ModalAbort extends Error {}
 
@@ -11,74 +12,69 @@ export type ModalTemplate = {
     submit: string;
     cancel: string;
     body: JSX.Element;
-    // init?: (root: ShadowRoot) => Promise<void>;
-    // check?: (fields: { [key: string]: any }) => Promise<Error | true>;
-    // result?: (root: ShadowRoot) => Promise<any>;
-    // change?: { [key: string]: (e: Event, shadowRoot: ShadowRoot) => void };
 };
 
 export type ModalObject = {
     template: ModalTemplate;
-    result: any;
+    result?: any;
+    defer: Defer<any>;
 };
 
-type ModalState = {
-    modal: ModalObject | null;
-};
-export class MyModal extends Component {
-    state: ModalState = {
-        modal: null,
-    };
+export function Modal() {
+    const [modal, setModal] = useState<ModalObject | null>(null);
+    const [title, setTitle] = useState('Title');
+    const [submit, setSubmit] = useState('Submit');
+    const [cancel, setCancel] = useState('Cancel');
+    const [body, setBody] = useState(<></>);
 
-    constructor(props: {}) {
-        super(props);
+    useEffect(
+        () => {
+            autorun(() => {
+                setModal(appStore.modal);
+                const t = appStore.modal?.template;
+                if (t) {
+                    setTitle(t.title);
+                    setSubmit(t.submit);
+                    setCancel(t.cancel);
+                    setBody(t.body);
+                }
+            });
+        },
+        [] /* <- this is important for autorun to get cleaned up! (https://mobx-react.js.org/recipes-effects) */
+    );
 
-        reaction(
-            () => appStore.modalOpen,
-            () => {
-                this.setState({
-                    modal: appStore.modal,
-                });
-            },
-            {
-                delay: 1,
-            }
-        );
-    }
-
-    render() {
-        console.log(this.state);
-        const modal = this.state.modal;
-        const title = modal?.template.title || 'Title';
-        const submit = modal?.template.submit || 'Submit';
-        const cancel = modal?.template.cancel || 'Cancel';
-        const body = modal?.template.body || <></>;
-
-        return (
-            <Modal show={modal !== null}>
-                <Modal.Header>
-                    <Modal.Title>{title}</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>{body}</Modal.Body>
-                <Modal.Footer>
-                    <Button variant="secondary" onClick={this.handleClose}>
-                        {cancel}
-                    </Button>
-                    <Button variant="primary" onClick={this.handleCommit}>
-                        {submit}
-                    </Button>
-                </Modal.Footer>
-            </Modal>
-        );
-    }
-
-    handleClose() {
+    function close() {
         appStore.rejectModal(new ModalAbort());
     }
 
-    handleCommit() {
-        appStore.resolveModal({});
-    }
+    return (
+        <ReactModal
+            show={modal !== null}
+            centered
+            onHide={close}
+            onEscapeKeyDown={close}
+        >
+            <ReactModal.Header>
+                <ReactModal.Title>{title}</ReactModal.Title>
+            </ReactModal.Header>
+            <ReactModal.Body>{body}</ReactModal.Body>
+            <ReactModal.Footer>
+                <Button variant="secondary" onClick={close}>
+                    {cancel}
+                </Button>
+                <Button
+                    variant="primary"
+                    onClick={() => appStore.resolveModal()}
+                >
+                    {submit}
+                </Button>
+            </ReactModal.Footer>
+        </ReactModal>
+    );
 }
 
-export default MyModal;
+export default Modal;
+export * from './mNewProject';
+export * from './mDeleteProject';
+export * from './mDownloadProject';
+export * from './mUploadProject';

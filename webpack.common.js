@@ -109,11 +109,11 @@ module.exports = {
             },
             {
                 test: /\.css$/,
-                include: /node_modules/,
+                exclude: /\.module\.css$/,
                 loader: ['style-loader', 'css-loader'],
             },
             {
-                test: /\.css$/,
+                test: /\.module\.css$/,
                 include: path.join(__dirname, 'src/'),
                 loader: [
                     'style-loader',
