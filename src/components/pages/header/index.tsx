@@ -58,6 +58,12 @@ export function Header(props: { title: string }) {
                     {/* <Nav.Link href="https://docs.google.com/forms/d/e/1FAIpQLSfrFYo0PnULmqOhQY4bxE_uWwe21m-RtxmboGFRlJW9Or5r4w/viewform?usp=sf_link">
                                     Feedback
                                 </Nav.Link> */}
+                    <Nav.Link as={Link} to="/documentation">
+                        Documentation
+                    </Nav.Link>
+                    <Nav.Link as={Link} to="/news">
+                        News
+                    </Nav.Link>
                     <Nav.Link as={Link} to="/impressum">
                         Impressum
                     </Nav.Link>

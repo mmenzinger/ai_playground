@@ -31,6 +31,12 @@ export class App extends Component<{}> {
                     <Route path="/impressum">
                         <p>impressum</p>
                     </Route>
+                    <Route path="/documentation">
+                        <p>documentation</p>
+                    </Route>
+                    <Route path="/welcome">
+                        <p>welcome</p>
+                    </Route>
                     <Route path="/project/:id/:name">
                         <Project />
                     </Route>

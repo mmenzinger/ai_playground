@@ -1,14 +1,18 @@
 import { observable, action, autorun, toJS, makeObservable } from 'mobx';
 
 const STORAGE_KEY = 'settings';
+const STORAGE_KEY_LOCAL = 'settings-local';
 
 class SettingsStore{
     data = JSON.parse(window.localStorage.getItem(STORAGE_KEY) || '{}');
+    localData = JSON.parse(window.localStorage.getItem(STORAGE_KEY_LOCAL) || '{}');
 
     constructor(){
         makeObservable(this, {
             data: observable,
+            localData: observable,
             set: action,
+            setLocal: action,
         });
     }
 
@@ -18,6 +22,18 @@ class SettingsStore{
     }
 
     get(key: string, fallback?: any){
+        if(this.data[key] !== undefined)
+            return this.data[key];
+        else
+            return fallback;
+    }
+
+    setLocal(key: string, value: any){
+        this.data[key] = value;
+        window.localStorage.setItem(STORAGE_KEY_LOCAL, JSON.stringify(this.data))
+    }
+
+    getLocal(key: string, fallback?: any){
         if(this.data[key] !== undefined)
             return this.data[key];
         else

@@ -27,21 +27,18 @@ export function Modal() {
     const [cancel, setCancel] = useState('Cancel');
     const [body, setBody] = useState(<></>);
 
-    useEffect(
-        () => {
-            autorun(() => {
-                setModal(appStore.modal);
-                const t = appStore.modal?.template;
-                if (t) {
-                    setTitle(t.title);
-                    setSubmit(t.submit);
-                    setCancel(t.cancel);
-                    setBody(t.body);
-                }
-            });
-        },
-        [] /* <- this is important for autorun to get cleaned up! (https://mobx-react.js.org/recipes-effects) */
-    );
+    useEffect(() => {
+        autorun(() => {
+            setModal(appStore.modal);
+            const t = appStore.modal?.template;
+            if (t) {
+                setTitle(t.title);
+                setSubmit(t.submit);
+                setCancel(t.cancel);
+                setBody(t.body);
+            }
+        });
+    }, []);
 
     function close() {
         appStore.rejectModal(new ModalAbort());

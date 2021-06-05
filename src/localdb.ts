@@ -1,16 +1,16 @@
 import Dexie from 'dexie';
 import { editor } from 'monaco-editor';
 
-import type { File, Project } from '@store/types';
+import type { File, Project } from '@store';
 
 export interface IFiles {
     id?: number,
     projectId: number,
+    parentId: number,
     name: string,
-    content: string | Blob,
-    lastChange: number,
+    content?: string | Blob,
+    lastChange?: number,
     state?: editor.ICodeEditorViewState,
-    exports?: string,
 }
 
 export interface IProjects {
@@ -31,6 +31,18 @@ class LocalDB {
             files: '++id,&[projectId+name],projectId',
             projects: '++id,&name',
         });
+        // TODO: merge version 2, 3 and 4
+        this.#db.version(2).stores({
+            files: '++id,&[projectId+name],projectId,parentId',
+        });
+        this.#db.version(3).upgrade(trans => {
+            return trans.table('files').toCollection().modify((file:File) => {
+                file.parentId = 0;
+            });
+        });
+        this.#db.version(4).stores({
+            files: '++id,&[projectId+parentId+name],projectId,parentId',
+        });
         this.#files = this.#db.table('files');
         this.#projects = this.#db.table('projects');
     }
@@ -38,8 +50,9 @@ class LocalDB {
     //------------------------------------------------------------------------------------------
     // F i l e s
     //------------------------------------------------------------------------------------------
-    async createFile(projectId: number, name: string, content: string | Blob = '', lastChange:number = Date.now()): Promise<number>{
-        return this.#files.add({ projectId, name, content, lastChange });
+    async createFile(projectId: number, parentId: number, name: string, content: string | Blob = ''): Promise<number>{
+        const lastChange = Date.now();
+        return this.#files.add({ projectId, name, content, parentId, lastChange });
     }
 
     async loadFile(id: number): Promise<File>{
@@ -102,7 +115,7 @@ class LocalDB {
     async createProject(name: string, scenario: string, files: File[] = []): Promise<number> {
         return this.#db.transaction('rw', this.#projects, this.#files, async () => {
             const projectId: number = await this.#projects.add({ name, scenario });
-            const projectFilePromises = files.map(file => this.createFile(projectId, file.name, file.content));
+            const projectFilePromises = files.map(file => this.createFile(projectId, file.parentId, file.name, file.content));
             await Promise.all(projectFilePromises);
 
             return projectId;
@@ -171,7 +184,7 @@ class LocalDB {
                         await this.saveFileContent(oldFile.id, newFile.content || '');
                 }
                 catch(_){
-                    await this.createFile(0, newFile.name, newFile.content);
+                    await this.createFile(0, newFile.parentId, newFile.name, newFile.content);
                 }
             });
             await Promise.all(collisionFilesPromises);

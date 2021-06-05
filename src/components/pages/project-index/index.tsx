@@ -30,12 +30,12 @@ export function ProjectIndex() {
     const history = useHistory();
     const [projects, setProjects] = useState<Project[]>([]);
 
-    let cancel = false;
+    let closed = false;
     useEffect(() => {
-        db.getProjects().then((projects) => !cancel && setProjects(projects));
+        db.getProjects().then((projects) => !closed && setProjects(projects));
         // secure promises to prevent warning (https://dev.to/jexperton/how-to-fix-the-react-memory-leak-warning-d4i)
         return () => {
-            cancel = true;
+            closed = true;
         };
     });
 

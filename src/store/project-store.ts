@@ -3,7 +3,36 @@ import db from '@localdb';
 import { throttle } from 'lodash-es';
 import settingsStore from '@store/settings-store';
 
-import type { File, Project, ProjectErrors, Caller, Log, LogType, IPosition } from '@store/types';
+import type { Caller, Log, LogType, IPosition } from '@store/types';
+import { editor } from 'monaco-editor';
+
+export type FileError = {
+    caller: Caller,
+    args: any[],
+}
+
+export type ProjectErrors = {
+    [key:number]: FileError[],
+}
+
+export type File = {
+    id: number,
+    projectId: number,
+    parentId: number,
+    name: string,
+    state?: editor.ICodeEditorViewState,
+    content?: string | Blob,
+    lastChange?: number,
+    virtual?: boolean,
+};
+
+export type Project = {
+    id: number,
+    name: string,
+    scenario: string,
+    openFileId?: number,
+    errors?: ProjectErrors,
+};
 
 class ProjectStore {
     activeProject: Project | null = null;
@@ -90,7 +119,7 @@ class ProjectStore {
     }
 
     async createProject(name: string, scenario: string, files: Array<File>): Promise<number> {
-        return await db.createProject(name, scenario, files);
+        return db.createProject(name, scenario, files);
     }
 
     async updateProjectErrors(id: number, projectErrors: ProjectErrors): Promise<void> {
@@ -125,7 +154,11 @@ class ProjectStore {
     }
 
     async importProject(name: string, scenario: string, projectFiles: Array<File>, globalFiles: Array<File>, collision: string): Promise<number> {
-        return await db.importProject(name, scenario, projectFiles, globalFiles, collision);
+        return db.importProject(name, scenario, projectFiles, globalFiles, collision);
+    }
+
+    async getProjectFiles(id: number): Promise<File[]>{
+        return db.getProjectFiles(id);
     }
 
     /**********************************************************************************+
@@ -175,8 +208,8 @@ class ProjectStore {
         this.activeFile = null;
     }
 
-    async createFile(name: string, projectId: number = 0, content: string | Blob = ''): Promise<number> {
-        const id: number = await db.createFile(projectId, name, content);
+    async createFile(name: string, projectId: number = 0, parentId: number = 0, content: string | Blob = ''): Promise<number> {
+        const id: number = await db.createFile(projectId, parentId, name, content);
 
         runInAction(() => {
             this.lastFileTreeChange = Date.now();

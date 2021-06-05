@@ -4,7 +4,10 @@
 declare namespace ProjectModuleCssNamespace {
     export interface IProjectModuleCss {
         horizontal: string;
+        loading: string;
+        pane: string;
         root: string;
+        tabs: string;
         vertical: string;
     }
 }
