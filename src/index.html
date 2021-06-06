@@ -13,27 +13,27 @@
         <script>
             // Load and register pre-caching Service Worker
             if ('serviceWorker' in navigator) {
-                window.addEventListener('load', function () {
+                onload = () => {
                     navigator.serviceWorker.register('/service-worker.js');
-                });
+                };
             }
-            onload = () => {
-                try {
-                    if ('serviceWorker' in navigator) {
-                        navigator.serviceWorker.register('/service-worker.js');
-                    } else {
-                        throw Error(`could not create service worker`);
-                    }
-                } catch (error) {
-                    document.getElementById('app').style.display = 'none';
-                    document.getElementById('notSupported').style.display =
-                        'block';
-                    const ul = document.getElementById('missing');
-                    const li = document.createElement('li');
-                    li.innerText = error.message;
-                    ul.appendChild(li);
-                }
-            };
+            // onload = () => {
+            //     try {
+            //         if ('serviceWorker' in navigator) {
+            //             navigator.serviceWorker.register('/service-worker.js');
+            //         } else {
+            //             throw Error(`could not create service worker`);
+            //         }
+            //     } catch (error) {
+            //         document.getElementById('app').style.display = 'none';
+            //         document.getElementById('notSupported').style.display =
+            //             'block';
+            //         const ul = document.getElementById('missing');
+            //         const li = document.createElement('li');
+            //         li.innerText = error.message;
+            //         ul.appendChild(li);
+            //     }
+            // };
         </script>
         <style>
             @import url('https://fonts.googleapis.com/css2?family=Roboto&family=Roboto+Mono&family=Roboto+Slab&display=swap');

@@ -1,5 +1,5 @@
-import { serialize, deserialize, messageWithResult } from '@util';
-import { MessageType, JSONMessage, HtmlMessage } from '@worker/types';
+import { serialize, deserialize, messageWithResult } from '@src/utils';
+import { MessageType, JSONMessage, HtmlMessage } from '@worker/worker-utils';
 
 import seedrandom from 'seedrandom';
 
@@ -119,12 +119,6 @@ export const localStorage = {
         saveLocalStorage();
     }
 }
-
-/***********************************************************************************************
- *  logging
- */
-declare const __console: Console;
-export const console = __console;
 
 /***********************************************************************************************
  *  gui interaction

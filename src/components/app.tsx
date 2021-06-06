@@ -1,5 +1,3 @@
-import 'bootstrap/dist/css/bootstrap.min.css';
-
 import React, { Component } from 'react';
 import {
     BrowserRouter as Router,
@@ -11,9 +9,11 @@ import {
 import Header from './pages/header';
 import Modal from './elements/modal';
 import ProjectIndex from './pages/project-index';
-import { Project } from './pages/project';
+import Project from './pages/project';
+import News from './pages/news';
+import Impressum from './pages/impressum';
 
-// import './global-style.css';
+import './app-light.scss';
 
 export class App extends Component<{}> {
     render() {
@@ -26,10 +26,10 @@ export class App extends Component<{}> {
                         <p>404</p>
                     </Route>
                     <Route path="/news">
-                        <p>news</p>
+                        <News />
                     </Route>
                     <Route path="/impressum">
-                        <p>impressum</p>
+                        <Impressum />
                     </Route>
                     <Route path="/documentation">
                         <p>documentation</p>

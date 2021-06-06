@@ -10,10 +10,10 @@ import store, { Project as tProject } from '@store';
 
 import Console from '@elements/console';
 import FileTree from '@elements/file-tree/index';
+import Editor from '@elements/editor';
 
 import { useParams } from 'react-router';
 import css from './project.module.css';
-import './tabs.css';
 
 export function Project() {
     const { id } = useParams<{ id: string }>();
@@ -82,7 +82,7 @@ export function Project() {
                         <FileTree project={project} />
                     </div>
                     <div className={css.pane}>
-                        <div>
+                        <div className={css.fillVertical}>
                             <Tabs
                                 className={css.tabs}
                                 activeKey={middleTab}
@@ -91,7 +91,7 @@ export function Project() {
                                 }
                             >
                                 <Tab eventKey="editor" title="Editor">
-                                    Editor
+                                    <Editor />
                                 </Tab>
                                 <Tab eventKey="markdown" title="Markdown">
                                     Markdown

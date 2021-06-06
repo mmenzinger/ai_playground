@@ -1,127 +1,127 @@
-import React from 'react';
-import { html } from 'lit-element';
-import db from '@localdb';
-import { ScenarioTemplates } from '@src/webpack-utils';
-import { Project, File } from '@store/types';
-import { ModalTemplate } from '@elements/modal';
-import JSZip from 'jszip';
-import { Form } from 'react-bootstrap';
+// import React from 'react';
+// import { html } from 'lit-element';
+// import db from '@localdb';
+// import { ScenarioTemplates } from '@src/webpack-utils';
+// import { Project, File } from '@store/types';
+// import { ModalTemplate } from '@elements/modal';
+// import JSZip from 'jszip';
+// import { Form } from 'react-bootstrap';
 
-//------------------------------------------------------------------------------
-// New Project
-//------------------------------------------------------------------------------
-export function newProjectTemplate(scenarioTemplates: {
-    [key: string]: ScenarioTemplates;
-}): ModalTemplate {
-    const scenarios = Object.values(scenarioTemplates).map((scenario) => (
-        <option value={scenario.name}>{Object.values(scenario.name)}</option>
-    ));
+// //------------------------------------------------------------------------------
+// // New Project
+// //------------------------------------------------------------------------------
+// export function newProjectTemplate(scenarioTemplates: {
+//     [key: string]: ScenarioTemplates;
+// }): ModalTemplate {
+//     const scenarios = Object.values(scenarioTemplates).map((scenario) => (
+//         <option value={scenario.name}>{Object.values(scenario.name)}</option>
+//     ));
 
-    let selectedScenarioIndex = 1;
-    let selectedTemplateIndex = 0;
-    const firstScenario = Object.values(scenarioTemplates)[
-        selectedScenarioIndex
-    ];
-    const firstTemplate = Object.values(firstScenario.templates)[
-        selectedTemplateIndex
-    ];
+//     let selectedScenarioIndex = 1;
+//     let selectedTemplateIndex = 0;
+//     const firstScenario = Object.values(scenarioTemplates)[
+//         selectedScenarioIndex
+//     ];
+//     const firstTemplate = Object.values(firstScenario.templates)[
+//         selectedTemplateIndex
+//     ];
 
-    function updateTemplates(
-        templateSelect: HTMLSelectElement,
-        scenario: string
-    ) {
-        const templates = Object.entries(scenarioTemplates[scenario].templates)
-            .sort((a, b) => a[1].name.localeCompare(b[1].name))
-            .map(
-                ([key, template]) =>
-                    `<option value="${key}">${template.name}</option>`
-            )
-            .join('');
-        templateSelect.innerHTML = templates;
-    }
+//     function updateTemplates(
+//         templateSelect: HTMLSelectElement,
+//         scenario: string
+//     ) {
+//         const templates = Object.entries(scenarioTemplates[scenario].templates)
+//             .sort((a, b) => a[1].name.localeCompare(b[1].name))
+//             .map(
+//                 ([key, template]) =>
+//                     `<option value="${key}">${template.name}</option>`
+//             )
+//             .join('');
+//         templateSelect.innerHTML = templates;
+//     }
 
-    return {
-        title: 'New Project',
-        submit: 'Create',
-        abort: 'Cancel',
+//     return {
+//         title: 'New Project',
+//         submit: 'Create',
+//         abort: 'Cancel',
 
-        content: (
-            <Form>
-                <Form.Group controlId="scenario">
-                    <Form.Label>Scenario</Form.Label>
-                    <Form.Control as="select">{scenarios}</Form.Control>
-                </Form.Group>
-                {/* <li>
-                <label for="scenario">Scenario</label>
-                <select id="scenario">${scenarios}</select>
-            </li>
-            <li>
-                <label for="template">Template</label>
-                <select id="template"></select>
-            </li>
-            <li>
-                <label for="name">Name</label>
-                <input id="name" type="text" placeholder="My Project" value="${firstTemplate.name}">
-            </li> */}
-            </Form>
-        ),
+//         content: (
+//             <Form>
+//                 <Form.Group controlId="scenario">
+//                     <Form.Label>Scenario</Form.Label>
+//                     <Form.Control as="select">{scenarios}</Form.Control>
+//                 </Form.Group>
+//                 {/* <li>
+//                 <label for="scenario">Scenario</label>
+//                 <select id="scenario">${scenarios}</select>
+//             </li>
+//             <li>
+//                 <label for="template">Template</label>
+//                 <select id="template"></select>
+//             </li>
+//             <li>
+//                 <label for="name">Name</label>
+//                 <input id="name" type="text" placeholder="My Project" value="${firstTemplate.name}">
+//             </li> */}
+//             </Form>
+//         ),
 
-        // init: async (shadowRoot: ShadowRoot) => {
-        //     const scenario = shadowRoot.getElementById(
-        //         'scenario'
-        //     ) as HTMLSelectElement;
-        //     const template = shadowRoot.getElementById(
-        //         'template'
-        //     ) as HTMLSelectElement;
-        //     const name = shadowRoot.getElementById('name') as HTMLInputElement;
-        //     scenario.selectedIndex = selectedScenarioIndex;
-        //     updateTemplates(
-        //         template,
-        //         scenario.options[selectedScenarioIndex].value
-        //     );
-        //     template.selectedIndex = selectedTemplateIndex;
-        //     name.value = template.options[selectedTemplateIndex].value;
-        // },
+//         // init: async (shadowRoot: ShadowRoot) => {
+//         //     const scenario = shadowRoot.getElementById(
+//         //         'scenario'
+//         //     ) as HTMLSelectElement;
+//         //     const template = shadowRoot.getElementById(
+//         //         'template'
+//         //     ) as HTMLSelectElement;
+//         //     const name = shadowRoot.getElementById('name') as HTMLInputElement;
+//         //     scenario.selectedIndex = selectedScenarioIndex;
+//         //     updateTemplates(
+//         //         template,
+//         //         scenario.options[selectedScenarioIndex].value
+//         //     );
+//         //     template.selectedIndex = selectedTemplateIndex;
+//         //     name.value = template.options[selectedTemplateIndex].value;
+//         // },
 
-        // check: async (fields: { [key: string]: any }) => {
-        //     if (fields.name.length === 0)
-        //         return Error(
-        //             'Empty project name!<br>Every project must have a name.'
-        //         );
-        //     if (await db.projectExists(fields.name))
-        //         return Error(
-        //             'Duplicate name!<br>A project with the same name already exists.'
-        //         );
-        //     return true;
-        // },
+//         // check: async (fields: { [key: string]: any }) => {
+//         //     if (fields.name.length === 0)
+//         //         return Error(
+//         //             'Empty project name!<br>Every project must have a name.'
+//         //         );
+//         //     if (await db.projectExists(fields.name))
+//         //         return Error(
+//         //             'Duplicate name!<br>A project with the same name already exists.'
+//         //         );
+//         //     return true;
+//         // },
 
-        // change: {
-        //     scenario: (e: Event, shadowRoot: ShadowRoot) => {
-        //         const target = e.target as HTMLSelectElement;
-        //         const template = shadowRoot.getElementById(
-        //             'template'
-        //         ) as HTMLSelectElement;
-        //         const name = shadowRoot.getElementById(
-        //             'name'
-        //         ) as HTMLInputElement;
-        //         const text = target.options[target.selectedIndex].value;
-        //         updateTemplates(template, text);
-        //         selectedScenarioIndex = target.selectedIndex;
-        //         selectedTemplateIndex = 0;
-        //         name.value = template.options[selectedTemplateIndex].value;
-        //     },
-        //     template: (e: Event, shadowRoot: ShadowRoot) => {
-        //         const target = e.target as HTMLSelectElement;
-        //         const text = target.options[target.selectedIndex].value;
-        //         const name = shadowRoot.getElementById(
-        //             'name'
-        //         ) as HTMLInputElement;
-        //         name.value = text;
-        //         selectedTemplateIndex = target.selectedIndex;
-        //     },
-        // },
-    };
-}
+//         // change: {
+//         //     scenario: (e: Event, shadowRoot: ShadowRoot) => {
+//         //         const target = e.target as HTMLSelectElement;
+//         //         const template = shadowRoot.getElementById(
+//         //             'template'
+//         //         ) as HTMLSelectElement;
+//         //         const name = shadowRoot.getElementById(
+//         //             'name'
+//         //         ) as HTMLInputElement;
+//         //         const text = target.options[target.selectedIndex].value;
+//         //         updateTemplates(template, text);
+//         //         selectedScenarioIndex = target.selectedIndex;
+//         //         selectedTemplateIndex = 0;
+//         //         name.value = template.options[selectedTemplateIndex].value;
+//         //     },
+//         //     template: (e: Event, shadowRoot: ShadowRoot) => {
+//         //         const target = e.target as HTMLSelectElement;
+//         //         const text = target.options[target.selectedIndex].value;
+//         //         const name = shadowRoot.getElementById(
+//         //             'name'
+//         //         ) as HTMLInputElement;
+//         //         name.value = text;
+//         //         selectedTemplateIndex = target.selectedIndex;
+//         //     },
+//         // },
+//     };
+// }
 
 // //------------------------------------------------------------------------------
 // // Upload Project

@@ -25,23 +25,14 @@
         "noUnusedParameters": true,
         "baseUrl": "src",
         "paths": {
-            "@types": ["types"],
-            "@localdb": ["localdb"],
-            "@util": ["util"],
-            "@sandbox": ["sandbox"],
-            "@shared-styles": ["components/shared-styles.css"],
             "@src/*": ["*"],
             "@store": ["store"],
-            "@store/*": ["store/*"],
-            "@doc/*": ["doc/*"],
-            "@lib/*": ["lib/*"],
-            "@pages/*": ["components/pages/*"],
-            "@iframe/*": ["iframe/*"],
-            "@components/*": ["components/*"],
-            "@elements/*": ["components/elements/*"],
-            "@scenario/*": ["scenario/*"],
+            "@localdb": ["localdb"],
+            "@utils": ["utils"],
             "@worker/*": ["worker/*"],
-            "@modal/*": ["components/modal/*"]
+            "@modal/*": ["components/modal/*"],
+            "@elements/*": ["components/elements/*"],
+            "@pages/*": ["components/pages/*"]
         }
     },
     "include": ["src"]

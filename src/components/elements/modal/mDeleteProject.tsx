@@ -5,12 +5,12 @@ import { Alert } from 'react-bootstrap';
 
 function DeleteProjectModal(props: { project: Project }) {
     return (
-        <Alert variant="danger">
+        <p>
             Are you sure you want to <em>permanently</em> delete the project '
             {props.project.name}'?
             <br />
             This operation can not be undone!
-        </Alert>
+        </p>
     );
 }
 
@@ -20,5 +20,6 @@ export async function showDeleteProjectModal(project: Project): Promise<void> {
         submit: 'Delete',
         cancel: 'Cancel',
         body: <DeleteProjectModal project={project} />,
+        type: 'danger',
     });
 }

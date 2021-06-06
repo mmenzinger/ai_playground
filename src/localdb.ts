@@ -31,7 +31,7 @@ class LocalDB {
             files: '++id,&[projectId+name],projectId',
             projects: '++id,&name',
         });
-        // TODO: merge version 2, 3 and 4
+        // TODO: merge version 2, 3, 4 and 5 into 2
         this.#db.version(2).stores({
             files: '++id,&[projectId+name],projectId,parentId',
         });
@@ -42,6 +42,9 @@ class LocalDB {
         });
         this.#db.version(4).stores({
             files: '++id,&[projectId+parentId+name],projectId,parentId',
+        });
+        this.#db.version(5).stores({
+            files: '++id,&[projectId+parentId+name],[projectId+name],projectId,parentId',
         });
         this.#files = this.#db.table('files');
         this.#projects = this.#db.table('projects');

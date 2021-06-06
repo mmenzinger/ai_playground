@@ -36,6 +36,19 @@
     padding: 0 1rem;
 }
 
+.fillVertical {
+    display: flex;
+    flex-direction: column;
+}
+.fillVertical :global(.tab-content) {
+    flex: 1;
+    display: flex;
+}
+.fillVertical :global(.tab-pane.active) {
+    flex: 1;
+    overflow: hidden;
+}
+
 :global(.gutter) {
     background-color: #eee;
     background-repeat: no-repeat;

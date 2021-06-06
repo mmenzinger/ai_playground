@@ -1,9 +1,6 @@
-import projectStore from '@src/store/project-store';
-import { Log, LogType } from '@src/store/types';
-import { autorun } from 'mobx';
 import React, { useState, useEffect, useRef } from 'react';
-import { ObjectInspector, chromeLight, InspectorTheme } from 'react-inspector';
-import { Hook, Unhook, Console as ConsoleFeed, Decode } from 'console-feed';
+import { Console as ConsoleFeed, Decode } from 'console-feed';
+import { MessageType } from '@worker/worker-utils';
 
 import css from './console.module.css';
 
@@ -17,11 +14,13 @@ export function Console() {
     const logEnd = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        const console = Hook(window.console, (log) => {
-            setLogs((currLogs: any[]) => [...currLogs, Decode(log)]);
-        });
-        return () => {
-            Unhook(console);
+        window.onmessage = (m: MessageEvent) => {
+            if (m.data.type === MessageType.LOG) {
+                const logs = m.data.logs.map((json: string) =>
+                    Decode(JSON.parse(json))
+                );
+                setLogs((currLogs: any[]) => [...currLogs, ...logs]);
+            }
         };
     }, []);
 

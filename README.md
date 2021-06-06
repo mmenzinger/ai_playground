@@ -5,4 +5,25 @@ The goal is not to teach specific algorithms or techniques, for which you can fi
 
 ## Installation
 
-Further instructions coming soon...
+The framework requires a working nodejs installation.
+
+```
+npm install
+```
+
+## Development
+
+To start a local development server and view changes live run
+
+```
+npm start
+```
+
+## Production
+
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+
+```
+npm run build:prod
+npm run deploy
+```

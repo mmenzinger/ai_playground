@@ -3,6 +3,7 @@
 
 declare namespace ProjectModuleCssNamespace {
     export interface IProjectModuleCss {
+        fillVertical: string;
         horizontal: string;
         loading: string;
         pane: string;

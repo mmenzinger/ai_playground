@@ -2,7 +2,6 @@ const path = require('path');
 const webpack = require('webpack');
 const merge = require('webpack-merge');
 const TerserPlugin = require('terser-webpack-plugin');
-const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const { InjectManifest } = require('workbox-webpack-plugin');
 
 const common = require('./webpack.common.js');
@@ -30,7 +29,7 @@ module.exports = merge(common, {
     ],
 
     performance: {
-        maxAssetSize: 1024*1024,
+        maxAssetSize: 1024 * 1024,
     },
 
     module: {
@@ -38,19 +37,21 @@ module.exports = merge(common, {
             {
                 test: /\.m?[tj]s$/,
                 include: path.join(__dirname, 'src/components'),
-                use: [{
-                    loader: 'minify-lit-html-loader',
-                    options: {
-                        htmlMinifier: {
-                            ignoreCustomFragments: [
-                                /[@?]\w+=\${.*?(\s*})+/,
-                            ]
-                        }
-                    }
-                },
-                {
-                    loader: 'babel-loader',
-                }]
+                use: [
+                    {
+                        loader: 'minify-lit-html-loader',
+                        options: {
+                            htmlMinifier: {
+                                ignoreCustomFragments: [
+                                    /[@?]\w+=\${.*?(\s*})+/,
+                                ],
+                            },
+                        },
+                    },
+                    {
+                        loader: 'babel-loader',
+                    },
+                ],
             },
         ],
     },

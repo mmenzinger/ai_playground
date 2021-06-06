@@ -4,11 +4,9 @@ import { Card, Button, ButtonGroup, CardDeck } from 'react-bootstrap';
 // import { autorun } from 'mobx';
 
 // import appStore from '@store/app-store';
-import projectStore from '@store/project-store';
+import store, { Project } from '@store';
 
 import css from './project-index.module.css';
-
-import { Project } from '@store/types';
 
 import db from '@localdb';
 
@@ -48,7 +46,7 @@ export function ProjectIndex() {
             if (template.scenario) {
                 template.files.push(...scenarios[template.scenario].files);
             }
-            await projectStore.createProject(
+            await store.project.createProject(
                 result.name,
                 template.scenario,
                 template.files
@@ -64,11 +62,9 @@ export function ProjectIndex() {
         e: React.MouseEvent<HTMLElement, MouseEvent>
     ) {
         e.stopPropagation();
-        console.log('delete', project.name);
-
         try {
             await showDeleteProjectModal(project);
-            await projectStore.deleteProject(project.id);
+            await store.project.deleteProject(project.id);
             setProjects(await db.getProjects());
         } catch (error) {
             if (!(error instanceof ModalAbort)) console.error(error);
@@ -177,12 +173,7 @@ export function ProjectIndex() {
         </Card>
     );
 
-    return (
-        <>
-            <h1>Projects</h1>
-            <CardDeck className={css.projectList}>{elements}</CardDeck>
-        </>
-    );
+    return <CardDeck className={css.projectList}>{elements}</CardDeck>;
 }
 
 export default ProjectIndex;

@@ -1,53 +1,25 @@
 const path = require('path');
-const webpack = require('webpack');
 const CopyPlugin = require('copy-webpack-plugin');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
 const FaviconsWebpackPlugin = require('favicons-webpack-plugin');
-const glob = require('glob');
-const jsdoc2md = require('jsdoc-to-markdown');
+const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
 
 const staticFiles = [
     { from: './src/index.html' },
-    { from: './src/iframe/*.html', to: '[name].[ext]' },
+    // { from: './src/iframe/*.html', to: '[name].[ext]' },
     { from: './public/assets', to: 'assets' },
-    {
-        from: 'node_modules/jstree/dist/jstree.min.js',
-        to: 'jstree/jstree.min.js',
-    },
-    {
-        from: 'node_modules/jstree/dist/themes/default/style.min.css',
-        to: 'jstree/jstree.min.css',
-    },
-    {
-        from: 'node_modules/jstree/dist/themes/default/32px.png',
-        to: 'jstree/32px.png',
-    },
-    {
-        from: 'node_modules/jstree/dist/themes/default/throbber.gif',
-        to: 'jstree/throbber.gif',
-    },
-    {
-        from: 'node_modules/jquery/dist/jquery.min.js',
-        to: 'jstree/jquery.min.js',
-    },
-    { from: 'node_modules/@tensorflow/tfjs-core/dist/' },
+    // { from: 'node_modules/@tensorflow/tfjs-core/dist/' },
+    // { from: './src/worker/scenario-worker.ts', to: 'scenario-worker.js' },
 ];
 
 const alias = {
     '@src': path.join(__dirname, 'src'),
     '@store': path.join(__dirname, 'src/store'),
-    '@doc': path.join(__dirname, 'src/doc'),
     '@localdb': path.join(__dirname, 'src/localdb'),
-    '@util': path.join(__dirname, 'src/util'),
-    '@lib': path.join(__dirname, 'src/lib'),
-    '@sandbox': path.join(__dirname, 'src/sandbox'),
-    '@shared-styles': path.join(__dirname, 'src/components/shared-styles.css'),
-    '@components': path.join(__dirname, 'src/components'),
+    '@utils': path.join(__dirname, 'src/utils'),
     '@worker': path.join(__dirname, 'src/worker'),
     '@modal': path.join(__dirname, 'src/components/modal'),
     '@elements': path.join(__dirname, 'src/components/elements'),
     '@pages': path.join(__dirname, 'src/components/pages'),
-    '@scenario': path.join(__dirname, 'src/scenario'),
 
     node_modules: path.join(__dirname, 'node_modules'),
 };
@@ -56,15 +28,9 @@ module.exports = {
     entry: {
         app: './src/index.tsx',
         'scenario-worker': './src/worker/scenario-worker',
-        monaco: './src/iframe/monaco',
-        jstree: './src/iframe/jstree',
-        'monaco/editor-worker': 'monaco-editor/esm/vs/editor/editor.worker',
-        'monaco/json-worker': 'monaco-editor/esm/vs/language/json/json.worker',
-        'monaco/ts-worker':
-            'monaco-editor/esm/vs/language/typescript/ts.worker',
-        'lib/utils': './src/lib/utils',
-        'lib/prolog': './src/lib/prolog',
-        'lib/tensorflow': './src/lib/tensorflow',
+        // 'lib/utils': './src/lib/utils',
+        // 'lib/prolog': './src/lib/prolog',
+        // 'lib/tensorflow': './src/lib/tensorflow',
     },
 
     output: {
@@ -83,38 +49,32 @@ module.exports = {
             {
                 test: /\.(ts|js|mjs)x?$/,
                 exclude: /node_modules/,
-                use: {
-                    loader: 'babel-loader',
-                },
+                use: ['babel-loader'],
             },
             {
                 test: /\.(js|pl|md|json)$/,
                 include: path.join(__dirname, 'src/scenario/'),
-                use: [
-                    {
-                        loader: 'raw-loader',
-                    },
-                ],
+                use: ['raw-loader'],
             },
             {
                 test: /\.(png|jpg|gif)$/,
                 include: path.join(__dirname, 'src/scenario/'),
-                use: [
-                    {
-                        loader: 'url-loader',
-                    },
-                ],
+                use: ['url-loader'],
+            },
+            {
+                test: /\.s[ac]ss$/,
+                use: ['style-loader', 'css-loader', 'sass-loader'],
             },
             {
                 test: /\.css$/,
                 exclude: /\.module\.css$/,
-                use: [{ loader: 'style-loader' }, { loader: 'css-loader' }],
+                use: ['style-loader', 'css-loader'],
             },
             {
                 test: /\.module\.css$/,
                 include: path.join(__dirname, 'src/'),
                 use: [
-                    { loader: 'style-loader' },
+                    'style-loader',
                     {
                         loader: '@teamsupercell/typings-for-css-modules-loader',
                         options: {
@@ -140,10 +100,6 @@ module.exports = {
 
     plugins: [
         new CopyPlugin({ patterns: staticFiles }),
-        // new HtmlWebpackPlugin({
-        //     template: 'src/index.ejs',
-        //     chunks: ['app'],
-        // }),
         new FaviconsWebpackPlugin({
             logo: './public/assets/logo.png',
             cache: true,
@@ -163,6 +119,10 @@ module.exports = {
                     yandex: false,
                 },
             },
+        }),
+        new MonacoWebpackPlugin({
+            // available options are documented at https://github.com/Microsoft/monaco-editor-webpack-plugin#options
+            languages: ['javascript', 'json', 'markdown'],
         }),
     ],
 

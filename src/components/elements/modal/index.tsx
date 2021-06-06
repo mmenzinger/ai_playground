@@ -3,7 +3,7 @@ import { Modal as ReactModal, Button } from 'react-bootstrap';
 import { autorun } from 'mobx';
 
 import appStore from '@store/app-store';
-import { Defer } from '@util';
+import { Defer } from '@src/utils';
 
 export class ModalAbort extends Error {}
 
@@ -12,6 +12,7 @@ export type ModalTemplate = {
     submit: string;
     cancel: string;
     body: JSX.Element;
+    type?: string;
 };
 
 export type ModalObject = {
@@ -25,6 +26,7 @@ export function Modal() {
     const [title, setTitle] = useState('Title');
     const [submit, setSubmit] = useState('Submit');
     const [cancel, setCancel] = useState('Cancel');
+    const [type, setType] = useState<string>();
     const [body, setBody] = useState(<></>);
 
     useEffect(() => {
@@ -36,6 +38,7 @@ export function Modal() {
                 setSubmit(t.submit);
                 setCancel(t.cancel);
                 setBody(t.body);
+                setType(t.type);
             }
         });
     }, []);
@@ -50,17 +53,20 @@ export function Modal() {
             centered
             onHide={close}
             onEscapeKeyDown={close}
+            scrollable
         >
-            <ReactModal.Header>
+            <ReactModal.Header
+                className={type === 'danger' ? 'alert-danger' : ''}
+            >
                 <ReactModal.Title>{title}</ReactModal.Title>
             </ReactModal.Header>
             <ReactModal.Body>{body}</ReactModal.Body>
-            <ReactModal.Footer>
+            <ReactModal.Footer style={{ justifyContent: 'space-between' }}>
                 <Button variant="secondary" onClick={close}>
                     {cancel}
                 </Button>
                 <Button
-                    variant="primary"
+                    variant={type === 'danger' ? 'danger' : 'primary'}
                     onClick={() => appStore.resolveModal()}
                 >
                     {submit}

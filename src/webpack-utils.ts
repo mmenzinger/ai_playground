@@ -1,4 +1,4 @@
-import { File } from '@store/types';
+import { File } from '@store';
 
 export type ScenarioTemplate = {
     name: string,

@@ -1,14 +1,4 @@
-import { messageWithResult } from '@util';
-import { Log } from '@store/types';
-
-export function call(functionName: string, canvases: OffscreenCanvas[]){
-    const msg: CallMessage = {
-        type: MessageType.CALL,
-        functionName,
-        canvases,
-    };
-    return messageWithResult(msg);
-}
+import { messageWithResult } from '@src/utils';
 
 export enum MessageType {
     LOG,
@@ -19,18 +9,13 @@ export enum MessageType {
     VIDEO,
 }
 
-export enum Functions {
-    RUN,
-    TRAIN,
-}
-
 export interface Message{
     type: MessageType;
 }
 
 export interface LogMessage {
     type: MessageType.LOG,
-    log: Log,
+    logs: string[],
 }
 
 export interface JSONMessage {
@@ -62,4 +47,13 @@ export interface HtmlMessage {
 export interface VideoMessage {
     type: MessageType.VIDEO,
     bitmap: ImageBitmap,
+}
+
+export function call(functionName: string, canvases: OffscreenCanvas[]){
+    const msg: CallMessage = {
+        type: MessageType.CALL,
+        functionName,
+        canvases,
+    };
+    return messageWithResult(msg);
 }

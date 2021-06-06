@@ -1,7 +1,7 @@
 import projectStore from '@store/project-store';
 import db from '@localdb';
-import { messageWithResult } from '@util';
-import { Message, LogMessage, MessageType, CallMessage, JSONMessage, HtmlMessage } from '@worker/types';
+import { messageWithResult } from '@src/utils';
+import { Message, MessageType, CallMessage, JSONMessage, HtmlMessage } from '@worker/worker-utils';
 
 export class Sandbox{
     #worker?: Worker;
@@ -25,11 +25,7 @@ export class Sandbox{
             let result: any = undefined;
             switch (msg.type) {
                 case MessageType.LOG:{
-                    const log = (msg as LogMessage).log;
-                    if(log.caller && !log.caller.projectId){
-                        log.caller.projectId = projectStore.activeProject?.id
-                    }
-                    projectStore.addLog(log.type, log.args, log.caller);
+                    window.postMessage(m.data);
                     break;
                 }
                 case MessageType.JSON_STORE:{
@@ -44,7 +40,7 @@ export class Sandbox{
                             await projectStore.saveFileContent(file.id, data.json);
                         }
                         catch(_){
-                            await projectStore.createFile(data.fileName, project, data.json);
+                            await projectStore.createFile(data.fileName, project, 0, data.json);
                         }
                         break;
                     }
