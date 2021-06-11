@@ -28,7 +28,7 @@ module.exports = {
     entry: {
         app: './src/index.tsx',
         'scenario-worker': './src/worker/scenario-worker',
-        // 'lib/utils': './src/lib/utils',
+        'lib/utils': './src/lib/utils',
         // 'lib/prolog': './src/lib/prolog',
         // 'lib/tensorflow': './src/lib/tensorflow',
     },

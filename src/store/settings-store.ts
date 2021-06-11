@@ -29,24 +29,19 @@ class SettingsStore{
     }
 
     setLocal(key: string, value: any){
-        this.data[key] = value;
-        window.localStorage.setItem(STORAGE_KEY_LOCAL, JSON.stringify(this.data))
+        this.localData[key] = value;
+        window.localStorage.setItem(STORAGE_KEY_LOCAL, JSON.stringify(this.localData))
     }
 
     getLocal(key: string, fallback?: any){
-        if(this.data[key] !== undefined)
-            return this.data[key];
+        if(this.localData[key] !== undefined)
+            return this.localData[key];
         else
             return fallback;
     }
 }
 
 export const settingsStore = new SettingsStore();
-
-// save settings to localStorage
-autorun(_ => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(settingsStore.data))
-});
 
 export function debugSettingsStore(){
     autorun(_ => {

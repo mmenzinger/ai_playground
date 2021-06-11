@@ -85,7 +85,7 @@
         "deploy": "firebase deploy",
         "license-checker": "license-checker --direct | sed -r '/(path|email|licenseFile):/d' > library_licenses",
         "check": "ncu",
-        "update": "ncu -u && npm install"
+        "update": "ncu -u && npm install && npm run license-checker"
     },
     "author": "Manuel Menzinger",
     "license": "MIT"

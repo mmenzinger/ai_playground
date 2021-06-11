@@ -21,9 +21,9 @@ npm start
 
 ## Production
 
-const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+Deployment requires a configured firebase account.
 
 ```
-npm run build:prod
+npm run build
 npm run deploy
 ```
