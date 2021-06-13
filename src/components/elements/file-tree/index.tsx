@@ -25,10 +25,15 @@ import { ListGroup, Popover } from 'react-bootstrap';
 type Menu = {
     filename: string;
     key: string | number;
+    parent: number;
     id: number;
     x: number;
     y: number;
 };
+
+interface ExtendedDataNode extends DataNode {
+    parent?: number;
+}
 
 export function FileTree(props: { project: Project }) {
     const [files, setFiles] = useState<DataNode[]>([]);
@@ -59,11 +64,12 @@ export function FileTree(props: { project: Project }) {
     // context menu
     function onRightClick(info: {
         event: React.MouseEvent<Element, MouseEvent>;
-        node: DataNode;
+        node: ExtendedDataNode;
     }) {
         setMenu({
             filename: info.node.title as string,
             key: info.node.key,
+            parent: info.node.parent || 0,
             id: Number(info.node.key) || 0,
             x: info.event.pageX + 10,
             y: info.event.pageY - 45,
@@ -83,15 +89,17 @@ export function FileTree(props: { project: Project }) {
         }
     ): void {
         const title = info.node.title as string;
+        const key = info.node.key;
         // folder
         if (isFolder(title)) {
-            const index = expanded.indexOf(title);
+            const index = expanded.indexOf(key);
             if (index > -1) {
-                keys.splice(index, 1);
-                setExpanded(keys);
+                const newExpanded = [...expanded];
+                newExpanded.splice(index, 1);
+                setExpanded(newExpanded);
             } else {
                 if (info.node.children?.length) {
-                    setExpanded([...expanded, title]);
+                    setExpanded([...expanded, key]);
                 }
             }
         }
@@ -121,7 +129,7 @@ export function FileTree(props: { project: Project }) {
                             <ListGroup.Item
                                 action
                                 onClick={() => {
-                                    createFile(props.project.id, menu.id);
+                                    createFile(props.project.id, menu.parent);
                                 }}
                             >
                                 Create File
@@ -156,7 +164,6 @@ export function FileTree(props: { project: Project }) {
                 expandedKeys={expanded}
                 selectedKeys={selected}
                 className={css.fileTree}
-                autoExpandParent={true}
             />
         </div>
     );
@@ -166,11 +173,16 @@ function createFile(projectId: number, parentId: number) {
     console.log('create file', projectId, parentId);
 }
 
-function fileToDataNode(file: File): DataNode {
+function fileToDataNode(
+    file: File,
+    children: DataNode[] = []
+): ExtendedDataNode {
     return {
         key: file.id,
+        parent: file.parentId,
         title: file.name,
         icon: fileNameToIcon(file.name),
+        children,
     };
 }
 
@@ -196,19 +208,46 @@ function fileNameToIcon(name: string) {
     return <img src="/assets/filetree/unknown.svg" />;
 }
 
-function getTreeData(projectFiles: File[], globalFiles: File[]): DataNode[] {
+function sortByTypeAndName(a: DataNode, b: DataNode): number {
+    const titleA = (a.title as string).toUpperCase();
+    const titleB = (b.title as string).toUpperCase();
+    const isFolderA = isFolder(titleA);
+    const isFolderB = isFolder(titleB);
+
+    if (isFolderA === isFolderB) {
+        return titleA < titleB ? -1 : 1;
+    }
+    return isFolderA ? -1 : 1;
+}
+
+function getTreeData(
+    projectFiles: File[],
+    globalFiles: File[]
+): ExtendedDataNode[] {
+    function recFilesToDataNode(
+        files: File[],
+        parentId: number = 0
+    ): DataNode[] {
+        return files
+            .filter((file) => file.parentId === parentId)
+            .map((file) =>
+                fileToDataNode(file, recFilesToDataNode(files, file.id))
+            )
+            .sort(sortByTypeAndName);
+    }
+
     return [
         {
             key: 'global',
             title: 'global',
             icon: <img src="/assets/filetree/folder.svg" />,
-            children: globalFiles.map(fileToDataNode),
+            children: recFilesToDataNode(globalFiles),
         },
         {
             key: 'project',
             title: 'project',
             icon: <img src="/assets/filetree/folder.svg" />,
-            children: projectFiles.map(fileToDataNode),
+            children: recFilesToDataNode(projectFiles),
         },
     ];
 }

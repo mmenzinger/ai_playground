@@ -15,13 +15,17 @@ const options = {
 export function Editor() {
     const [value, setValue] = useState('');
 
+    let closed = false;
     useEffect(() => {
         autorun(() => {
             const file = store.project.activeFile;
             if (file?.content && !(file.content instanceof Blob)) {
-                setValue(file.content);
+                !closed && setValue(file.content);
             }
         });
+        return () => {
+            closed = true;
+        };
     }, []);
 
     function onChange(
