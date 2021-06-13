@@ -1,5 +1,4 @@
-import { messageWithResult } from '@src/utils';
-import { data } from '@tensorflow/tfjs';
+import { messageWithResult } from '@utils';
 
 export enum MessageType {
     LOG,

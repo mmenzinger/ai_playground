@@ -1,10 +1,5 @@
 import React from 'react';
-import {
-    BrowserRouter as Router,
-    Switch,
-    Route,
-    Redirect,
-} from 'react-router-dom';
+import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 
 import store from '@store';
 
@@ -26,14 +21,6 @@ export function App() {
     return (
         <Router>
             <Modal />
-            {/* <Route
-                render={({ location }) => {
-                    if (location.pathname !== '/welcome') {
-                        return <Header title="AI Playground" />;
-                    }
-                    return null;
-                }}
-            /> */}
             <Header title="AI Playground" />
             <Switch>
                 <Route path="/news">

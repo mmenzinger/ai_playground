@@ -18,7 +18,7 @@ async function checkServiceWorker(): Promise<JSX.Element | true> {
 }
 
 async function checkModuleWorker(): Promise<JSX.Element | true> {
-    return new Promise(async (resolve, reject) => {
+    return new Promise(async (resolve, _) => {
         try {
             const worker = new Worker(`/scenario-worker.js`, {
                 type: 'module',
@@ -104,8 +104,8 @@ export function Welcome() {
                     <li key={i}>{feature}</li>
                 ))}
             </ul>
-            This website <strong>will not work</strong> in the intended way,
-            while you can try to continue anyway, it is highly recommended to
+            This website <strong>will not work</strong> in the intended way!
+            While you can try to continue anyway, it is highly recommended to
             switch to a supported browser like any{' '}
             <a href="https://www.chromium.org/Home">Chromium</a>-based browser (
             <a href="https://www.google.com/chrome/">Chrome</a>,{' '}

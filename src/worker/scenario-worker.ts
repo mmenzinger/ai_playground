@@ -82,7 +82,8 @@ onmessage = async m => {
                     throw Error(`index.js does not have an exported function '${data.functionName}'`);
                 }
                 
-                m.ports[0].postMessage({ result: true });
+                // m.ports[0].postMessage({ result: true });
+                m.ports[0].postMessage(true);
             }
             catch (error) {
                 console.error(error);
