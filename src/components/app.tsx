@@ -13,7 +13,7 @@ import Project from './pages/project';
 import News from './pages/news';
 import Impressum from './pages/impressum';
 
-import './app-light.scss';
+import './app-dark.scss';
 
 export class App extends Component<{}> {
     render() {
