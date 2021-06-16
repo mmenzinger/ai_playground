@@ -10,7 +10,9 @@ import 'rc-tree/assets/index.css';
 import './contextmenu.css';
 import css from './file-tree.module.css';
 import { ListGroup, Popover } from 'react-bootstrap';
-
+import {
+    showRenameFileModal,
+} from '@elements/modal';
 // for collapse/expand animation
 // bugs out when fast clicking!
 // const motion = {
@@ -138,7 +140,10 @@ export function FileTree(props: { project: Project }) {
                                 Create Folder
                             </ListGroup.Item>
                             {isProtected(menu) ? null : (
-                                <ListGroup.Item action>
+                                <ListGroup.Item action
+                                onClick={() => {
+                                    onRenameFile(menu.id, menu.filename);
+                                }}>
                                     Rename <em>{menu.filename}</em>
                                 </ListGroup.Item>
                             )}
@@ -172,7 +177,9 @@ export function FileTree(props: { project: Project }) {
 function createFile(projectId: number, parentId: number) {
     console.log('create file', projectId, parentId);
 }
-
+async function onRenameFile(fileId: number, fileName: string) {
+    await showRenameFileModal(fileId, fileName);
+}
 function fileToDataNode(
     file: File,
     children: DataNode[] = []

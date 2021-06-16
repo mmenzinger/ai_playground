@@ -81,3 +81,4 @@ export * from './mNewProject';
 export * from './mDeleteProject';
 export * from './mDownloadProject';
 export * from './mUploadProject';
+export * from './mRenameFileModal';

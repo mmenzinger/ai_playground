@@ -11,7 +11,7 @@ import News from './pages/news';
 import Impressum from './pages/impressum';
 import Welcome from './pages/welcome';
 
-import './app-dark.scss';
+import './app-light.scss';
 
 export function App() {
     if (store.settings.getLocal('firstTime', true)) {

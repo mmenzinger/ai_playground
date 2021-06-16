@@ -36,7 +36,6 @@ export function ProjectIndex() {
             closed = true;
         };
     });
-
     async function onNewProject() {
         try {
             const scenarios = getScenarios();
