@@ -2,6 +2,7 @@ import Dexie from 'dexie';
 import { editor } from 'monaco-editor';
 
 import type { File, Project } from '@store';
+import { BasicFile } from './webpack-utils';
 
 export interface IFiles {
     id?: number,
@@ -53,7 +54,7 @@ class LocalDB {
     //------------------------------------------------------------------------------------------
     // F i l e s
     //------------------------------------------------------------------------------------------
-    async createFile(projectId: number, parentId: number, name: string, content: string | Blob = ''): Promise<number>{
+    async createFile(projectId: number, parentId: number, name: string, content?: string | Blob): Promise<number>{
         const lastChange = Date.now();
         return this.#files.add({ projectId, name, content, parentId, lastChange });
     }
@@ -115,10 +116,22 @@ class LocalDB {
     //------------------------------------------------------------------------------------------
     // P r o j e c t s
     //------------------------------------------------------------------------------------------
-    async createProject(name: string, scenario: string, files: File[] = []): Promise<number> {
+    async createProject(name: string, scenario: string, files: BasicFile[] = []): Promise<number> {
         return this.#db.transaction('rw', this.#projects, this.#files, async () => {
             const projectId: number = await this.#projects.add({ name, scenario });
-            const projectFilePromises = files.map(file => this.createFile(projectId, file.parentId, file.name, file.content));
+            let projectFilePromises: Promise<number>[] = [];
+            const recAddFile = async (file: BasicFile, parentId: number = 0) => {
+                if(Array.isArray(file.content)){
+                    const newFileId = await this.createFile(projectId, parentId, file.name);
+                    file.content.forEach(file => recAddFile(file, newFileId));
+                }
+                else{
+                    projectFilePromises.push(this.createFile(projectId, parentId, file.name, file.content));
+                }
+            }
+            files.forEach((file) => recAddFile(file));
+            
+            // const projectFilePromises = files.map(file => this.createFile(projectId, file.parentId, file.name, file.content));
             await Promise.all(projectFilePromises);
 
             return projectId;
@@ -164,6 +177,7 @@ class LocalDB {
         const iFiles = await this.#files.where('projectId').equals(id).toArray();
         const files: File[] = [];
         for(const iFile of iFiles){
+            
             if(iFile.id !== undefined){
                 files.push({...iFile, id: iFile.id})
             }
@@ -192,7 +206,7 @@ class LocalDB {
             });
             await Promise.all(collisionFilesPromises);
 
-            return await this.createProject(name, scenario, projectFiles);
+            return await this.createProject(name, scenario, projectFiles as BasicFile[]);
         });
     }
 

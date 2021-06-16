@@ -1,0 +1,39 @@
+/*******************************************************************************
+* FileTree
+*******************************************************************************/
+.fileTree :global(span.rc-tree-iconEle.rc-tree-icon__customize) {
+    height: 20px;
+    line-height: 20px;
+    vertical-align: 0.125rem;
+}
+
+.fileTree :global(span.rc-tree-iconEle img) {
+    max-width: 100%;
+    max-height: 100%;
+}
+
+.fileTree {
+    user-select: none;
+}
+
+/*******************************************************************************
+* ContextMenu
+*******************************************************************************/
+.contextMenu :global(.popover-header) {
+    padding: 0.25rem 0.5rem;
+    text-align: center;
+}
+
+.contextMenu :global(.popover-body) {
+    padding: 0;
+}
+
+.contextMenu :global(.list-group-item) {
+    padding: 0.1rem 0.5rem;
+    border-left: none;
+    border-right: none;
+    border-top: none;
+}
+.contextMenu :global(.list-group-item:last-child) {
+    border-bottom: none;
+}

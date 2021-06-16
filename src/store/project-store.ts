@@ -2,6 +2,7 @@ import { observable, action, makeObservable, autorun, runInAction, toJS, trace }
 import db from '@localdb';
 
 import { editor, IPosition } from 'monaco-editor';
+import { BasicFile } from '@src/webpack-utils';
 
 export type FileError = {
     args: any[],
@@ -89,7 +90,7 @@ class ProjectStore {
         this.activeFile = null;
     }
 
-    async createProject(name: string, scenario: string, files: Array<File>): Promise<number> {
+    async createProject(name: string, scenario: string, files: Array<BasicFile>): Promise<number> {
         return db.createProject(name, scenario, files);
     }
 

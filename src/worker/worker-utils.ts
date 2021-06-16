@@ -1,4 +1,4 @@
-import { messageWithResult } from '@src/utils';
+import { messageWithResult } from '@utils';
 
 export enum MessageType {
     LOG,
@@ -7,6 +7,7 @@ export enum MessageType {
     EVENT,
     HTML,
     VIDEO,
+    TEST,
 }
 
 export interface Message{
@@ -47,6 +48,10 @@ export interface HtmlMessage {
 export interface VideoMessage {
     type: MessageType.VIDEO,
     bitmap: ImageBitmap,
+}
+
+export interface TestMessage {
+    type: MessageType.TEST,
 }
 
 export function call(functionName: string, canvases: OffscreenCanvas[]){

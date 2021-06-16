@@ -50,6 +50,17 @@ let videoFrameUpdateBusy = false;
 onmessage = async m => {
     const msg: Message = m.data;
     switch (msg.type) {
+        case MessageType.TEST: {
+            try{
+                // @ts-ignore
+                await import(/* webpackIgnore: true */ '/lib/utils.js');
+                m.ports[0].postMessage(true);
+            }
+            catch(error){
+                m.ports[0].postMessage(error.message);
+            }
+            break;
+        }
         case MessageType.CALL: {
             const data = (msg as CallMessage);
             try {
@@ -71,7 +82,8 @@ onmessage = async m => {
                     throw Error(`index.js does not have an exported function '${data.functionName}'`);
                 }
                 
-                m.ports[0].postMessage({ result: true });
+                // m.ports[0].postMessage({ result: true });
+                m.ports[0].postMessage(true);
             }
             catch (error) {
                 console.error(error);

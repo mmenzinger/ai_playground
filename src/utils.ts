@@ -16,10 +16,11 @@ export async function messageWithResult(msg: object, timeout: number | null = nu
         const channel = new MessageChannel();
         channel.port1.onmessage = m => {
             clearTimeout(to);
-            if(m.data && m.data.result)
-                resolve(m.data.result);
-            else
-                resolve(undefined);
+            resolve(m.data);
+            // if(m.data && m.data.result)
+            //     resolve(m.data.result);
+            // else
+            //     resolve(undefined);
         }
         target.postMessage(msg, [channel.port2, ...transfer]);
     });

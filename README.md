@@ -19,11 +19,18 @@ To start a local development server and view changes live run
 npm start
 ```
 
-## Production
-
-const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+Urls
 
 ```
-npm run build:prod
+http://localhost:9000/
+http://localhost:9000/webpack-dev-server
+```
+
+## Production
+
+Deployment requires a configured firebase account.
+
+```
+npm run build
 npm run deploy
 ```

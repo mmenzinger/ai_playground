@@ -1,37 +1,44 @@
-├─ @babel/code-frame@7.12.13
-│  ├─ licenses: MIT
-│  ├─ repository: https://github.com/babel/babel
-│  ├─ publisher: Sebastian McKenzie
-├─ @babel/compat-data@7.14.4
+├─ @babel/code-frame@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
 │  ├─ publisher: The Babel Team
 │  ├─ url: https://babel.dev/team
-├─ @babel/core@7.14.3
-│  ├─ licenses: MIT
-│  ├─ repository: https://github.com/babel/babel
-│  ├─ publisher: Sebastian McKenzie
-├─ @babel/generator@7.14.3
-│  ├─ licenses: MIT
-│  ├─ repository: https://github.com/babel/babel
-│  ├─ publisher: Sebastian McKenzie
-├─ @babel/helper-annotate-as-pure@7.12.13
-│  ├─ licenses: MIT
-│  ├─ repository: https://github.com/babel/babel
-├─ @babel/helper-builder-binary-assignment-operator-visitor@7.12.13
-│  ├─ licenses: MIT
-│  ├─ repository: https://github.com/babel/babel
-├─ @babel/helper-compilation-targets@7.14.4
+├─ @babel/compat-data@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
 │  ├─ publisher: The Babel Team
 │  ├─ url: https://babel.dev/team
-├─ @babel/helper-create-class-features-plugin@7.14.4
+├─ @babel/core@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
 │  ├─ publisher: The Babel Team
 │  ├─ url: https://babel.dev/team
-├─ @babel/helper-create-regexp-features-plugin@7.14.3
+├─ @babel/generator@7.14.5
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/babel/babel
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/helper-annotate-as-pure@7.14.5
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/babel/babel
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/helper-builder-binary-assignment-operator-visitor@7.14.5
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/babel/babel
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/helper-compilation-targets@7.14.5
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/babel/babel
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/helper-create-class-features-plugin@7.14.5
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/babel/babel
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/helper-create-regexp-features-plugin@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
 │  ├─ publisher: The Babel Team
@@ -39,131 +46,197 @@
 ├─ @babel/helper-define-polyfill-provider@0.2.3
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel-polyfills
-├─ @babel/helper-explode-assignable-expression@7.13.0
+├─ @babel/helper-explode-assignable-expression@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-├─ @babel/helper-function-name@7.14.2
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/helper-function-name@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-├─ @babel/helper-get-function-arity@7.12.13
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/helper-get-function-arity@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-├─ @babel/helper-hoist-variables@7.13.16
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/helper-hoist-variables@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-├─ @babel/helper-member-expression-to-functions@7.13.12
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/helper-member-expression-to-functions@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-│  ├─ publisher: Justin Ridgewell
-├─ @babel/helper-module-imports@7.13.12
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/helper-module-imports@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-│  ├─ publisher: Logan Smyth
-├─ @babel/helper-module-transforms@7.14.2
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/helper-module-transforms@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-│  ├─ publisher: Logan Smyth
-├─ @babel/helper-optimise-call-expression@7.12.13
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/helper-optimise-call-expression@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-├─ @babel/helper-plugin-utils@7.13.0
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/helper-plugin-utils@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-│  ├─ publisher: Logan Smyth
-├─ @babel/helper-remap-async-to-generator@7.13.0
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/helper-remap-async-to-generator@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-├─ @babel/helper-replace-supers@7.14.4
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/helper-replace-supers@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-├─ @babel/helper-simple-access@7.13.12
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/helper-simple-access@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-│  ├─ publisher: Logan Smyth
-├─ @babel/helper-skip-transparent-expression-wrappers@7.12.1
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/helper-skip-transparent-expression-wrappers@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-├─ @babel/helper-split-export-declaration@7.12.13
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/helper-split-export-declaration@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-├─ @babel/helper-validator-identifier@7.14.0
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/helper-validator-identifier@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-├─ @babel/helper-validator-option@7.12.17
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/helper-validator-option@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-├─ @babel/helper-wrap-function@7.13.0
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/helper-wrap-function@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-├─ @babel/helpers@7.14.0
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/helpers@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-│  ├─ publisher: Sebastian McKenzie
-├─ @babel/highlight@7.14.0
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/highlight@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-│  ├─ publisher: suchipi
-├─ @babel/parser@7.14.4
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/parser@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-│  ├─ publisher: Sebastian McKenzie
-├─ @babel/plugin-bugfix-v8-spread-parameters-in-optional-chaining@7.13.12
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/plugin-bugfix-v8-spread-parameters-in-optional-chaining@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-├─ @babel/plugin-proposal-async-generator-functions@7.14.2
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/plugin-proposal-async-generator-functions@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-├─ @babel/plugin-proposal-class-properties@7.13.0
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/plugin-proposal-class-properties@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-├─ @babel/plugin-proposal-class-static-block@7.14.3
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/plugin-proposal-class-static-block@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-├─ @babel/plugin-proposal-dynamic-import@7.14.2
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/plugin-proposal-dynamic-import@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-├─ @babel/plugin-proposal-export-namespace-from@7.14.2
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/plugin-proposal-export-namespace-from@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-├─ @babel/plugin-proposal-json-strings@7.14.2
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/plugin-proposal-json-strings@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-├─ @babel/plugin-proposal-logical-assignment-operators@7.14.2
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/plugin-proposal-logical-assignment-operators@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-├─ @babel/plugin-proposal-nullish-coalescing-operator@7.14.2
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/plugin-proposal-nullish-coalescing-operator@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-├─ @babel/plugin-proposal-numeric-separator@7.14.2
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/plugin-proposal-numeric-separator@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-├─ @babel/plugin-proposal-object-rest-spread@7.14.4
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/plugin-proposal-object-rest-spread@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-├─ @babel/plugin-proposal-optional-catch-binding@7.14.2
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/plugin-proposal-optional-catch-binding@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-├─ @babel/plugin-proposal-optional-chaining@7.14.2
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/plugin-proposal-optional-chaining@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-├─ @babel/plugin-proposal-private-methods@7.13.0
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/plugin-proposal-private-methods@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-├─ @babel/plugin-proposal-private-property-in-object@7.14.0
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/plugin-proposal-private-property-in-object@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-├─ @babel/plugin-proposal-unicode-property-regex@7.12.13
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/plugin-proposal-unicode-property-regex@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
 ├─ @babel/plugin-syntax-async-generators@7.8.4
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel/tree/master/packages/babel-plugin-syntax-async-generators
 ├─ @babel/plugin-syntax-class-properties@7.12.13
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-├─ @babel/plugin-syntax-class-static-block@7.12.13
+├─ @babel/plugin-syntax-class-static-block@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
 ├─ @babel/plugin-syntax-dynamic-import@7.8.3
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel/tree/master/packages/babel-plugin-syntax-dynamic-import
@@ -173,9 +246,11 @@
 ├─ @babel/plugin-syntax-json-strings@7.8.3
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel/tree/master/packages/babel-plugin-syntax-json-strings
-├─ @babel/plugin-syntax-jsx@7.12.13
+├─ @babel/plugin-syntax-jsx@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
 ├─ @babel/plugin-syntax-logical-assignment-operators@7.10.4
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
@@ -194,156 +269,242 @@
 ├─ @babel/plugin-syntax-optional-chaining@7.8.3
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel/tree/master/packages/babel-plugin-syntax-optional-chaining
-├─ @babel/plugin-syntax-private-property-in-object@7.14.0
+├─ @babel/plugin-syntax-private-property-in-object@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-├─ @babel/plugin-syntax-top-level-await@7.12.13
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/plugin-syntax-top-level-await@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-├─ @babel/plugin-syntax-typescript@7.12.13
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/plugin-syntax-typescript@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-├─ @babel/plugin-transform-arrow-functions@7.13.0
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/plugin-transform-arrow-functions@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-├─ @babel/plugin-transform-async-to-generator@7.13.0
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/plugin-transform-async-to-generator@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-├─ @babel/plugin-transform-block-scoped-functions@7.12.13
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/plugin-transform-block-scoped-functions@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-├─ @babel/plugin-transform-block-scoping@7.14.4
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/plugin-transform-block-scoping@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-├─ @babel/plugin-transform-classes@7.14.4
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/plugin-transform-classes@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-├─ @babel/plugin-transform-computed-properties@7.13.0
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/plugin-transform-computed-properties@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-├─ @babel/plugin-transform-destructuring@7.14.4
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/plugin-transform-destructuring@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-├─ @babel/plugin-transform-dotall-regex@7.12.13
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/plugin-transform-dotall-regex@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-├─ @babel/plugin-transform-duplicate-keys@7.12.13
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/plugin-transform-duplicate-keys@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-├─ @babel/plugin-transform-exponentiation-operator@7.12.13
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/plugin-transform-exponentiation-operator@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-├─ @babel/plugin-transform-for-of@7.13.0
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/plugin-transform-for-of@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-├─ @babel/plugin-transform-function-name@7.12.13
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/plugin-transform-function-name@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-├─ @babel/plugin-transform-literals@7.12.13
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/plugin-transform-literals@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-├─ @babel/plugin-transform-member-expression-literals@7.12.13
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/plugin-transform-member-expression-literals@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-├─ @babel/plugin-transform-modules-amd@7.14.2
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/plugin-transform-modules-amd@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-├─ @babel/plugin-transform-modules-commonjs@7.14.0
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/plugin-transform-modules-commonjs@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-├─ @babel/plugin-transform-modules-systemjs@7.13.8
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/plugin-transform-modules-systemjs@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-├─ @babel/plugin-transform-modules-umd@7.14.0
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/plugin-transform-modules-umd@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-├─ @babel/plugin-transform-named-capturing-groups-regex@7.12.13
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/plugin-transform-named-capturing-groups-regex@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-├─ @babel/plugin-transform-new-target@7.12.13
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/plugin-transform-new-target@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-├─ @babel/plugin-transform-object-super@7.12.13
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/plugin-transform-object-super@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-├─ @babel/plugin-transform-parameters@7.14.2
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/plugin-transform-parameters@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-├─ @babel/plugin-transform-property-literals@7.12.13
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/plugin-transform-property-literals@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-├─ @babel/plugin-transform-react-display-name@7.14.2
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/plugin-transform-react-display-name@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-├─ @babel/plugin-transform-react-jsx-development@7.12.17
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/plugin-transform-react-jsx-development@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-├─ @babel/plugin-transform-react-jsx@7.14.3
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/plugin-transform-react-jsx@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-├─ @babel/plugin-transform-react-pure-annotations@7.12.1
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/plugin-transform-react-pure-annotations@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-├─ @babel/plugin-transform-regenerator@7.13.15
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/plugin-transform-regenerator@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-│  ├─ publisher: Ben Newman
-├─ @babel/plugin-transform-reserved-words@7.12.13
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/plugin-transform-reserved-words@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-├─ @babel/plugin-transform-shorthand-properties@7.12.13
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/plugin-transform-shorthand-properties@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-├─ @babel/plugin-transform-spread@7.13.0
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/plugin-transform-spread@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-├─ @babel/plugin-transform-sticky-regex@7.12.13
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/plugin-transform-sticky-regex@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-├─ @babel/plugin-transform-template-literals@7.13.0
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/plugin-transform-template-literals@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-├─ @babel/plugin-transform-typeof-symbol@7.12.13
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/plugin-transform-typeof-symbol@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-├─ @babel/plugin-transform-typescript@7.14.4
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/plugin-transform-typescript@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-├─ @babel/plugin-transform-unicode-escapes@7.12.13
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/plugin-transform-unicode-escapes@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-├─ @babel/plugin-transform-unicode-regex@7.12.13
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/plugin-transform-unicode-regex@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-├─ @babel/preset-env@7.14.4
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/preset-env@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-│  ├─ publisher: Henry Zhu
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
 ├─ @babel/preset-modules@0.1.4
 │  ├─ licenses: MIT
-├─ @babel/preset-react@7.13.13
+├─ @babel/preset-react@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-│  ├─ publisher: Sebastian McKenzie
-├─ @babel/preset-typescript@7.13.0
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/preset-typescript@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
 ├─ @babel/runtime@7.14.0
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
 │  ├─ publisher: Sebastian McKenzie
-├─ @babel/template@7.12.13
+├─ @babel/template@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-│  ├─ publisher: Sebastian McKenzie
-├─ @babel/traverse@7.14.2
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/traverse@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-│  ├─ publisher: Sebastian McKenzie
-├─ @babel/types@7.14.4
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
+├─ @babel/types@7.14.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
-│  ├─ publisher: Sebastian McKenzie
+│  ├─ publisher: The Babel Team
+│  ├─ url: https://babel.dev/team
 ├─ @discoveryjs/json-ext@0.5.3
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/discoveryjs/json-ext
@@ -643,7 +804,7 @@
 ├─ @types/prop-types@15.7.3
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/DefinitelyTyped/DefinitelyTyped
-├─ @types/react-dom@17.0.6
+├─ @types/react-dom@17.0.7
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/DefinitelyTyped/DefinitelyTyped
 ├─ @types/react-router-dom@5.1.7
@@ -655,7 +816,7 @@
 ├─ @types/react-transition-group@4.4.1
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/DefinitelyTyped/DefinitelyTyped
-├─ @types/react@17.0.9
+├─ @types/react@17.0.11
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/DefinitelyTyped/DefinitelyTyped
 ├─ @types/resolve@1.17.1
@@ -747,13 +908,13 @@
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/xtuc/webassemblyjs
 │  ├─ publisher: Sven Sauleau
-├─ @webpack-cli/configtest@1.0.3
+├─ @webpack-cli/configtest@1.0.4
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/webpack/webpack-cli
-├─ @webpack-cli/info@1.2.4
+├─ @webpack-cli/info@1.3.0
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/webpack/webpack-cli
-├─ @webpack-cli/serve@1.4.0
+├─ @webpack-cli/serve@1.5.1
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/webpack/webpack-cli
 ├─ @xtuc/ieee754@1.2.0
@@ -790,7 +951,7 @@
 │  ├─ repository: https://github.com/sindresorhus/aggregate-error
 │  ├─ publisher: Sindre Sorhus
 │  ├─ url: sindresorhus.com
-├─ ai.c4f.wtf@0.1.1
+├─ ai.c4f.wtf@0.2.0
 │  ├─ licenses: MIT
 │  ├─ publisher: Manuel Menzinger
 ├─ ajv-errors@1.0.1
@@ -2800,11 +2961,11 @@
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/mobxjs/mobx
 │  ├─ publisher: Michel Weststrate
-├─ monaco-editor-webpack-plugin@3.1.0
+├─ monaco-editor-webpack-plugin@4.0.0
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/Microsoft/monaco-editor-webpack-plugin
 │  ├─ publisher: Microsoft Corporation
-├─ monaco-editor@0.24.0
+├─ monaco-editor@0.25.0
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/Microsoft/monaco-editor
 │  ├─ publisher: Microsoft Corporation
@@ -3708,7 +3869,7 @@
 │  ├─ repository: https://github.com/ChALkeR/safer-buffer
 │  ├─ publisher: Nikita Skovoroda
 │  ├─ url: https://github.com/ChALkeR
-├─ sass-loader@12.0.0
+├─ sass-loader@12.1.0
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/webpack-contrib/sass-loader
 │  ├─ publisher: J. Tangelder
@@ -4378,7 +4539,7 @@
 │  ├─ repository: https://github.com/jsdom/webidl-conversions
 │  ├─ publisher: Domenic Denicola
 │  ├─ url: https://domenic.me/
-├─ webpack-cli@4.7.0
+├─ webpack-cli@4.7.2
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/webpack/webpack-cli
 ├─ webpack-dev-middleware@3.7.3
@@ -4393,7 +4554,7 @@
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/webpack-contrib/webpack-log
 │  ├─ publisher: Andrew Powell
-├─ webpack-merge@5.7.3
+├─ webpack-merge@5.8.0
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/survivejs/webpack-merge
 │  ├─ publisher: Juho Vepsalainen

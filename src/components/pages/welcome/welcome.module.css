@@ -1,0 +1,19 @@
+.root {
+    padding: 1rem;
+    max-width: 40rem;
+    align-self: center;
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+}
+
+.check {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.check > div {
+    margin-right: 1rem;
+}

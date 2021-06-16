@@ -4,6 +4,8 @@ import MonacoEditor, {
     EditorDidMount,
 } from 'react-monaco-editor';
 import monacoEditor from 'monaco-editor';
+import { autorun } from 'mobx';
+import store from '@src/store';
 
 const options = {
     selectOnLineNumbers: true,
@@ -12,6 +14,19 @@ const options = {
 
 export function Editor() {
     const [value, setValue] = useState('');
+
+    let closed = false;
+    useEffect(() => {
+        autorun(() => {
+            const file = store.project.activeFile;
+            if (file?.content && !(file.content instanceof Blob)) {
+                !closed && setValue(file.content);
+            }
+        });
+        return () => {
+            closed = true;
+        };
+    }, []);
 
     function onChange(
         newValue: string,

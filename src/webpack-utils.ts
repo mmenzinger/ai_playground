@@ -1,142 +1,101 @@
-import { File } from '@store';
+export type BasicFile = {
+    name: string,
+    content: string | Blob | BasicFile[],
+};
 
 export type ScenarioTemplate = {
     name: string,
     scenario: string,
-    files: File[],
+    files: BasicFile[],
 };
 
 export type ScenarioTemplates = {
     name: string,
     templates: {[key:string]: ScenarioTemplate},
-    examples: {[key:string]: ScenarioTemplate},
-    files: File[],
+    files: BasicFile[],
 }
 
 export function getScenarios(): {[key:string]: ScenarioTemplates} {
-    const rc = require.context('@src/scenario', true, /\.[a-z]+$/i);
-    const paths = rc.keys().filter(path => new RegExp(`/[^/]+/`).test(path));
-    const scenarios: {[key:string]: ScenarioTemplates} = {
-        Examples: {
-            name: 'Examples',
-            templates: {},
-            examples: {},
-            files: [],
-        },
-    };
-    paths.forEach(path => {
-        const match = path.match(new RegExp(`^\./([^/~]+)/?(templates|examples|assets)?/?([^/]+)?/([^/]+)$`));
-        if(match){
-            const type = match[1];
-            const folder = match[2];
-            const name = match[3];
-            const filename = match[4];
-    
-            scenarios[type] = scenarios[type] || {
-                name: type,
-                templates: {},
-                examples: {},
-                files: [],
-            }
-            if(!folder){
-                // @ts-ignore
-                const raw = require(`@src/scenario/${type}/${filename}`).default;
-                scenarios[type].files.push(
-                    getFile(filename, raw)
-                )
-            }
-            if(folder === 'assets'){
-                const raw = require(`@src/scenario/${type}/${folder}/${filename}`).default;
-                scenarios[type].files.push(
-                    getFile(filename, raw)
-                )
-            }
-            if(folder === 'examples'){
-                scenarios.Examples.templates[name] = scenarios.Examples.templates[name] || {
-                    name: name,
-                    scenario: type,
+    let scenarios:{[key:string]: ScenarioTemplates} = {
+                Examples: {
+                    name: 'Examples',
+                    templates: {},
                     files: [],
-                }
-                const raw = require(`@src/scenario/${path.substring(2)}`).default;
-                scenarios.Examples.templates[name].files.push(
-                    getFile(filename, raw)
-                );
-            }
+                },
+            };
+    const context = require.context('@src/scenario', true, /\.[a-z]+$/i);
+    const paths = context.keys().filter(path => new RegExp(`/[^/]+/`).test(path));
 
-            if(folder && folder !== 'assets'){
-                // @ts-ignore
-                scenarios[type][folder][name] = scenarios[type][folder][name] || {
-                    name,
-                    scenario: type,
-                    files: [],
-                }
+    function getOrCreateFolder(files: BasicFile[], filename: string){
+        for(const folder of files){
+            if(folder.name === filename)
+                return folder;
+        }
+        const folder: BasicFile = {
+            name: filename,
+            content: [],
+        }
+        files.push(folder);
+        return folder;
+    }
 
-                
-                const raw = require(`@src/scenario/${path.substring(2)}`).default;
-                // @ts-ignore
-                scenarios[type][folder][name].files.push(
-                    getFile(filename, raw)
-                );
-            }
+    for(const path of paths){
+        const parts = path.split('/');
+        let i = 1;
+        let scenario = parts[i++];
+        let template = undefined;
+        if(parts[i] === '~examples'){
+            scenario = 'Examples';
+            template = parts[i+1];
+            i+=2;
         }
-        else{
-            const match = path.match(new RegExp(`^\./~Examples/([^/]+)/([^/]+)$`));
-            if(match){
-                const name = match[1];
-                const filename = match[2];
-                
-                scenarios.Examples.templates[name] = scenarios.Examples.templates[name] || {
-                    name: name,
-                    scenario: undefined,
+        else if(parts[i] === '~templates'){
+            template = parts[i+1];
+            i+=2;
+        }
+
+        if(scenario){
+            if(!scenarios[scenario]){
+                scenarios[scenario] =  {
+                    name: scenario,
+                    templates: {},
                     files: [],
                 }
-                const raw = require(`@src/scenario/${path.substring(2)}`).default;
-                scenarios.Examples.templates[name].files.push(
-                    getFile(filename, raw)
-                );
             }
+            if(template && !scenarios[scenario].templates[template]){
+                scenarios[scenario].templates[template] = {
+                    name: template,
+                    scenario: parts[1],
+                    files: [],
+                }
+            }
+            let files = template ? scenarios[scenario].templates[template].files : scenarios[scenario].files;
+            for(; i < parts.length-1; i++){
+                const folder = getOrCreateFolder(files, parts[i])
+                files = folder.content as BasicFile[];
+            }
+            // ts-ignore
+            const raw = require(`@src/scenario/${path.slice(2)}`).default;
+            files.push(getBasicFile(parts[parts.length-1], raw))
         }
-    });
+    }
     return scenarios;
 }
 
-function getFile(filename: string, raw: any): File{
+function getBasicFile(filename: string, raw: any): BasicFile{
     let content = raw;
     if(/\.(png|jpe?g|gif)$/.test(filename)){
-        const [match, contentType, base64] = raw.match(/^data:(.+);base64,(.*)$/);
+        const [_match, _contentType, base64] = raw.match(/^data:(.+);base64,(.*)$/);
         content = base64toBlob(base64);
     }
-    // @ts-ignore
     return {
         name: filename,
         content,
     }
 }
 
-export function getTemplates() {
-    const templates = [];
-    for (let scenario of Object.values(getScenarios())) {
-        for (let template of Object.values(scenario.templates)) {
-            template.files.push(...scenario.files);
-            templates.push(template);
-        }
-    }
-    return templates;
-}
-
-export function getExamples() {
-    const examples = [];
-    for (let scenario of Object.values(getScenarios())) {
-        for (let example of Object.values(scenario.examples)) {
-            example.files.push(...scenario.files);
-            examples.push(example);
-        }
-    }
-    return examples;
-}
-
 // Convert the base64 to a Blob
-// Souce: https://stackoverflow.com/a/20151856/626911
+// Source: https://stackoverflow.com/a/20151856/626911
 function base64toBlob(base64Data: string, contentType?: string) {
     contentType = contentType || '';
     var sliceSize = 1024;
