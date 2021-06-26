@@ -11,9 +11,11 @@ import store, { Project as tProject } from '@store';
 import Console from '@elements/console';
 import FileTree from '@elements/file-tree/index';
 import Editor from '@elements/editor';
+import Markdown from '@elements/markdown';
 
 import { useParams } from 'react-router';
 import css from './project.module.css';
+import { autorun } from 'mobx';
 
 export function Project() {
     const { id } = useParams<{ id: string }>();
@@ -29,7 +31,7 @@ export function Project() {
 
     const [project, setProject] = useState<tProject | null>(null);
 
-    const [middleTab, setMiddleTab] = useState('editor');
+    const [centerTab, setCenterTab] = useState('editor');
 
     useEffect(() => {
         store.project.openProject(Number(id)).then((p) => setProject(p));
@@ -37,6 +39,17 @@ export function Project() {
             setProject(null);
             store.project.closeProject();
         };
+    }, []);
+
+    useEffect(() => {
+        autorun(() => {
+            const file = store.project.activeFile;
+            if (file?.name.endsWith('.md')) {
+                setCenterTab('markdown');
+            } else if (file) {
+                setCenterTab('editor');
+            }
+        });
     }, []);
 
     useEffect(() => {
@@ -85,16 +98,16 @@ export function Project() {
                         <div className={css.fillVertical}>
                             <Tabs
                                 className={css.tabs}
-                                activeKey={middleTab}
+                                activeKey={centerTab}
                                 onSelect={(tab) =>
-                                    setMiddleTab(tab || 'editor')
+                                    setCenterTab(tab || 'editor')
                                 }
                             >
                                 <Tab eventKey="editor" title="Editor">
                                     <Editor />
                                 </Tab>
                                 <Tab eventKey="markdown" title="Markdown">
-                                    Markdown
+                                    <Markdown />
                                 </Tab>
                                 <Tab eventKey="settings" title="Settings">
                                     Settings

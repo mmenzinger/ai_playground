@@ -1,125 +1,85 @@
-// import { html, LitElement } from 'lit-element';
-// import { reaction, toJS } from 'mobx';
-// import projectStore from '@store/project-store';
-// import { Project } from '@store/types';
+import React, { useState, useEffect, useRef } from 'react';
+import store from '@src/store';
+import { autorun } from 'mobx';
 
-// import Prism from 'prismjs';
-// import 'prismjs/plugins/line-numbers/prism-line-numbers';
-// import 'prismjs/components/prism-prolog';
-// import 'prismjs/components/prism-markdown';
+import showdown from 'showdown';
 
-// // @ts-ignore
-// import sharedStyles from '@shared-styles';
-// // @ts-ignore
-// import style from './c4f-markdown.css';
-// // @ts-ignore
-// import prism from 'prismjs/themes/prism.css';
-// // @ts-ignore
-// import prismLineNumbers from 'prismjs/plugins/line-numbers/prism-line-numbers.css';
-// import db from '@localdb';
+import Prism from 'prismjs';
+import 'prismjs/plugins/line-numbers/prism-line-numbers';
+import 'prismjs/components/prism-prolog';
+import 'prismjs/components/prism-markdown';
+import 'prismjs/components/prism-javascript';
+import 'prismjs/components/prism-typescript';
+import 'prismjs/components/prism-json';
 
-// const showdown = require('showdown');
-// const converter = new showdown.Converter({
-//     ghCompatibleHeaderId: true,
-//     parseImgDimensions: true,
-//     strikethrough: true,
-//     tables: true,
-//     takslists: true,
-//     smoothLivePreview: true,
-// });
+import css from './markdown.module.css';
+import 'prismjs/themes/prism.css';
 
-// class C4fMarkdown extends LitElement {
-//     static get styles() {
-//         return [
-//             sharedStyles,
-//             style,
-//             prism,
-//             prismLineNumbers,
-//         ];
-//     }
+function updateHyperlinks(element: HTMLElement) {
+    const anchors = element.querySelectorAll('a');
+    anchors.forEach((anchor) => {
+        const href = anchor.getAttribute('href');
+        if (href && href[0] === '#') {
+            anchor.onclick = (event) => {
+                event.preventDefault();
+                const target = element.querySelector(href);
+                if (target) target.scrollIntoView();
+            };
+        }
+    });
+}
 
-//     #activeProject: Project | null = null;
+function updateCodeHighlight(element: HTMLElement) {
+    for (const pre of element.querySelectorAll('pre')) {
+        pre.classList.add('line-numbers');
+    }
+    Prism.highlightAllUnder(element);
+}
 
-//     render() {
-//         return html`<div id="markdown"></div>`;
-//     }
+const converter = new showdown.Converter({
+    ghCompatibleHeaderId: true,
+    parseImgDimensions: true,
+    strikethrough: true,
+    tables: true,
+    takslists: true,
+    smoothLivePreview: true,
+});
 
-//     firstUpdated() {
-//         const container = this.shadowRoot?.querySelector('#markdown') as HTMLElement;
+export function Markdown() {
+    const [text, setText] = useState('');
+    const container = useRef<HTMLDivElement>(null);
 
-//         reaction(
-//             () => projectStore.activeProject,
-//             project => {
-//                 if (project !== this.#activeProject) {
-//                     this.#activeProject = project;
-//                     container.innerHTML = '';
-//                 }
-//             }
-//         )
-//         reaction(
-//             () => ({
-//                 file: projectStore.activeFile,
-//                 content: projectStore.activeFile?.content,
-//             }),
-//             async data => {
-//                 let { file } = data;
-//                 // load readme.md or scenario.md when no md-file is selected in the beginning
-//                 if (!file?.name.endsWith('.md') && projectStore.activeProject && container.innerHTML.length === 0) {
-//                     const projectId = projectStore.activeProject.id;
-//                     for (const fileName of ['readme.md', 'scenario.md']) {
-//                         try {
-//                             file = await db.loadFileByName(projectId, fileName);
-//                             break;
-//                         }
-//                         catch (_) { }
-//                     }
+    let closed = false;
+    useEffect(() => {
+        autorun(() => {
+            const file = store.project.activeFile;
+            if (
+                file?.name.endsWith('.md') &&
+                file?.content &&
+                !(file.content instanceof Blob)
+            ) {
+                !closed && setText(converter.makeHtml(file.content));
+            }
+        });
+        return () => {
+            closed = true;
+        };
+    }, []);
 
-//                     if (!file?.name.endsWith('.md')) {
-//                         const files = await db.getProjectFiles(projectId);
-//                         for (const pfile of files) {
-//                             if (pfile.name.endsWith('.md')) {
-//                                 file = pfile;
-//                                 break;
-//                             }
-//                         }
-//                     }
-//                 }
+    useEffect(() => {
+        let element = container.current as HTMLElement;
+        if (element) {
+            updateHyperlinks(element);
+            updateCodeHighlight(element);
+        }
+    });
 
-//                 if (file?.name.endsWith('.md')) {
-//                     container.innerHTML = converter.makeHtml(file.content);
-//                     this.updateHyperlinks(container);
-//                     this.updateCodeHighlight(container);
-//                 }
-//             },
-//             {
-//                 fireImmediately: true,
-//                 delay: 1,
-//             }
-//         );
-//     }
-
-//     updateHyperlinks(element: HTMLElement) {
-//         const anchors = element.querySelectorAll('a');
-//         anchors.forEach(anchor => {
-//             const href = anchor.getAttribute('href');
-//             if (href && href[0] === '#') {
-//                 anchor.onclick = (event) => {
-//                     event.preventDefault();
-//                     const target = element.querySelector(href);
-//                     if (target)
-//                         target.scrollIntoView();
-//                 };
-//             }
-//         });
-//     }
-
-//     updateCodeHighlight(element: HTMLElement) {
-//         for (const pre of element.querySelectorAll('pre')) {
-//             pre.classList.add('line-numbers');
-//         }
-
-//         Prism.highlightAllUnder(element);
-//     }
-// }
-
-// window.customElements.define('c4f-markdown', C4fMarkdown);
+    return (
+        <div
+            ref={container}
+            className={css.root}
+            dangerouslySetInnerHTML={{ __html: text }}
+        ></div>
+    );
+}
+export default Markdown;

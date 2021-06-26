@@ -3,12 +3,12 @@
 │  ├─ repository: https://github.com/babel/babel
 │  ├─ publisher: The Babel Team
 │  ├─ url: https://babel.dev/team
-├─ @babel/compat-data@7.14.5
+├─ @babel/compat-data@7.14.7
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
 │  ├─ publisher: The Babel Team
 │  ├─ url: https://babel.dev/team
-├─ @babel/core@7.14.5
+├─ @babel/core@7.14.6
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
 │  ├─ publisher: The Babel Team
@@ -131,7 +131,7 @@
 │  ├─ repository: https://github.com/babel/babel
 │  ├─ publisher: The Babel Team
 │  ├─ url: https://babel.dev/team
-├─ @babel/helpers@7.14.5
+├─ @babel/helpers@7.14.6
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
 │  ├─ publisher: The Babel Team
@@ -141,7 +141,7 @@
 │  ├─ repository: https://github.com/babel/babel
 │  ├─ publisher: The Babel Team
 │  ├─ url: https://babel.dev/team
-├─ @babel/parser@7.14.5
+├─ @babel/parser@7.14.7
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
 │  ├─ publisher: The Babel Team
@@ -151,7 +151,7 @@
 │  ├─ repository: https://github.com/babel/babel
 │  ├─ publisher: The Babel Team
 │  ├─ url: https://babel.dev/team
-├─ @babel/plugin-proposal-async-generator-functions@7.14.5
+├─ @babel/plugin-proposal-async-generator-functions@7.14.7
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
 │  ├─ publisher: The Babel Team
@@ -196,7 +196,7 @@
 │  ├─ repository: https://github.com/babel/babel
 │  ├─ publisher: The Babel Team
 │  ├─ url: https://babel.dev/team
-├─ @babel/plugin-proposal-object-rest-spread@7.14.5
+├─ @babel/plugin-proposal-object-rest-spread@7.14.7
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
 │  ├─ publisher: The Babel Team
@@ -314,7 +314,7 @@
 │  ├─ repository: https://github.com/babel/babel
 │  ├─ publisher: The Babel Team
 │  ├─ url: https://babel.dev/team
-├─ @babel/plugin-transform-destructuring@7.14.5
+├─ @babel/plugin-transform-destructuring@7.14.7
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
 │  ├─ publisher: The Babel Team
@@ -374,7 +374,7 @@
 │  ├─ repository: https://github.com/babel/babel
 │  ├─ publisher: The Babel Team
 │  ├─ url: https://babel.dev/team
-├─ @babel/plugin-transform-named-capturing-groups-regex@7.14.5
+├─ @babel/plugin-transform-named-capturing-groups-regex@7.14.7
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
 │  ├─ publisher: The Babel Team
@@ -434,7 +434,7 @@
 │  ├─ repository: https://github.com/babel/babel
 │  ├─ publisher: The Babel Team
 │  ├─ url: https://babel.dev/team
-├─ @babel/plugin-transform-spread@7.14.5
+├─ @babel/plugin-transform-spread@7.14.6
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
 │  ├─ publisher: The Babel Team
@@ -469,7 +469,7 @@
 │  ├─ repository: https://github.com/babel/babel
 │  ├─ publisher: The Babel Team
 │  ├─ url: https://babel.dev/team
-├─ @babel/preset-env@7.14.5
+├─ @babel/preset-env@7.14.7
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/babel/babel
 │  ├─ publisher: The Babel Team
@@ -804,13 +804,16 @@
 ├─ @types/prop-types@15.7.3
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/DefinitelyTyped/DefinitelyTyped
-├─ @types/react-dom@17.0.7
+├─ @types/react-dom@17.0.8
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/DefinitelyTyped/DefinitelyTyped
 ├─ @types/react-router-dom@5.1.7
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/DefinitelyTyped/DefinitelyTyped
 ├─ @types/react-router@5.1.14
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/DefinitelyTyped/DefinitelyTyped
+├─ @types/react-syntax-highlighter@13.5.1
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/DefinitelyTyped/DefinitelyTyped
 ├─ @types/react-transition-group@4.4.1
@@ -826,6 +829,9 @@
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/DefinitelyTyped/DefinitelyTyped
 ├─ @types/seedrandom@3.0.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/DefinitelyTyped/DefinitelyTyped
+├─ @types/showdown@1.9.3
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/DefinitelyTyped/DefinitelyTyped
 ├─ @types/warning@3.0.0
@@ -1194,7 +1200,7 @@
 │  ├─ licenses: ISC
 │  ├─ repository: https://github.com/fb55/boolbase
 │  ├─ publisher: Felix Boehm
-├─ bootstrap@5.0.1
+├─ bootstrap@5.0.2
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/twbs/bootstrap
 │  ├─ publisher: The Bootstrap Authors
@@ -1507,11 +1513,11 @@
 │  ├─ repository: https://github.com/jonschlinkert/copy-descriptor
 │  ├─ publisher: Jon Schlinkert
 │  ├─ url: https://github.com/jonschlinkert
-├─ copy-webpack-plugin@9.0.0
+├─ copy-webpack-plugin@9.0.1
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/webpack-contrib/copy-webpack-plugin
 │  ├─ publisher: Len Boyette
-├─ core-js-compat@3.14.0
+├─ core-js-compat@3.15.1
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/zloirock/core-js
 ├─ core-js@3.14.0
@@ -1799,7 +1805,7 @@
 ├─ error-ex@1.3.2
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/qix-/node-error-ex
-├─ es-module-lexer@0.4.1
+├─ es-module-lexer@0.6.0
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/guybedford/es-module-lexer
 │  ├─ publisher: Guy Bedford
@@ -2118,7 +2124,7 @@
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/terkelg/globalyzer
 │  ├─ publisher: Terkel Gjervig
-├─ globby@11.0.3
+├─ globby@11.0.4
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/sindresorhus/globby
 │  ├─ publisher: Sindre Sorhus
@@ -3063,7 +3069,7 @@
 │  ├─ repository: https://github.com/npm/npm-bundled
 │  ├─ publisher: Isaac Z. Schlueter
 │  ├─ url: http://blog.izs.me/
-├─ npm-check-updates@11.6.0
+├─ npm-check-updates@11.7.1
 │  ├─ licenses: Apache-2.0
 │  ├─ repository: https://github.com/raineorshine/npm-check-updates
 │  ├─ publisher: Tomas Junnonen
@@ -3873,7 +3879,7 @@
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/webpack-contrib/sass-loader
 │  ├─ publisher: J. Tangelder
-├─ sass@1.34.1
+├─ sass@1.35.1
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/sass/dart-sass
 │  ├─ publisher: Natalie Weizenbaum
@@ -4201,7 +4207,7 @@
 │  ├─ repository: https://github.com/sindresorhus/strip-final-newline
 │  ├─ publisher: Sindre Sorhus
 │  ├─ url: sindresorhus.com
-├─ style-loader@2.0.0
+├─ style-loader@3.0.0
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/webpack-contrib/style-loader
 │  ├─ publisher: Tobias Koppers @sokra
@@ -4242,7 +4248,7 @@
 │  ├─ repository: https://github.com/sindresorhus/tempy
 │  ├─ publisher: Sindre Sorhus
 │  ├─ url: https://sindresorhus.com
-├─ terser-webpack-plugin@5.1.3
+├─ terser-webpack-plugin@5.1.4
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/webpack-contrib/terser-webpack-plugin
 │  ├─ publisher: webpack Contrib Team
@@ -4363,7 +4369,7 @@
 │  ├─ repository: https://github.com/feross/typedarray-to-buffer
 │  ├─ publisher: Feross Aboukhadijeh
 │  ├─ url: http://feross.org/
-├─ typescript@4.3.2
+├─ typescript@4.3.4
 │  ├─ licenses: Apache-2.0
 │  ├─ repository: https://github.com/Microsoft/TypeScript
 │  ├─ publisher: Microsoft Corp.
@@ -4562,7 +4568,7 @@
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/webpack/webpack-sources
 │  ├─ publisher: Tobias Koppers @sokra
-├─ webpack@5.38.1
+├─ webpack@5.40.0
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/webpack/webpack
 │  ├─ publisher: Tobias Koppers @sokra
