@@ -1,6 +1,6 @@
 {
     "name": "ai.c4f.wtf",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "description": "AI Playground",
     "dependencies": {
         "@forevolve/bootstrap-dark": "^1.2.0-g6c89781692",
