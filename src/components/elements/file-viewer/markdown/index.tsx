@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import store from '@src/store';
+import store from '@store';
 import { autorun } from 'mobx';
 
 import showdown from 'showdown';

@@ -10,8 +10,7 @@ import store, { Project as tProject } from '@store';
 
 import Console from '@elements/console';
 import FileTree from '@elements/file-tree/index';
-import Editor from '@elements/editor';
-import Markdown from '@elements/markdown';
+import FileViewer from '@elements/file-viewer';
 
 import { useParams } from 'react-router';
 import css from './project.module.css';
@@ -31,7 +30,7 @@ export function Project() {
 
     const [project, setProject] = useState<tProject | null>(null);
 
-    const [centerTab, setCenterTab] = useState('editor');
+    const [centerTab, setCenterTab] = useState('settings');
 
     useEffect(() => {
         store.project.openProject(Number(id)).then((p) => setProject(p));
@@ -43,11 +42,8 @@ export function Project() {
 
     useEffect(() => {
         autorun(() => {
-            const file = store.project.activeFile;
-            if (file?.name.endsWith('.md')) {
-                setCenterTab('markdown');
-            } else if (file) {
-                setCenterTab('editor');
+            if (store.project.activeFile) {
+                setCenterTab('file');
             }
         });
     }, []);
@@ -100,14 +96,11 @@ export function Project() {
                                 className={css.tabs}
                                 activeKey={centerTab}
                                 onSelect={(tab) =>
-                                    setCenterTab(tab || 'editor')
+                                    setCenterTab(tab || 'settings')
                                 }
                             >
-                                <Tab eventKey="editor" title="Editor">
-                                    <Editor />
-                                </Tab>
-                                <Tab eventKey="markdown" title="Markdown">
-                                    <Markdown />
+                                <Tab eventKey="file" title="File">
+                                    <FileViewer />
                                 </Tab>
                                 <Tab eventKey="settings" title="Settings">
                                     Settings

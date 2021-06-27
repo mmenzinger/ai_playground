@@ -10,6 +10,7 @@ import 'rc-tree/assets/index.css';
 import './contextmenu.css';
 import css from './file-tree.module.css';
 import { ListGroup, Popover } from 'react-bootstrap';
+import { project } from '@src/components/pages/project-index/project-index.module.css';
 
 // for collapse/expand animation
 // bugs out when fast clicking!
@@ -54,6 +55,10 @@ export function FileTree(props: { project: Project }) {
             if (!closed) {
                 setFiles(getTreeData(projectFiles, globalFiles));
                 setExpanded([...expanded, 'project']);
+                const activeFileId = store.project.activeFile?.id;
+                if (activeFileId) {
+                    setSelected([activeFileId]);
+                }
             }
         });
         return () => {
