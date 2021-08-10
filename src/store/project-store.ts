@@ -35,6 +35,7 @@ class ProjectStore {
     activeProject: Project | null = null;
     activeFile: File | null = null;
     lastFileTreeChange: number = 0;
+    logCallbacks: ((logs: string[]) => void)[] = [];
 
     constructor() {
         makeObservable(this, {
@@ -76,6 +77,10 @@ class ProjectStore {
                 catch(_){}
             }
         }
+        navigator.serviceWorker.controller?.postMessage({
+            type: 'setProject',
+            project,
+        });
         runInAction(() => {
             this.activeFile = file;
             this.activeProject = project;
@@ -228,6 +233,29 @@ class ProjectStore {
             this.activeFile.name = name;
             this.lastFileTreeChange = Date.now();
         });
+    }
+
+    /**********************************************************************************+
+     * Log 
+     */
+    publishLogs(logs: string[]){
+        for(const callback of this.logCallbacks){
+            if(callback){
+                callback(logs);
+            }
+        }
+    }
+
+    subscribeToLogs(callback: (logs: string[]) => void){
+        this.logCallbacks.push(callback);
+        return callback;
+    }
+
+    unsubscribeFromLogs(callback: (logs: string[]) => void){
+        const index = this.logCallbacks.indexOf(callback);
+        if(index > -1){
+            this.logCallbacks.splice(index, 1);
+        }
     }
 }
 

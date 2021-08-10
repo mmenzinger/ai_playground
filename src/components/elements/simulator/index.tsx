@@ -1,3 +1,43 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { call, MessageType } from '@worker/worker-utils';
+import { start } from '@src/scenario/Examples/~templates/Empty';
+import { toUpper } from 'lodash-es';
+import store from '@src/store';
+
+export function Simulator() {
+    const iframe = useRef<HTMLIFrameElement>(null);
+    const [src, setSrc] = useState<string>('/simulator/default.html');
+    //const [worker, setWorker] = useState<Worker | null>(null);
+    //const [workerPort, setWorkerPort] = useState<MessagePort | null>(null);
+
+    const iframeHandler: any = {
+        log: (m: MessageEvent) => store.project.publishLogs(m.data.logs),
+    };
+
+    useEffect(() => {
+        const channel = new MessageChannel();
+        const interval = setInterval(() => {
+            const contentWindow = iframe.current?.contentWindow;
+            if (contentWindow) {
+                // @ts-ignore set message port on iframe
+                contentWindow.__port = channel.port2;
+                clearInterval(interval);
+
+                channel.port1.onmessage = (m) => {
+                    const type = m.data.type as string;
+                    if (iframeHandler[type]) {
+                        iframeHandler[type](m);
+                    }
+                };
+            }
+        }, 100);
+    }, []);
+
+    return <iframe ref={iframe} src={src} />;
+}
+
+export default Simulator;
+
 // import { html } from 'lit-element';
 // import { MobxLitElement } from '@adobe/lit-mobx';
 // import projectStore from '@store/project-store';

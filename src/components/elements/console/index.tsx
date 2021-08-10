@@ -3,6 +3,7 @@ import { Console as ConsoleFeed, Decode } from 'console-feed';
 import { MessageType } from '@worker/worker-utils';
 
 import css from './console.module.css';
+import store from '@src/store';
 
 // https://github.com/samdenty/console-feed/blob/master/src/definitions/Styles.d.ts
 const theme = {
@@ -14,13 +15,14 @@ export function Console() {
     const logEnd = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        window.onmessage = (m: MessageEvent) => {
-            if (m.data.type === MessageType.LOG) {
-                const logs = m.data.logs.map((json: string) =>
-                    Decode(JSON.parse(json))
-                );
-                setLogs((currLogs: any[]) => [...currLogs, ...logs]);
-            }
+        const id = store.project.subscribeToLogs((logStrings) => {
+            const logs = logStrings.map((json: string) =>
+                Decode(JSON.parse(json))
+            );
+            setLogs((currLogs: any[]) => [...currLogs, ...logs]);
+        });
+        return () => {
+            store.project.unsubscribeFromLogs(id);
         };
     }, []);
 

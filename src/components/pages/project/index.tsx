@@ -11,6 +11,7 @@ import store, { Project as tProject } from '@store';
 import Console from '@elements/console';
 import FileTree from '@elements/file-tree/index';
 import FileViewer from '@elements/file-viewer';
+import Simulator from '@elements/simulator';
 
 import { useParams } from 'react-router';
 import css from './project.module.css';
@@ -113,7 +114,9 @@ export function Project() {
                     <Console />
                 </div>
             </Split>
-            <div className={css.pane}>Simulator</div>
+            <div className={css.pane}>
+                <Simulator />
+            </div>
         </Split>
     );
 }

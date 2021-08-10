@@ -7,6 +7,7 @@ const staticFiles = [
     { from: './src/index.html' },
     // { from: './src/iframe/*.html', to: '[name].[ext]' },
     { from: './public/assets', to: 'assets' },
+    { from: './public/simulator', to: 'simulator' },
     // { from: 'node_modules/@tensorflow/tfjs-core/dist/' },
     // { from: './src/worker/scenario-worker.ts', to: 'scenario-worker.js' },
 ];
@@ -25,18 +26,26 @@ const alias = {
 };
 
 module.exports = {
+    // experiments: {
+    //     outputModule: true,
+    // },
+
     entry: {
         app: './src/index.tsx',
         'scenario-worker': './src/worker/scenario-worker',
         'lib/utils': './src/lib/utils',
+        // 'simulator/utils': {
+        //     import: './src/components/elements/simulator/utils',
+        //     library: {
+        //         type: 'module',
+        //     },
+        // },
         // 'lib/prolog': './src/lib/prolog',
         // 'lib/tensorflow': './src/lib/tensorflow',
     },
 
     output: {
         filename: '[name].js',
-        library: 'LIB',
-        libraryTarget: 'var',
     },
 
     resolve: {

@@ -32,7 +32,11 @@ export function Editor() {
         newValue: string,
         e: monacoEditor.editor.IModelContentChangedEvent
     ) {
-        // console.log('onChange', newValue, e);
+        setValue(newValue);
+        const file = store.project.activeFile;
+        if (file) {
+            store.project.saveFileContent(file.id, newValue);
+        }
     }
 
     function editorDidMount(editor: monacoEditor.editor.IStandaloneCodeEditor) {

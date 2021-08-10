@@ -1,9 +1,6 @@
-import React, { Component } from 'react';
+import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Navbar, Breadcrumb, Nav } from 'react-bootstrap';
-
-import appStore from '@store/app-store';
-import projectStore from '@store/project-store';
 
 import css from './header.module.css';
 

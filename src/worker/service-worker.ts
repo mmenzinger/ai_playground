@@ -1,10 +1,11 @@
-import { registerRoute, RouteHandlerCallbackContext } from 'workbox-routing';
+import { registerRoute } from 'workbox-routing';
 import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching';
 import { StaleWhileRevalidate } from 'workbox-strategies';
-import { Plugin as ExpirationPlugin } from 'workbox-expiration';
-import { Project } from '@store/types';
+import { ExpirationPlugin } from 'workbox-expiration';
+import { Project } from '@store';
 import db from '@localdb';
 
+declare var self: ServiceWorkerGlobalScope;
 declare var PRODUCTION: boolean;
 
 let project: Project | null = null;
@@ -12,14 +13,13 @@ let project: Project | null = null;
 onmessage = m => {
     if (m.data.type === 'setProject') {
         project = m.data.project;
-        m.ports[0].postMessage({ project });
     }
 };
 
-(self as ServiceWorkerGlobalScope).addEventListener('install', (event) => {
+self.addEventListener('install', (event) => {
     event.waitUntil(self.skipWaiting());
 });
-(self as ServiceWorkerGlobalScope).addEventListener('activate', (event) => {
+self.addEventListener('activate', (event) => {
     event.waitUntil(self.clients.claim());
 });
 
@@ -53,47 +53,46 @@ else {
     // console.log(self.__WB_MANIFEST);
 }
 
-async function userFile(arg: RouteHandlerCallbackContext): Promise<Response> {
+async function userFile({url, request}: {url: URL, request: Request}): Promise<Response> {
     let response: Response;
-    const init = {
+    const header = {
         status: 200,
         statusText: 'OK',
         headers: { 'Content-Type': 'application/javascript' }
     };
 
     try {
-        const path = arg.url.pathname.split('/');
-        let id;
+        const path = url.pathname.split('/');
+        let projectId;
         switch (path[1]) {
             case 'project': {
                 if (!project)
                     throw Error('no project loaded');
-                id = project.id; break;
+                projectId = project.id; break;
             }
-            case 'global': id = 0; break;
-            default: id = Number(path[1]);
+            case 'global': projectId = 0; break;
+            default: projectId = Number(path[1]);
         }
-
         let filename = path[path.length - 1];
-        const file = await db.loadFileByName(id, filename);
+        const file = await db.loadFileByName(projectId, filename);
         if (!(file.content instanceof Blob) && file.name.endsWith('.js')) {
             file.content = file.content?.replace(/(from\s*['"`])(project|global|scenario|lib)\//g, '$1/$2/');
         }
         else if (file.name.endsWith('.png')) {
-            init.headers = { 'Content-Type': 'image/png' };
+            header.headers = { 'Content-Type': 'image/png' };
         }
-        response = new Response(file.content, init);
+        response = new Response(file.content, header);
     }
     catch (error) {
-        if (arg.url.pathname.endsWith('localstorage.json')) {
-            response = new Response('{}', init);
+        if (url.pathname.endsWith('localstorage.json')) {
+            response = new Response('{}', header);
         }
-        else if (arg.request) {
-            response = await fetch(arg.request);
+        else if (request) {
+            response = await fetch(request);
         }
         else {
             console.error(`invalid request`);
-            response = await fetch(arg.url.toString());
+            response = await fetch(url.toString());
         }
     }
     return response;
