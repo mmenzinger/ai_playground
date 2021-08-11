@@ -10,6 +10,9 @@ const staticFiles = [
     { from: './public/simulator', to: 'simulator' },
     // { from: 'node_modules/@tensorflow/tfjs-core/dist/' },
     // { from: './src/worker/scenario-worker.ts', to: 'scenario-worker.js' },
+
+    // temporary...
+    { from: './src/lib/utils.js', to: 'lib/utils.js' },
 ];
 
 const alias = {
@@ -33,13 +36,8 @@ module.exports = {
     entry: {
         app: './src/index.tsx',
         'scenario-worker': './src/worker/scenario-worker',
-        'lib/utils': './src/lib/utils',
-        // 'simulator/utils': {
-        //     import: './src/components/elements/simulator/utils',
-        //     library: {
-        //         type: 'module',
-        //     },
-        // },
+        // reenable when webpack 5 s able to support esm ....
+        // 'lib/utils': './src/lib/utils',
         // 'lib/prolog': './src/lib/prolog',
         // 'lib/tensorflow': './src/lib/tensorflow',
     },
