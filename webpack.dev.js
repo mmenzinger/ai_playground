@@ -9,7 +9,7 @@ module.exports = merge(common, {
     devtool: 'inline-cheap-module-source-map',
 
     entry: {
-        'service-worker': './src/worker/service-worker',
+        'service-worker': './src/service-worker',
     },
 
     output: {

@@ -1,17 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { call, MessageType } from '@worker/worker-utils';
-import { start } from '@src/scenario/Examples/~templates/Empty';
-import { toUpper } from 'lodash-es';
 import store from '@src/store';
+import { StoreMessage } from './utils';
+import { project } from '@src/components/pages/project-index/project-index.module.css';
+import db from '@src/localdb';
 
 export function Simulator() {
     const iframe = useRef<HTMLIFrameElement>(null);
     const [src, setSrc] = useState<string>('/simulator/default.html');
-    //const [worker, setWorker] = useState<Worker | null>(null);
-    //const [workerPort, setWorkerPort] = useState<MessagePort | null>(null);
 
     const iframeHandler: any = {
         log: (m: MessageEvent) => store.project.publishLogs(m.data.logs),
+        store: (m: MessageEvent) => storeFile(m),
     };
 
     useEffect(() => {
@@ -19,8 +18,8 @@ export function Simulator() {
         const interval = setInterval(() => {
             const contentWindow = iframe.current?.contentWindow;
             if (contentWindow) {
-                // @ts-ignore set message port on iframe
-                contentWindow.__port = channel.port2;
+                // set message port on iframe
+                (contentWindow as any).__port = channel.port2;
                 clearInterval(interval);
 
                 channel.port1.onmessage = (m) => {
@@ -34,6 +33,23 @@ export function Simulator() {
     }, []);
 
     return <iframe ref={iframe} src={src} />;
+}
+
+async function storeFile(m: MessageEvent) {
+    const data: StoreMessage = m.data;
+    let projectId = data.projectId || store.project.activeProject?.id;
+
+    if (projectId) {
+        try {
+            const file = await db.loadFileByName(projectId, data.fileName);
+            await store.project.saveFileContent(file.id, data.data);
+        } catch (_) {
+            await store.project.createFile(data.fileName, projectId, data.data);
+        }
+        m.ports[0].postMessage(true);
+    } else {
+        throw Error('no active project');
+    }
 }
 
 export default Simulator;

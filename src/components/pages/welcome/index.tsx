@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Alert, Button, Spinner } from 'react-bootstrap';
 import { messageWithResult } from '@utils';
-import { MessageType } from '@worker/worker-utils';
 
 import store from '@store';
 
@@ -20,15 +19,15 @@ async function checkServiceWorker(): Promise<JSX.Element | true> {
 async function checkModuleWorker(): Promise<JSX.Element | true> {
     return new Promise(async (resolve, _) => {
         try {
-            const worker = new Worker(`/scenario-worker.js`, {
+            const worker = new Worker(`/simulator/scenario-worker.js`, {
                 type: 'module',
             });
             const result = await messageWithResult(
-                { type: MessageType.TEST },
+                { type: 'setup' },
                 5000,
                 worker
             );
-            if (result === true) {
+            if (result.type === 'ready') {
                 resolve(true);
             } else {
                 resolve(
@@ -37,6 +36,7 @@ async function checkModuleWorker(): Promise<JSX.Element | true> {
                     </a>
                 );
             }
+            worker.terminate();
         } catch (e) {
             resolve(
                 <a href="https://developer.mozilla.org/en-US/docs/Web/API/Worker/Worker">
@@ -114,6 +114,17 @@ export function Welcome() {
         </Alert>
     ) : null;
 
+    const ok =
+        !missingFeatures || missingFeatures?.length ? null : (
+            <Alert variant="success">
+                Your browser has all required features and should work fine. If
+                you still find any bugs let me know:{' '}
+                <a href="https://github.com/c4f-wtf/ai/issues">
+                    https://github.com/c4f-wtf/ai/issues
+                </a>
+            </Alert>
+        );
+
     return (
         <div className={css.root}>
             <h1>Welcome to ai.c4f.wtf</h1>
@@ -136,17 +147,13 @@ export function Welcome() {
                 target machine.
             </p>
             <p>
-                This page is under heavy development, scenarios might change and
-                bugs may occur. To help fixing those problems please make use of
-                the report function in the top right corner.
-            </p>
-            <p>
-                Furthermore the app is open-source and its code can be found{' '}
-                <a href="https://github.com/c4f-wtf/ai">on GitHub</a>. It was
+                Furthermore the app is open-source and its code can be found on{' '}
+                <a href="https://github.com/c4f-wtf/ai">GitHub</a>. It was
                 created with extensibility in mind, any contributions
                 (especially new scenarios) are very welcome.
             </p>
             {missing}
+            {ok}
             {footer}
         </div>
     );

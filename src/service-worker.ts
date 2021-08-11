@@ -73,8 +73,15 @@ async function userFile({url, request}: {url: URL, request: Request}): Promise<R
             case 'global': projectId = 0; break;
             default: projectId = Number(path[1]);
         }
-        let filename = path[path.length - 1];
-        const file = await db.loadFileByName(projectId, filename);
+        let file;
+        if(path[2] === 'first'){
+            file = await db.loadFirstFileByName(projectId, path[path.length-1]);
+        }
+        else{
+            const filepath = path.slice(2).join('/');
+            file = await db.loadFileByName(projectId, filepath);
+        }
+        
         if (!(file.content instanceof Blob) && file.name.endsWith('.js')) {
             file.content = file.content?.replace(/(from\s*['"`])(project|global|scenario|lib)\//g, '$1/$2/');
         }

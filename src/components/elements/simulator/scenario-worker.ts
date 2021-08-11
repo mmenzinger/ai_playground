@@ -8,7 +8,7 @@ import cfFunction from 'console-feed/lib/Transform/Function';
 import cfMap from 'console-feed/lib/Transform/Map';
 import cfReplicator from 'console-feed/lib/Transform/replicator';
 
-import {CallMessage, EventMessage, LogMessage, Message, MessageType, VideoMessage} from './worker-utils';
+import { SetupMessage, CallMessage, MouseEventMessage } from './utils';
 
 /***********************************************************************************************
  *  console wrapper
@@ -46,41 +46,79 @@ function postLogMessage(jsonData: string): void{
  *  message handling
  */
 const messageHandler:any = {
-    call: (m: MessageEvent) => call(m.data.file, m.data.functionName, m.data.args, m.ports[0]),
+    call: (m: MessageEvent) => {
+        const data = m.data as CallMessage;
+        call(data.file, data.functionName, data.args, m.ports[0]);
+    },
+    onmousedown: (m: MessageEvent) => {
+        const data = m.data as MouseEventMessage;
+        if((self as any).onmousedown instanceof Function){
+            (self as any).onmousedown(data);
+        }
+    },
+    onmouseup: (m: MessageEvent) => {
+        const data = m.data as MouseEventMessage;
+        if((self as any).onmouseup instanceof Function){
+            (self as any).onmouseup(data);
+        }
+    },
+    onmousemove: (m: MessageEvent) => {
+        const data = m.data as MouseEventMessage;
+        if((self as any).onmousemove instanceof Function){
+            (self as any).onmousemove(data);
+        }
+    },
 };
 
 onmessage = async m => {
-    if(m.data.type === 'setup'){
-        const channel = new MessageChannel();
-        (self as any).__messageChannel = channel;
-        (self as any).__canvas = m.data.canvas;
-        (self as any).__messagePort = channel.port1;
-        channel.port1.onmessage = m => {
-            if(messageHandler[m.data.type]){
-                messageHandler[m.data.type](m);
+    try{
+        if(m.data.type === 'setup'){
+            const data = m.data as SetupMessage;
+            const channel = new MessageChannel();
+            (self as any).__messageChannel = channel;
+            (self as any).__canvas = data.canvas;
+            (self as any).__messagePort = channel.port1;
+            channel.port1.onmessage = m => {
+                    if(messageHandler[m.data.type]){
+                        messageHandler[m.data.type](m);
+                    }
             }
+            // @ts-ignore
+            const util = await import(/* webpackIgnore: true */ '/lib/utils.js');
+            //await util.initLocalStorage();
+
+            m.ports[0].postMessage({
+                type: 'ready',
+                port: channel.port2,
+            }, [channel.port2]);
         }
-        // @ts-ignore
-        const util = await import(/* webpackIgnore: true */ '/lib/utils.js');
-        //await util.initLocalStorage();
-
-        m.ports[0].postMessage({
-            type: 'ready',
-            port: channel.port2,
-        }, [channel.port2]);
+    }
+    catch(e){
+        console.error(e);
     }
 }
 
-async function call(file: string, functionName: string, args: [any], resultPort: MessagePort){
-    const index = await import(/* webpackIgnore: true */ file);
-    if(index[functionName] instanceof Function){
-        const result = await index[functionName](...args);
-        resultPort.postMessage(result);
+async function call(file: string, functionName: string, args: any[], resultPort: MessagePort){
+    try{
+        const index = await import(/* webpackIgnore: true */ file);
+        if(index[functionName] instanceof Function){
+            const result = await index[functionName](...args);
+            resultPort.postMessage(result);
+        }
+        else{
+            throw Error(`${file} does not have an exported function '${functionName}'`);
+        }
     }
-    else{
-        throw Error(`${file} does not have an exported function '${functionName}'`);
+    catch(e){
+        console.error(e);
     }
 }
+
+self.addEventListener("unhandledrejection", function(e) { 
+    console.error(e.reason);
+    // handle error here, for example log   
+});
+
 // let videoFrameUpdateBusy = false;
 // onmessage = async m => {
 //     const msg: Message = m.data;

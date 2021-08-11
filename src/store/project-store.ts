@@ -185,8 +185,8 @@ class ProjectStore {
         this.activeFile = null;
     }
 
-    async createFile(name: string, projectId: number = 0, parentId: number = 0, content: string | Blob = ''): Promise<number> {
-        const id: number = await db.createFile(projectId, parentId, name, content);
+    async createFile(name: string, projectId: number = 0, content?: string | Blob, parentId: number = 0): Promise<number> {
+        const id: number = await db.createFile(projectId, name, content, parentId);
 
         runInAction(() => {
             this.lastFileTreeChange = Date.now();
@@ -204,7 +204,7 @@ class ProjectStore {
         });
     }
 
-    async saveFileContent(id: number, content: string): Promise<void> {
+    async saveFileContent(id: number, content: string | Blob): Promise<void> {
         await db.saveFileContent(id, content);
         runInAction(() => {
             if (this.activeFile?.id === id) {

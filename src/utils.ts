@@ -17,10 +17,6 @@ export async function messageWithResult(msg: object, timeout: number | null = nu
         channel.port1.onmessage = m => {
             clearTimeout(to);
             resolve(m.data);
-            // if(m.data && m.data.result)
-            //     resolve(m.data.result);
-            // else
-            //     resolve(undefined);
         }
         target.postMessage(msg, [channel.port2, ...transfer]);
     });
@@ -152,12 +148,19 @@ export function deserialize(json: string): any {
         return value;
     };
 
-    let obj = JSON.parse(json, reviver);
-    return deepMap(obj, value => {
-        if (value === '__UNDEFINED__')
-            return undefined;
-        return value;
-    });
+    try{
+        const obj = JSON.parse(json, reviver);
+
+        return deepMap(obj, value => {
+            if (value === '__UNDEFINED__')
+                return undefined;
+            return value;
+        });
+    }
+    catch(e){
+        console.error(e);
+    }
+    
 }
 
 export function dispatchIframeEvents(iframe: HTMLIFrameElement, target: any = window) {

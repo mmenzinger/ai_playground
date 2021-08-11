@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Console as ConsoleFeed, Decode } from 'console-feed';
-import { MessageType } from '@worker/worker-utils';
 
 import css from './console.module.css';
 import store from '@src/store';
@@ -19,7 +18,11 @@ export function Console() {
             const logs = logStrings.map((json: string) =>
                 Decode(JSON.parse(json))
             );
-            setLogs((currLogs: any[]) => [...currLogs, ...logs]);
+            if (logs.length) {
+                setLogs((currLogs: any[]) => [...currLogs, ...logs]);
+            } else {
+                setLogs([]);
+            }
         });
         return () => {
             store.project.unsubscribeFromLogs(id);

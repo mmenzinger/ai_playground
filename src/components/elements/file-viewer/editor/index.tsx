@@ -19,7 +19,10 @@ export function Editor() {
     useEffect(() => {
         autorun(() => {
             const file = store.project.activeFile;
-            if (file?.content && !(file.content instanceof Blob)) {
+            if (
+                file?.content !== undefined &&
+                !(file.content instanceof Blob)
+            ) {
                 !closed && setValue(file.content);
             }
         });

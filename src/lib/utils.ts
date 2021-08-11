@@ -1,5 +1,5 @@
+import { StoreMessage } from '@elements/simulator/utils';
 import { serialize, deserialize, messageWithResult } from '@src/utils';
-import { MessageType, JSONMessage, HtmlMessage } from '@worker/worker-utils';
 
 import seedrandom from 'seedrandom';
 
@@ -26,19 +26,19 @@ export async function includeUrl(url: string, context = {}, parse = (content: st
 
 export async function storeJson(path: string, data: any): Promise<void> {
     path = fixPath(path, '.json');
-    const match = path.match(/\/?([^\/]+)\/([^\/]+$)/);
+    const match = path.match(/^\/(project|global)\/(.+$)/);
     if(match){
         const json = serialize(data);
         const projectId = (match[1] === 'global') ? 0 : undefined;
-        const msg: JSONMessage = { 
-            type: MessageType.JSON_STORE,
+        const msg: StoreMessage = {
+            type: 'store',
             projectId,
             fileName: match[2],
-            json,
+            data: json,
         };
         
-        await messageWithResult(msg, 1000)
-            .catch(_ => {
+        await messageWithResult(msg, 1000, (self as any).__messagePort)
+            .catch(() => {
                 throw Error(`could not store file ${match[2]}`);
             });
     }
@@ -124,7 +124,9 @@ export const localStorage = {
  *  gui interaction
  */
 export function getCanvas(id: 0 | 1 | 2 = 0): OffscreenCanvas{
-    return (self as any).__canvases[id];
+    if(id !== 0)
+        throw Error("multiple canvases were removed");
+    return (self as any).__canvas;
 }
 
 export async function sleep(ms: number): Promise<void>{
@@ -134,26 +136,18 @@ export async function sleep(ms: number): Promise<void>{
 } 
 
 export async function setMessages(html: string): Promise<void>{
-    const msg: HtmlMessage = { 
-        type: MessageType.HTML,
-        action: 'set',
-        html,
-    };
-    await messageWithResult(msg);
+    throw Error("setMessages was removed");
 }
 
 export async function addMessage(html: string): Promise<void>{
-    const msg: HtmlMessage = { 
-        type: MessageType.HTML,
-        action: 'add',
-        html,
-    };
-    await messageWithResult(msg)
+    throw Error("addMessage was removed");
 }
 
 let images = new Map<string, ImageBitmap>();
 export async function loadImages(paths: string[]): Promise<void> {
+
     const newImages = await Promise.all(paths.map(async (path) => {
+        path = fixPath(path);
         const match = path.match(/\/([^\/]+)\.(png|jpeg)$/);
         let name = path;
         if(match && match.length > 1){

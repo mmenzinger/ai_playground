@@ -23,7 +23,7 @@ module.exports = merge(common, {
             PRODUCTION: true,
         }),
         new InjectManifest({
-            swSrc: './src/worker/service-worker.ts',
+            swSrc: './src/service-worker.ts',
             maximumFileSizeToCacheInBytes: 50 * 1024 * 1024, // monaco has huge file sizes...
         }),
     ],

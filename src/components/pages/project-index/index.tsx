@@ -132,8 +132,10 @@ export function ProjectIndex() {
             >
                 <Card.Img
                     variant="top"
-                    src={`/${project.id}/logo.png`}
-                    onError={(e: any) => (e.target.src = '/assets/logo.png')}
+                    src={`/${project.id}/first/logo.png`}
+                    onError={(e: any) => {
+                        e.target.src = '/assets/logo.png';
+                    }}
                 />
                 <Card.Body>
                     <Card.Text>{project.name}</Card.Text>

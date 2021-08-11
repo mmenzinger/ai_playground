@@ -35,7 +35,8 @@ module.exports = {
 
     entry: {
         app: './src/index.tsx',
-        'scenario-worker': './src/worker/scenario-worker',
+        'simulator/scenario-worker':
+            './src/components/elements/simulator/scenario-worker',
         // reenable when webpack 5 s able to support esm ....
         // 'lib/utils': './src/lib/utils',
         // 'lib/prolog': './src/lib/prolog',

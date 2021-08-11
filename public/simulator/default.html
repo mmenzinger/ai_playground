@@ -32,16 +32,24 @@
             import { ScenarioWorker } from '/simulator/utils.js';
 
             const displayContainer = document.getElementById('display');
-            const worker = new ScenarioWorker();
+            const worker = new ScenarioWorker({
+                onmousedown: true,
+                onmouseup: true,
+                onmousemove: true,
+            });
+
+            onload = async function () {
+                await worker.start(displayContainer);
+                await worker.call('/project/index.js', 'start');
+            };
 
             document.getElementById('start').onclick = async function () {
                 await worker.start(displayContainer);
-                const ret = await worker.call('/project/index.js', 'start');
-                console.log(ret);
+                await worker.call('/project/index.js', 'start');
             };
             document.getElementById('train').onclick = async function () {
                 await worker.start(displayContainer);
-                worker.call('/project/index.js', 'train');
+                await worker.call('/project/index.js', 'train');
             };
             document.getElementById('terminate').onclick = async function () {
                 worker.terminate();
@@ -49,12 +57,10 @@
         </script>
     </head>
     <body>
-        <header>
-            <section id="control">
-                <button id="start">start&nbsp;/&nbsp;restart</button>
-                <button id="train">call&nbsp;train</button>
-                <button id="terminate">terminate</button>
-            </section>
+        <header id="control">
+            <button id="start">start&nbsp;/&nbsp;restart</button>
+            <button id="train">call&nbsp;train</button>
+            <button id="terminate">terminate</button>
         </header>
         <main id="display"></main>
     </body>

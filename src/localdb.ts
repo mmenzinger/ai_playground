@@ -54,9 +54,21 @@ class LocalDB {
     //------------------------------------------------------------------------------------------
     // F i l e s
     //------------------------------------------------------------------------------------------
-    async createFile(projectId: number, parentId: number, name: string, content?: string | Blob): Promise<number>{
+    async createFile(projectId: number, path: string, content?: string | Blob, parentId?: number): Promise<number>{
         const lastChange = Date.now();
-        return this.#files.add({ projectId, name, content, parentId, lastChange });
+        if(parentId === undefined){
+            const folders = path.split('/');
+            parentId = 0;
+            for(const folder of folders){
+                const iFile: IFiles | undefined = await this.#files.get({projectId, parentId, folder});
+                if(!iFile || iFile.id === undefined){
+                    throw new LocalDBError(`file '${path}' does not exist`);
+                }
+                parentId = iFile?.id;
+            }
+            
+        }
+        return this.#files.add({ projectId, name: path, content, parentId, lastChange });
     }
 
     async loadFile(id: number): Promise<File>{
@@ -66,11 +78,26 @@ class LocalDB {
         return {...iFile, id};
     }
 
-    async loadFileByName(projectId: number, name: string): Promise<File>{
-        const iFile = await this.#files.get({projectId, name});
-        if(!iFile || iFile.id === undefined)
+    async loadFileByName(projectId: number, path: string): Promise<File>{
+        const names = path.split('/');
+        let parentId = 0;
+        let iFile: IFiles | undefined = undefined;
+        for(const name of names){
+            iFile = await this.#files.get({projectId, parentId, name});
+            if(!iFile || iFile.id === undefined){
+                throw new LocalDBError(`file '${path}' does not exist`);
+            }
+            parentId = iFile?.id;
+        }
+        return iFile as File;
+    }
+
+    async loadFirstFileByName(projectId: number, name: string): Promise<File>{
+        let iFile = await this.#files.get({projectId, name});
+        if(!iFile || iFile.id === undefined){
             throw new LocalDBError(`file '${name}' does not exist`);
-        return {...iFile, id: iFile.id};
+        }
+        return iFile as File;
     }
 
     async saveFile(file: File, lastChange: number = Date.now()): Promise<void> {
@@ -122,11 +149,11 @@ class LocalDB {
             let projectFilePromises: Promise<number>[] = [];
             const recAddFile = async (file: BasicFile, parentId: number = 0) => {
                 if(Array.isArray(file.content)){
-                    const newFileId = await this.createFile(projectId, parentId, file.name);
+                    const newFileId = await this.createFile(projectId, file.name, undefined, parentId);
                     file.content.forEach(file => recAddFile(file, newFileId));
                 }
                 else{
-                    projectFilePromises.push(this.createFile(projectId, parentId, file.name, file.content));
+                    projectFilePromises.push(this.createFile(projectId, file.name, file.content, parentId));
                 }
             }
             files.forEach((file) => recAddFile(file));
@@ -201,7 +228,7 @@ class LocalDB {
                         await this.saveFileContent(oldFile.id, newFile.content || '');
                 }
                 catch(_){
-                    await this.createFile(0, newFile.parentId, newFile.name, newFile.content);
+                    await this.createFile(0, newFile.name, newFile.content, newFile.parentId);
                 }
             });
             await Promise.all(collisionFilesPromises);
