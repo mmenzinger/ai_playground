@@ -32,7 +32,13 @@ export function Simulator() {
         }, 100);
     }, []);
 
-    return <iframe ref={iframe} src={src} />;
+    return (
+        <iframe
+            ref={iframe}
+            src={src}
+            sandbox="allow-scripts allow-same-origin"
+        />
+    );
 }
 
 async function storeFile(m: MessageEvent) {
@@ -41,7 +47,7 @@ async function storeFile(m: MessageEvent) {
 
     if (projectId) {
         try {
-            const file = await db.loadFileByName(projectId, data.fileName);
+            const file = await db.loadFileByPath(projectId, data.fileName);
             await store.project.saveFileContent(file.id, data.data);
         } catch (_) {
             await store.project.createFile(data.fileName, projectId, data.data);

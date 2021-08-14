@@ -64,7 +64,7 @@ export function FileViewer() {
                     <img
                         className={css.image}
                         src={`/${store.project.activeProject?.id || 'assets'}/${
-                            file?.name || 'logo.png'
+                            file?.id ? `file/${file.id}` : 'logo.png'
                         }`}
                     />
                 </Tab>

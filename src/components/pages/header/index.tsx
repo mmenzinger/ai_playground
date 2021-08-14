@@ -65,7 +65,7 @@ export function Header(props: { title: string }) {
                         Impressum
                     </Nav.Link>
                     <Nav.Link href="https://github.com/c4f-wtf/ai/issues">
-                        Bugs
+                        Issues
                     </Nav.Link>
                 </Nav>
             </Navbar.Collapse>

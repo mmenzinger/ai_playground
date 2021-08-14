@@ -9,6 +9,7 @@ export interface IFiles {
     projectId: number,
     parentId: number,
     name: string,
+    path: string,
     content?: string | Blob,
     lastChange?: number,
     state?: editor.ICodeEditorViewState,
@@ -47,6 +48,13 @@ class LocalDB {
         this.#db.version(5).stores({
             files: '++id,&[projectId+parentId+name],[projectId+name],projectId,parentId',
         });
+        this.#db.version(6).stores({
+            files: '++id,&[projectId+parentId+name],&[projectId+path],[projectId+name],projectId,parentId',
+        }).upgrade(trans => {
+            return trans.table('files').toCollection().modify((file:File) => {
+                file.path = file.name;
+            });
+        });
         this.#files = this.#db.table('files');
         this.#projects = this.#db.table('projects');
     }
@@ -54,21 +62,27 @@ class LocalDB {
     //------------------------------------------------------------------------------------------
     // F i l e s
     //------------------------------------------------------------------------------------------
-    async createFile(projectId: number, path: string, content?: string | Blob, parentId?: number): Promise<number>{
+    async createFile(projectId: number, name: string, content?: string | Blob, parentId?: number): Promise<number>{
         const lastChange = Date.now();
-        if(parentId === undefined){
-            const folders = path.split('/');
-            parentId = 0;
-            for(const folder of folders){
-                const iFile: IFiles | undefined = await this.#files.get({projectId, parentId, folder});
-                if(!iFile || iFile.id === undefined){
-                    throw new LocalDBError(`file '${path}' does not exist`);
-                }
-                parentId = iFile?.id;
-            }
-            
+        let path = name;
+        if(parentId === 0 && ['first', 'file'].includes(name)){
+            throw new LocalDBError(`'${name}' is used internally and can not be used as a top level name`);
         }
-        return this.#files.add({ projectId, name: path, content, parentId, lastChange });
+        if(parentId === undefined){
+            parentId = 0;
+        }
+        if(parentId !== 0){
+            let parent = parentId;
+            while(parent !== 0){
+                const iFile: IFiles | undefined = await this.#files.get({id: parent});
+                if(!iFile){
+                    break;
+                }
+                parent = iFile.parentId || 0;
+                path = `${iFile.name}/${path}`;
+            }
+        }
+        return this.#files.add({ projectId, name, path, content, parentId, lastChange });
     }
 
     async loadFile(id: number): Promise<File>{
@@ -78,25 +92,17 @@ class LocalDB {
         return {...iFile, id};
     }
 
-    async loadFileByName(projectId: number, path: string): Promise<File>{
-        const names = path.split('/');
-        let parentId = 0;
-        let iFile: IFiles | undefined = undefined;
-        for(const name of names){
-            iFile = await this.#files.get({projectId, parentId, name});
-            if(!iFile || iFile.id === undefined){
-                throw new LocalDBError(`file '${path}' does not exist`);
-            }
-            parentId = iFile?.id;
-        }
+    async loadFileByPath(projectId: number, path: string): Promise<File>{
+        const iFile = await this.#files.get({projectId, path});
+        if(!iFile)
+            throw new LocalDBError(`file '${path}' does not exist`);
         return iFile as File;
     }
 
     async loadFirstFileByName(projectId: number, name: string): Promise<File>{
         let iFile = await this.#files.get({projectId, name});
-        if(!iFile || iFile.id === undefined){
+        if(!iFile)
             throw new LocalDBError(`file '${name}' does not exist`);
-        }
         return iFile as File;
     }
 
@@ -130,9 +136,34 @@ class LocalDB {
     }
 
     async renameFile(id: number, name: string, lastChange: number = Date.now()): Promise<void>{
-        const records: number = await this.#files.update(id, {name, lastChange});
+        const iFile = await this.#files.get(id);
+        if(!iFile)
+            throw new LocalDBError(`file ${id} does not exist`);
+        const path = iFile.path.split('/');
+        path.pop();
+        path.push(name);
+        const records: number = await this.#files.update(id, {name, path: path.join('/'), lastChange});
         if(records === 0)
             throw new LocalDBError(`could not rename file ${id}`);
+    }
+
+    async moveFile(id: number, parentId: number, lastChange: number = Date.now()): Promise<void>{
+        const iFile = await this.#files.get(id);
+        if(!iFile)
+            throw new LocalDBError(`file ${id} does not exist`);
+        let parent = parentId;
+        let path = iFile.name;
+        while(parent !== 0){
+            const iFile: IFiles | undefined = await this.#files.get({id: parent});
+            if(!iFile){
+                break;
+            }
+            parent = iFile.parentId || 0;
+            path = `${iFile.name}/${path}`;
+        }
+        const records: number = await this.#files.update(id, {parentId, path, lastChange});
+        if(records === 0)
+            throw new LocalDBError(`could not move file ${id} into ${parentId}`);
     }
 
     async fileExists(projectId:number, name: string): Promise<boolean>{
@@ -215,6 +246,21 @@ class LocalDB {
         return files;
     }
 
+    async getProjectFilesResolved(id: number): Promise<File[]>{
+        const iFiles = await this.#files.where('projectId').equals(id).toArray();
+        const files: File[] = [];
+        for(const iFile of iFiles){
+            
+            if(iFile.id !== undefined){
+                files.push({...iFile, id: iFile.id})
+            }
+            else{
+                throw new LocalDBError('this should never happen');
+            }
+        }
+        return files;
+    }
+
     async setProjectOpenFileId(id: number, fileId: number): Promise<void> {
         await this.#projects.update(id, {openFileId: fileId});
     }
@@ -223,7 +269,7 @@ class LocalDB {
         return this.#db.transaction('rw', this.#projects,this.#files, async () => {
             const collisionFilesPromises = globalFiles.map(async (newFile) => {
                 try{
-                    const oldFile = await this.loadFileByName(0, newFile.name);
+                    const oldFile = await this.loadFileByPath(0, newFile.name);
                     if(collision === 'new')
                         await this.saveFileContent(oldFile.id, newFile.content || '');
                 }

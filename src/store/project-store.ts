@@ -4,7 +4,17 @@ import db from '@localdb';
 import { editor, IPosition } from 'monaco-editor';
 import { BasicFile } from '@src/webpack-utils';
 
+export type Caller = {
+    fileId?: number,
+    projectId?: number,
+    fileName?: string,
+    functionNames: string[]
+    line?: number,
+    column?: number,
+}
+
 export type FileError = {
+    caller: Caller,
     args: any[],
 }
 
@@ -17,6 +27,7 @@ export type File = {
     projectId: number,
     parentId: number,
     name: string,
+    path: string,
     state?: editor.ICodeEditorViewState,
     content?: string | Blob,
     lastChange?: number,
@@ -71,7 +82,7 @@ class ProjectStore {
         if(!file){
             for(const fileName of ['readme.md', 'scenario.md', 'index.js']){
                 try{
-                    file = await db.loadFileByName(id, fileName);
+                    file = await db.loadFirstFileByName(id, fileName);
                     break;
                 }
                 catch(_){}

@@ -4,6 +4,7 @@ import { StaleWhileRevalidate } from 'workbox-strategies';
 import { ExpirationPlugin } from 'workbox-expiration';
 import { Project } from '@store';
 import db from '@localdb';
+import { isNumber } from 'lodash-es';
 
 declare var self: ServiceWorkerGlobalScope;
 declare var PRODUCTION: boolean;
@@ -77,9 +78,13 @@ async function userFile({url, request}: {url: URL, request: Request}): Promise<R
         if(path[2] === 'first'){
             file = await db.loadFirstFileByName(projectId, path[path.length-1]);
         }
+        else if(path[2] === 'file' && Number(path[3])){
+            const id = Number(path[3]);
+            file = await db.loadFile(id);
+        }
         else{
             const filepath = path.slice(2).join('/');
-            file = await db.loadFileByName(projectId, filepath);
+            file = await db.loadFileByPath(projectId, filepath);
         }
         
         if (!(file.content instanceof Blob) && file.name.endsWith('.js')) {

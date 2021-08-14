@@ -1,7 +1,7 @@
 const path = require('path');
 const CopyPlugin = require('copy-webpack-plugin');
 const FaviconsWebpackPlugin = require('favicons-webpack-plugin');
-const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
+// const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
 
 const staticFiles = [
     { from: './src/index.html' },
@@ -128,10 +128,10 @@ module.exports = {
                 },
             },
         }),
-        new MonacoWebpackPlugin({
-            // available options are documented at https://github.com/Microsoft/monaco-editor-webpack-plugin#options
-            languages: ['javascript', 'json', 'markdown'],
-        }),
+        // new MonacoWebpackPlugin({
+        //     // available options are documented at https://github.com/Microsoft/monaco-editor-webpack-plugin#options
+        //     languages: ['javascript', 'json', 'markdown'],
+        // }),
     ],
 
     devServer: {

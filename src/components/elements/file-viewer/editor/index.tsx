@@ -1,63 +1,420 @@
-import React, { useState, useEffect } from 'react';
-import MonacoEditor, {
-    ChangeHandler,
-    EditorDidMount,
-} from 'react-monaco-editor';
-import monacoEditor from 'monaco-editor';
+import React, { useState, useEffect, useRef } from 'react';
+import MonacoEditor, { Monaco } from '@monaco-editor/react';
+import { Uri, editor, languages, MarkerSeverity } from 'monaco-editor';
+import store, { File, FileError, Project, ProjectErrors } from '@store';
+import { prologTokensProvider } from './prolog';
+import { isString } from 'lodash';
 import { autorun } from 'mobx';
-import store from '@src/store';
+import db from '@localdb';
 
 const options = {
     selectOnLineNumbers: true,
     automaticLayout: true,
+
+    fontSize: 14,
+    scrollBeyondLastLine: false,
+    scrollBeyondLastColumn: 1,
+    roundedSelection: false,
+    mouseWheelZoom: true,
+    minimap: {
+        enabled: false,
+    },
+    lineNumbersMinChars: 3,
+    // wordWrap: 'on',
+    // model: null,
 };
+
+function editorWillMount(monaco: Monaco) {
+    monaco.languages.typescript.javascriptDefaults.setDiagnosticsOptions({
+        noSemanticValidation: false,
+        noSyntaxValidation: false,
+        noSuggestionDiagnostics: false,
+        diagnosticCodesToIgnore: [],
+    });
+
+    monaco.languages.typescript.javascriptDefaults.setCompilerOptions({
+        target: monaco.languages.typescript.ScriptTarget.ESNext,
+        allowNonTsExtensions: true,
+        allowJs: true,
+        alwaysStrict: true,
+        checkJs: true,
+        esModuleInterop: true,
+        module: monaco.languages.typescript.ModuleKind.ESNext,
+        paths: {
+            '@/*': ['./'],
+        },
+        baseUrl: './',
+    });
+
+    monaco.languages.register({ id: 'prolog' });
+    monaco.languages.setMonarchTokensProvider('prolog', prologTokensProvider);
+}
 
 export function Editor() {
     const [value, setValue] = useState('');
 
+    const internals = useRef<{
+        editor: editor.IStandaloneCodeEditor | null;
+        monaco: Monaco | null;
+        file: File | null;
+        modelFiles: Map<string, File>; // model.id => File
+        lastMarkers: editor.IMarker[] | null;
+        projectErrors: ProjectErrors;
+        firstErrorUpdate: boolean;
+    }>({
+        editor: null,
+        monaco: null,
+        file: null,
+        modelFiles: new Map(),
+        lastMarkers: null,
+        projectErrors: {},
+        firstErrorUpdate: true,
+    });
+
     let closed = false;
     useEffect(() => {
-        autorun(() => {
-            const file = store.project.activeFile;
-            if (
-                file?.content !== undefined &&
-                !(file.content instanceof Blob)
-            ) {
-                !closed && setValue(file.content);
-            }
-        });
         return () => {
             closed = true;
         };
     }, []);
 
-    function onChange(
-        newValue: string,
-        e: monacoEditor.editor.IModelContentChangedEvent
+    function editorDidMount(
+        editor: editor.IStandaloneCodeEditor,
+        monaco: Monaco
     ) {
-        setValue(newValue);
+        internals.current.editor = editor;
+        internals.current.monaco = monaco;
+        // editor.focus();
+        let file: File;
+        let project: Project;
+        autorun(async () => {
+            const newFile = store.project.activeFile;
+            const newProject = store.project.activeProject;
+
+            if (newProject !== project && newProject) {
+                project = newProject;
+                let files = await db.getProjectFilesResolved(project.id);
+                files = [
+                    ...files,
+                    ...(await db.getProjectFilesResolved(0)),
+                ].filter((file) => !(file.content instanceof Blob));
+                openProject(project, files);
+            }
+            if (newFile !== file && newFile) {
+                file = newFile;
+
+                openFile(file);
+            }
+        });
+
+        editor.onDidChangeCursorSelection((_) => {
+            if (internals.current.file?.id) {
+                store.project.saveFileState(
+                    internals.current.file.id,
+                    editor.saveViewState()
+                );
+            }
+        });
+        editor.onDidScrollChange((_) => {
+            if (internals.current.file?.id) {
+                store.project.saveFileState(
+                    internals.current.file.id,
+                    editor.saveViewState()
+                );
+            }
+        });
+
+        editor.onDidChangeModelDecorations((_) => {
+            markersUpdated();
+        });
+    }
+
+    function onChange(
+        value: string | undefined,
+        event: editor.IModelContentChangedEvent
+    ) {
+        setValue(value || '');
         const file = store.project.activeFile;
         if (file) {
-            store.project.saveFileContent(file.id, newValue);
+            store.project.saveFileContent(file.id, value || '');
         }
     }
 
-    function editorDidMount(editor: monacoEditor.editor.IStandaloneCodeEditor) {
-        // console.log('editorDidMount', editor);
-        editor.focus();
+    function createModel(file: File, uri: Uri) {
+        let language = 'javascript';
+        const ending = file.name.match(/\.([a-z]+)$/);
+        if (ending) {
+            switch (ending[1]) {
+                case 'js':
+                    language = 'javascript';
+                    break;
+                case 'json':
+                    language = 'json';
+                    break;
+                case 'pl':
+                    language = 'prolog';
+                    break;
+                case 'md':
+                    language = 'markdown';
+                    break;
+                case 'html':
+                    language = 'html';
+                    break;
+            }
+        }
+        if (file.content instanceof Blob) return null;
+        return (
+            internals.current.monaco?.editor.createModel(
+                file.content || '',
+                language,
+                uri
+            ) || null
+        );
+    }
+
+    function openProject(project: Project, files: File[], initialFile?: File) {
+        if (internals.current.monaco) {
+            internals.current.projectErrors = {};
+            // preload files
+            const modelsValidated = [];
+            for (const file of files) {
+                // (file.projectId ? '/project/' : '/global/') + file.name;
+                const uri = internals.current.monaco.Uri.parse(file.path);
+                let model = internals.current.monaco.editor.getModel(uri);
+                if (!model) {
+                    model = createModel(file, uri);
+                } else {
+                    if (!(file.content instanceof Blob)) {
+                        model.setValue(file.content || '');
+                    }
+                }
+                if (model) {
+                    modelsValidated.push(validateModel(model));
+                    internals.current.modelFiles.set(model.id, file);
+                }
+            }
+            Promise.all(modelsValidated).then((_) => {
+                markersUpdated();
+            });
+
+            if (initialFile) {
+                openFile(initialFile);
+            }
+        }
+    }
+
+    function openFile(file: File) {
+        if (internals.current.monaco) {
+            if (file.content instanceof Blob) return;
+
+            if (!file) {
+                console.warn('tried to open non existing file');
+                return;
+            }
+
+            if (internals.current.file) {
+                internals.current.file.state =
+                    internals.current.editor?.saveViewState() || undefined;
+            }
+            internals.current.file = file;
+
+            let path;
+            if (file.id) {
+                path = (file.projectId ? '/project/' : '/global/') + file.path;
+            } else {
+                path = file.path;
+            }
+            const uri = internals.current.monaco.Uri.parse(path);
+            let model = internals.current.monaco.editor.getModel(uri);
+            if (!model) {
+                model = createModel(file, uri);
+            }
+            if (!model) {
+                console.error(file);
+                throw Error(`could not open file!`);
+            }
+            model.setValue(file.content || '');
+            internals.current.editor?.setModel(model);
+
+            if (file.state) {
+                internals.current.editor?.restoreViewState(file.state);
+            }
+
+            if (file.id) {
+                internals.current.editor?.updateOptions({ readOnly: false });
+            } else {
+                internals.current.editor?.updateOptions({ readOnly: true });
+            }
+
+            internals.current.editor?.focus();
+        }
+    }
+
+    function markersUpdated() {
+        if (internals.current.monaco) {
+            const markers: editor.IMarker[] =
+                internals.current.monaco.editor.getModelMarkers({});
+            const errorMarkers = markers.filter(
+                (marker) => marker.severity === 8
+            );
+            //console.log(lastMarkers, errorMarkers, !lastMarkers)
+            if (
+                !internals.current.lastMarkers ||
+                !sameMarkers(internals.current.lastMarkers, errorMarkers)
+            ) {
+                let errorsChanged = false;
+                internals.current.lastMarkers = errorMarkers;
+                const models = internals.current.monaco.editor.getModels();
+                for (const model of models) {
+                    const fileErrors = errorMarkers.filter(
+                        (marker) =>
+                            marker.resource.path ===
+                            (model as any)._associatedResource.path
+                    );
+                    const file = internals.current.modelFiles.get(model.id);
+                    if (file) {
+                        const errors: FileError[] = fileErrors.map(
+                            (marker): FileError => ({
+                                caller: {
+                                    fileId: file.id,
+                                    fileName: file.name,
+                                    projectId: file.projectId,
+                                    line: marker.startLineNumber,
+                                    column: marker.startColumn,
+                                    functionNames: [],
+                                },
+                                args: [marker.message],
+                            })
+                        );
+                        if (
+                            !sameErrors(
+                                internals.current.projectErrors[file.id] || [],
+                                errors
+                            )
+                        ) {
+                            internals.current.projectErrors[file.id] = errors;
+                            errorsChanged = true;
+                        }
+                    } else {
+                        console.warn('marker without loaded file');
+                    }
+                }
+                //console.log(errorsChanged, projectErrors);
+                if (errorsChanged) {
+                    if (internals.current.firstErrorUpdate) {
+                        internals.current.firstErrorUpdate = false;
+                        if (store.project.activeFile) {
+                            openFile(store.project.activeFile);
+                        }
+                    }
+                    if (store.project.activeProject) {
+                        store.project.updateProjectErrors(
+                            store.project.activeProject.id,
+                            internals.current.projectErrors
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    async function validateModel(
+        model: editor.ITextModel,
+        getWorker?: (
+            ...uris: Uri[]
+        ) => Promise<languages.typescript.TypeScriptWorker>
+    ) {
+        const owner = model.getModeId();
+        if (!model.isDisposed() && owner === 'javascript') {
+            if (getWorker === undefined) {
+                getWorker = await languages.typescript.getJavaScriptWorker();
+            }
+            const worker = await getWorker(model.uri);
+            const diagnostics = (
+                await Promise.all([
+                    worker.getSyntacticDiagnostics(model.uri.toString()),
+                    worker.getSemanticDiagnostics(model.uri.toString()),
+                ])
+            ).reduce((a, it) => a.concat(it));
+
+            const markers = diagnostics.map((d) => {
+                const start = model.getPositionAt(d.start || 0);
+                const end = model.getPositionAt(
+                    (d.start || 0) + (d.length || 0)
+                );
+                return {
+                    severity: MarkerSeverity.Error,
+                    startLineNumber: start.lineNumber,
+                    startColumn: start.column,
+                    endLineNumber: end.lineNumber,
+                    endColumn: end.column,
+                    message: flattenMessageChain(d.messageText),
+                };
+            });
+
+            internals.current.monaco?.editor.setModelMarkers(
+                model,
+                owner,
+                markers
+            );
+        }
     }
 
     return (
         <MonacoEditor
-            language="javascript"
-            // theme="vs-dark"
-            value={value}
+            defaultLanguage="javascript"
             options={options}
+            value={value}
             onChange={onChange}
-            editorDidMount={editorDidMount}
+            onMount={editorDidMount}
+            beforeMount={editorWillMount}
         />
     );
 }
+
+function flattenMessageChain(
+    chain: string | languages.typescript.DiagnosticMessageChain
+): string {
+    if (isString(chain)) return chain;
+    else {
+        return chain.messageText;
+    }
+}
+
+function sameMarker(a: editor.IMarker, b: editor.IMarker) {
+    return (
+        a.code === b.code &&
+        a.startColumn === b.startColumn &&
+        a.startLineNumber === b.startLineNumber &&
+        a.message === b.message &&
+        a.resource.path === b.resource.path
+    );
+}
+
+function sameMarkers(a: editor.IMarker[], b: editor.IMarker[]) {
+    if (!a || !b || a.length !== b.length) return false;
+    for (let i = 0; i < a.length; i++) {
+        if (!sameMarker(a[i], b[i])) return false;
+    }
+    return true;
+}
+
+function sameError(a: FileError, b: FileError) {
+    return (
+        a.caller.fileId === b.caller.fileId &&
+        a.caller.line === b.caller.line &&
+        a.caller.column === b.caller.column
+    );
+}
+
+function sameErrors(a: FileError[], b: FileError[]) {
+    if (!a || !b || a.length !== b.length) return false;
+    for (let i = 0; i < a.length; i++) {
+        if (!sameError(a[i], b[i])) return false;
+    }
+    return true;
+}
+
 export default Editor;
 
 // // import * as monaco from 'monaco-editor';
@@ -548,78 +905,3 @@ export default Editor;
 // }
 
 // window.customElements.define('c4f-editor', C4fEditor);
-
-// async function validateModel(model: monaco.editor.ITextModel, getWorker?: (...uris: monaco.Uri[]) => Promise<monaco.languages.typescript.TypeScriptWorker>) {
-//     const owner = model.getModeId();
-//     if (!model.isDisposed() && owner === 'javascript') {
-//         if (getWorker === undefined) {
-//             getWorker = await monaco.languages.typescript.getJavaScriptWorker();
-//         }
-//         const worker = await getWorker(model.uri);
-//         const diagnostics = (await Promise.all([
-//             worker.getSyntacticDiagnostics(model.uri.toString()),
-//             worker.getSemanticDiagnostics(model.uri.toString())
-//         ])).reduce((a, it) => a.concat(it));
-
-//         const markers = diagnostics.map(d => {
-//             const start = model.getPositionAt(d.start || 0);
-//             const end = model.getPositionAt((d.start || 0) + (d.length || 0));
-//             return {
-//                 severity: monaco.MarkerSeverity.Error,
-//                 startLineNumber: start.lineNumber,
-//                 startColumn: start.column,
-//                 endLineNumber: end.lineNumber,
-//                 endColumn: end.column,
-//                 message: flattenMessageChain(d.messageText),
-//             };
-//         });
-
-//         monaco.editor.setModelMarkers(model, owner, markers);
-//     }
-// }
-
-// function flattenMessageChain(chain: string | monaco.languages.typescript.DiagnosticMessageChain): string {
-//     if (isString(chain))
-//         return chain;
-//     else {
-//         return chain.messageText;
-//     }
-// }
-
-// function sameMarker(a: monaco.editor.IMarker, b: monaco.editor.IMarker) {
-//     return (
-//         a.code === b.code &&
-//         a.startColumn === b.startColumn &&
-//         a.startLineNumber === b.startLineNumber &&
-//         a.message === b.message &&
-//         a.resource.path === b.resource.path
-//     );
-// }
-
-// function sameMarkers(a: monaco.editor.IMarker[], b: monaco.editor.IMarker[]) {
-//     if (!a || !b || a.length !== b.length)
-//         return false;
-//     for (let i = 0; i < a.length; i++) {
-//         if (!sameMarker(a[i], b[i]))
-//             return false;
-//     }
-//     return true;
-// }
-
-// function sameError(a: FileError, b: FileError) {
-//     return (
-//         a.caller.fileId === b.caller.fileId &&
-//         a.caller.line === b.caller.line &&
-//         a.caller.column === b.caller.column
-//     );
-// }
-
-// function sameErrors(a: FileError[], b: FileError[]) {
-//     if (!a || !b || a.length !== b.length)
-//         return false;
-//     for (let i = 0; i < a.length; i++) {
-//         if (!sameError(a[i], b[i]))
-//             return false;
-//     }
-//     return true;
-// }

@@ -14,12 +14,14 @@ export function News() {
                             completely reworked backbone (moved from polymer to
                             react)
                         </li>
-                        <li>switched design from handmade to bootstrap</li>
+                        <li>switched design to bootstrap</li>
                         <li>new console</li>
                         <li>new file-tree (also added folders)</li>
                         <li>new documentation</li>
                         <li>more flexible scenario system (added views)</li>
                         <li>major bugfixes</li>
+                        <li>moved to single canvas</li>
+                        <li>removed addMessage and setMessage from utils</li>
                     </ul>
                 </Card.Body>
             </Card>
