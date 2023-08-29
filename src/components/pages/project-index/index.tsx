@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Button, ButtonGroup, CardDeck } from 'react-bootstrap';
+import { Card, Button, ButtonGroup, CardGroup } from 'react-bootstrap';
 // import { Link } from 'react-router-dom';
 // import { autorun } from 'mobx';
 
@@ -22,10 +22,10 @@ import {
     showDeleteProjectModal,
     showDownloadProjectModal,
 } from '@elements/modal';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 export function ProjectIndex() {
-    const history = useHistory();
+    const navigate = useNavigate();
     const [projects, setProjects] = useState<Project[]>([]);
 
     let closed = false;
@@ -127,7 +127,7 @@ export function ProjectIndex() {
                 className={css.project}
                 key={project.id}
                 onClick={() => {
-                    history.push(`/project/${project.id}/${project.name}`);
+                    navigate(`/project/${project.id}/${project.name}`);
                 }}
             >
                 <Card.Img
@@ -175,7 +175,7 @@ export function ProjectIndex() {
         </Card>
     );
 
-    return <CardDeck className={css.projectList}>{elements}</CardDeck>;
+    return <CardGroup className={css.projectList}>{elements}</CardGroup>;
 }
 
 export default ProjectIndex;

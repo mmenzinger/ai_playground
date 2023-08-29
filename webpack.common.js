@@ -37,7 +37,7 @@ module.exports = {
         app: './src/index.tsx',
         'simulator/scenario-worker':
             './src/components/elements/simulator/scenario-worker',
-        // reenable when webpack 5 s able to support esm ....
+        // reenable when webpack 5 is able to support esm ....
         // 'lib/utils': './src/lib/utils',
         // 'lib/prolog': './src/lib/prolog',
         // 'lib/tensorflow': './src/lib/tensorflow',
@@ -135,16 +135,30 @@ module.exports = {
     ],
 
     devServer: {
+        // static:{
+        //     watch: true,
+        // },
         watchContentBase: true,
         compress: true,
         port: 9000,
-        publicPath: '/',
         historyApiFallback: true,
+        // allowedHosts: "all",
         disableHostCheck: true,
+        // devMiddleware:{
+        //     stats: {
+        //         children: false,
+        //         maxModules: 0,
+        //     },
+        //     publicPath: '/',
+        // },
         stats: {
             children: false,
             maxModules: 0,
         },
+        publicPath: '/',
+        // client:{
+        //     logging: 'warn',
+        // }
         clientLogLevel: 'warning',
     },
 };

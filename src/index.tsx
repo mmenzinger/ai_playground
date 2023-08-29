@@ -1,6 +1,5 @@
 import * as React from 'react';
-import * as ReactDOM from 'react-dom';
-
+import { createRoot } from 'react-dom/client';
 import App from './components/app';
 
 // TODO: remove, just for debugging
@@ -8,5 +7,6 @@ import App from './components/app';
 // worker.onmessage = (m: MessageEvent) => {
 //     postMessage(m.data);
 // };
-
-ReactDOM.render(<App />, document.getElementById('output'));
+const container = document.getElementById('output');
+const root = createRoot(container!);
+root.render(<App />);

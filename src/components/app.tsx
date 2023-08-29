@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 import store from '@store';
 
@@ -22,29 +22,15 @@ export function App() {
         <Router>
             <Modal />
             <Header title="AI Playground" />
-            <Switch>
-                <Route path="/news">
-                    <News />
-                </Route>
-                <Route path="/impressum">
-                    <Impressum />
-                </Route>
-                <Route path="/documentation">
-                    <p>documentation</p>
-                </Route>
-                <Route path="/welcome">
-                    <Welcome />
-                </Route>
-                <Route path="/project/:id/:name">
-                    <Project />
-                </Route>
-                <Route path="/">
-                    <ProjectIndex />
-                </Route>
-                <Route>
-                    <p>404</p>
-                </Route>
-            </Switch>
+            <Routes>
+                <Route path="/news" element={<News />} />
+                <Route path="/impressum" element={<Impressum />} />
+                <Route path="/documentation" element={<p>documentation</p>} />
+                <Route path="/welcome" element={<Welcome />} />
+                <Route path="/project/:id/:name" element={<Project />} />
+                <Route path="/" element={<ProjectIndex />} />
+                <Route element={<p>404</p>} />
+            </Routes>
         </Router>
     );
 }

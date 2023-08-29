@@ -57,6 +57,9 @@ module.exports = merge(common, {
     },
 
     devServer: {
+        // static:{
+        //     directory: path.join(__dirname, 'build/prod'),
+        // },
         contentBase: path.join(__dirname, 'build/prod'),
     },
 });

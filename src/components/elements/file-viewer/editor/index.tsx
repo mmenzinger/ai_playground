@@ -71,12 +71,12 @@ export function Editor() {
         firstErrorUpdate: true,
     });
 
-    let closed = false;
-    useEffect(() => {
-        return () => {
-            closed = true;
-        };
-    }, []);
+    // let closed = false;
+    // useEffect(() => {
+    //     return () => {
+    //         closed = true;
+    //     };
+    // }, []);
 
     function editorDidMount(
         editor: editor.IStandaloneCodeEditor,
@@ -131,7 +131,7 @@ export function Editor() {
 
     function onChange(
         value: string | undefined,
-        event: editor.IModelContentChangedEvent
+        _: editor.IModelContentChangedEvent
     ) {
         setValue(value || '');
         const file = store.project.activeFile;
@@ -172,7 +172,7 @@ export function Editor() {
         );
     }
 
-    function openProject(project: Project, files: File[], initialFile?: File) {
+    function openProject(_: Project, files: File[], initialFile?: File) {
         if (internals.current.monaco) {
             internals.current.projectErrors = {};
             // preload files
@@ -324,7 +324,7 @@ export function Editor() {
             ...uris: Uri[]
         ) => Promise<languages.typescript.TypeScriptWorker>
     ) {
-        const owner = model.getModeId();
+        const owner = model.getLanguageId();
         if (!model.isDisposed() && owner === 'javascript') {
             if (getWorker === undefined) {
                 getWorker = await languages.typescript.getJavaScriptWorker();
