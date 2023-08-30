@@ -8,25 +8,11 @@ import cfFunction from 'console-feed/lib/Transform/Function';
 import cfMap from 'console-feed/lib/Transform/Map';
 import cfReplicator from 'console-feed/lib/Transform/replicator';
 
-import { SetupMessage, CallMessage, MouseEventMessage } from './utils';
-
+import { SetupMessage, CallMessage, MouseEventMessage } from './worker-utils';
+console.log("worker loaded");
 /***********************************************************************************************
  *  console wrapper
  */
-// reimplementation of Hook from console-feed to remove html dependency
-const transforms = [cfFunction, cfArithmetic, cfMap];
-const replicator = new cfReplicator();
-replicator.addTransforms(transforms);
-for(let method of cfMethods){
-    // const nativeMethod = (console as any)[method];
-    (console as any)[method] = function(...args: any[]){
-        //nativeMethod.apply(this, args);
-        const parsed = cfParse(method as Methods, args);
-        const jsonData = replicator.encode(parsed);
-        postLogMessage(jsonData);
-    }
-}
-
 // send logs throttled
 let logs: string[] = [];
 const sendLogMessages = throttle(()=> {
@@ -41,6 +27,21 @@ function postLogMessage(jsonData: string): void{
     logs.push(jsonData);
     sendLogMessages();
 }
+
+// reimplementation of Hook from console-feed to remove html dependency
+const transforms = [cfFunction, cfArithmetic, cfMap];
+const replicator = new cfReplicator();
+replicator.addTransforms(transforms);
+for(let method of cfMethods){
+    // const nativeMethod = (console as any)[method];
+    (console as any)[method] = function(...args: any[]){
+        //nativeMethod.apply(this, args);
+        const parsed = cfParse(method as Methods, args);
+        const jsonData = replicator.encode(parsed);
+        postLogMessage(jsonData);
+    }
+}
+
 
 /***********************************************************************************************
  *  message handling
@@ -84,9 +85,8 @@ onmessage = async m => {
                     }
             }
             // @ts-ignore
-            const util = await import(/* webpackIgnore: true */ '/lib/utils.js');
+            const util = await import(/* @vite-ignore */ '/lib/utils.js');
             //await util.initLocalStorage();
-
             m.ports[0].postMessage({
                 type: 'ready',
                 port: channel.port2,
@@ -98,9 +98,10 @@ onmessage = async m => {
     }
 }
 
+
 async function call(file: string, functionName: string, args: any[], resultPort: MessagePort){
     try{
-        const index = await import(/* webpackIgnore: true */ file);
+        const index = await import(/* @vite-ignore */ file);
         if(index[functionName] instanceof Function){
             const result = await index[functionName](...args);
             resultPort.postMessage(result);

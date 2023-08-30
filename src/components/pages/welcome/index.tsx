@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Alert, Button, Spinner } from 'react-bootstrap';
 import { messageWithResult } from '@utils';
 
@@ -22,6 +22,7 @@ async function checkModuleWorker(): Promise<JSX.Element | true> {
             const worker = new Worker(`/simulator/scenario-worker.js`, {
                 type: 'module',
             });
+            worker.postMessage({ type: 'setup' });
             const result = await messageWithResult(
                 { type: 'setup' },
                 5000,

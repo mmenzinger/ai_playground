@@ -2,7 +2,7 @@ import { observable, action, makeObservable, autorun, runInAction, toJS, trace }
 import db from '@localdb';
 
 import { editor, IPosition } from 'monaco-editor';
-import { BasicFile } from '@src/webpack-utils';
+import { BasicFile } from '@src/scenario-utils';
 
 export type Caller = {
     fileId?: number,

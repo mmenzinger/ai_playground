@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Button, ButtonGroup, CardGroup } from 'react-bootstrap';
+import { Card, Button, ButtonGroup } from 'react-bootstrap';
 // import { Link } from 'react-router-dom';
 // import { autorun } from 'mobx';
 
@@ -10,7 +10,7 @@ import css from './project-index.module.css';
 
 import db from '@localdb';
 
-import { getScenarios } from '@src/webpack-utils';
+import { getScenarios } from '@src/scenario-utils';
 
 import { ModalAbort } from '@elements/modal';
 
@@ -39,13 +39,19 @@ export function ProjectIndex() {
 
     async function onNewProject() {
         try {
-            const scenarios = getScenarios();
+            const scenarios = await getScenarios();
+            console.log(scenarios);
             const result = await showNewProjectModal(scenarios);
+            console.log(result);
             const scenario = scenarios[result.scenario];
+            console.log(scenario);
             let template = scenario.templates[result.template];
+            console.log(template);
             if (template.scenario) {
                 template.files.push(...scenarios[template.scenario].files);
             }
+            
+            
             await store.project.createProject(
                 result.name,
                 template.scenario,
@@ -175,7 +181,7 @@ export function ProjectIndex() {
         </Card>
     );
 
-    return <CardGroup className={css.projectList}>{elements}</CardGroup>;
+    return <div className={css.projectList}>{elements}</div>;
 }
 
 export default ProjectIndex;

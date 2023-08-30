@@ -1,12 +1,12 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import store from '@src/store';
-import { StoreMessage } from './utils';
-import { project } from '@src/components/pages/project-index/project-index.module.css';
+import { StoreMessage } from './worker-utils';
+// import { project } from '@src/components/pages/project-index/project-index.module.css';
 import db from '@src/localdb';
 
 export function Simulator() {
     const iframe = useRef<HTMLIFrameElement>(null);
-    const [src, setSrc] = useState<string>('/simulator/default.html');
+    const [src, _] = useState<string>('/simulator/default.html');
 
     const iframeHandler: any = {
         log: (m: MessageEvent) => store.project.publishLogs(m.data.logs),

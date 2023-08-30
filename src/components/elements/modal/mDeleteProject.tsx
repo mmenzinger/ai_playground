@@ -1,7 +1,6 @@
-import React from 'react';
 import appStore from '@src/store/app-store';
-import { Project } from '@store/types';
-import { Alert } from 'react-bootstrap';
+import { Project } from '@store';
+// import { Alert } from 'react-bootstrap';
 
 function DeleteProjectModal(props: { project: Project }) {
     return (

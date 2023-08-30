@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Simulator</title>
+        <style>
+            html,
+            body {
+                height: 100%;
+                padding: 0;
+                margin: 0;
+            }
+            body {
+                display: flex;
+                flex-direction: column;
+            }
+            header {
+                flex: 0 1;
+                padding: 0.5rem;
+            }
+            main {
+                flex: 1;
+                position: relative;
+            }
+            canvas {
+                width: 100%;
+                height: 100%;
+            }
+        </style>
+        <script type="module">
+            import { ScenarioWorker } from '/simulator/worker-utils.js';
+
+            const displayContainer = document.getElementById('display');
+            const worker = new ScenarioWorker({
+                onmousedown: true,
+                onmouseup: true,
+                onmousemove: true,
+            });
+
+            onload = async function () {
+                await worker.start(displayContainer);
+                await worker.call('/project/index.js', 'start');
+            };
+
+            document.getElementById('start').onclick = async function () {
+                await worker.start(displayContainer);
+                await worker.call('/project/index.js', 'start');
+            };
+            document.getElementById('train').onclick = async function () {
+                await worker.start(displayContainer);
+                await worker.call('/project/index.js', 'train');
+            };
+            document.getElementById('terminate').onclick = async function () {
+                worker.terminate();
+            };
+        </script>
+    </head>
+    <body>
+        <header id="control">
+            <button id="start">start&nbsp;/&nbsp;restart</button>
+            <button id="train">call&nbsp;train</button>
+            <button id="terminate">terminate</button>
+        </header>
+        <main id="display"></main>
+    </body>
+</html>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 import MonacoEditor, { Monaco } from '@monaco-editor/react';
 import { Uri, editor, languages, MarkerSeverity } from 'monaco-editor';
 import store, { File, FileError, Project, ProjectErrors } from '@store';

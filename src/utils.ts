@@ -201,7 +201,7 @@ export function dispatchIframeEvents(iframe: HTMLIFrameElement, target: any = wi
 }
 
 export function hideImport(path: string){
-    return import(/* webpackIgnore: true */path);
+    return import(/* @vite-ignore */path);
 }
 
 export function thisShouldNotHappen(){

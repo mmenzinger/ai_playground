@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Form, Row, Col } from 'react-bootstrap';
-import { ScenarioTemplates } from '@src/webpack-utils';
+import { ScenarioTemplates } from '@src/scenario-utils';
 import appStore from '@src/store/app-store';
 
 type NewProjectModalResult = {

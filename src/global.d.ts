@@ -1,0 +1,1 @@
+declare const __SCENARIO_DIRECTORY_JSON__: string[];

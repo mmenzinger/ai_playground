@@ -1,4 +1,4 @@
-import { StoreMessage } from '@elements/simulator/utils';
+import { StoreMessage } from '@src/components/elements/simulator/worker-utils';
 import { serialize, deserialize, messageWithResult } from '@src/utils';
 
 import seedrandom from 'seedrandom';
@@ -135,11 +135,11 @@ export async function sleep(ms: number): Promise<void>{
     });
 } 
 
-export async function setMessages(html: string): Promise<void>{
+export async function setMessages(_: string): Promise<void>{
     throw Error("setMessages was removed");
 }
 
-export async function addMessage(html: string): Promise<void>{
+export async function addMessage(_: string): Promise<void>{
     throw Error("addMessage was removed");
 }
 

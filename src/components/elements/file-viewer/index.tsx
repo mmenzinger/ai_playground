@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { autorun } from 'mobx';
 import store, { File } from '@store';
 import { Tabs, Tab } from 'react-bootstrap';
@@ -11,7 +11,7 @@ import css from './file-viewer.module.css';
 export function FileViewer() {
     const [tab, setTab] = useState<string>();
     const [type, setType] = useState<string>();
-    const [toggle, setToggle] = useState<string>();
+    const [toggle, setToggle] = useState<string>('');
     const [file, setFile] = useState<File>();
 
     let closed = false;
@@ -42,14 +42,14 @@ export function FileViewer() {
         } else if (tab === 'editor' && type === 'md') {
             setToggle('markdown');
         } else {
-            setToggle(undefined);
+            setToggle('');
         }
     }, [tab, type]);
 
     return (
         <div className={css.root}>
             <Tabs
-                className={[css.tabs, toggle]}
+                className={[css.tabs, toggle].join(' ')}
                 activeKey={tab}
                 onSelect={(tab) => setTab(tab || undefined)}
                 variant="pills"

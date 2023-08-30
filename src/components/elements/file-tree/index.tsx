@@ -87,7 +87,7 @@ export function FileTree(props: { project: Project }) {
         info: {
             event: 'select';
             selected: boolean;
-            node: EventDataNode;
+            node: EventDataNode<DataNode>;
             selectedNodes: DataNode[];
             nativeEvent: MouseEvent;
         }
@@ -126,37 +126,35 @@ export function FileTree(props: { project: Project }) {
                     id="contextMenu"
                     style={{ top: menu.y, left: menu.x }}
                     className={css.contextMenu}
+                    title={menu.filename} // h3 ?
                 >
-                    <Popover.Title as="h3">{menu.filename}</Popover.Title>
-                    <Popover.Content>
-                        <ListGroup>
-                            <ListGroup.Item
-                                action
-                                onClick={() => {
-                                    createFile(props.project.id, menu.parent);
-                                }}
-                            >
-                                Create File
-                            </ListGroup.Item>
+                    <ListGroup>
+                        <ListGroup.Item
+                            action
+                            onClick={() => {
+                                createFile(props.project.id, menu.parent);
+                            }}
+                        >
+                            Create File
+                        </ListGroup.Item>
+                        <ListGroup.Item action>
+                            Create Folder
+                        </ListGroup.Item>
+                        {isProtected(menu) ? null : (
                             <ListGroup.Item action>
-                                Create Folder
+                                Rename <em>{menu.filename}</em>
                             </ListGroup.Item>
-                            {isProtected(menu) ? null : (
-                                <ListGroup.Item action>
-                                    Rename <em>{menu.filename}</em>
-                                </ListGroup.Item>
-                            )}
-                            <ListGroup.Item action>Upload Files</ListGroup.Item>
+                        )}
+                        <ListGroup.Item action>Upload Files</ListGroup.Item>
+                        <ListGroup.Item action>
+                            Download <em>{menu.filename}</em>
+                        </ListGroup.Item>
+                        {isProtected(menu) ? null : (
                             <ListGroup.Item action>
-                                Download <em>{menu.filename}</em>
+                                Delete <em>{menu.filename}</em>
                             </ListGroup.Item>
-                            {isProtected(menu) ? null : (
-                                <ListGroup.Item action>
-                                    Delete <em>{menu.filename}</em>
-                                </ListGroup.Item>
-                            )}
-                        </ListGroup>
-                    </Popover.Content>
+                        )}
+                    </ListGroup>
                 </Popover>
             ) : null}
             <Tree

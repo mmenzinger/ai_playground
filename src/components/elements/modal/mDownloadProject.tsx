@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import { Project } from '@store/types';
-import { Col, Form, Row, Modal, Button } from 'react-bootstrap';
-import { createPortal } from 'react-dom';
+import { useEffect, useState } from 'react';
+import { Project } from '@store';
+import { Col, Form, Row } from 'react-bootstrap';
+// import { createPortal } from 'react-dom';
 import appStore from '@src/store/app-store';
 
 type DownloadProjectResult = {

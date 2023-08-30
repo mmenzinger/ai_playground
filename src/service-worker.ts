@@ -1,13 +1,13 @@
 import { registerRoute } from 'workbox-routing';
-import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching';
-import { StaleWhileRevalidate } from 'workbox-strategies';
-import { ExpirationPlugin } from 'workbox-expiration';
+// import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching';
+// import { StaleWhileRevalidate } from 'workbox-strategies';
+// import { ExpirationPlugin } from 'workbox-expiration';
 import { Project } from '@store';
 import db from '@localdb';
-import { isNumber } from 'lodash-es';
+// import { isNumber } from 'lodash-es';
 
 declare var self: ServiceWorkerGlobalScope;
-declare var PRODUCTION: boolean;
+// declare var PRODUCTION: boolean;
 
 let project: Project | null = null;
 
@@ -30,29 +30,29 @@ registerRoute(
     userFile
 );
 
-if (PRODUCTION) {
-    cleanupOutdatedCaches();
+// if (PRODUCTION) {
+//     cleanupOutdatedCaches();
 
-    precacheAndRoute(self.__WB_MANIFEST, {
-        cleanURLs: false,
-    });
+//     precacheAndRoute(self.__WB_MANIFEST, {
+//         cleanURLs: false,
+//     });
 
-    registerRoute(
-        ({ url }) => url.origin !== location.origin,
-        new StaleWhileRevalidate({
-            cacheName: 'cors-cache',
-            plugins: [
-                new ExpirationPlugin({
-                    // keep for 1 month
-                    maxAgeSeconds: 30 * 7 * 24 * 60 * 60,
-                }),
-            ],
-        }),
-    );
-}
-else {
-    // console.log(self.__WB_MANIFEST);
-}
+//     registerRoute(
+//         ({ url }) => url.origin !== location.origin,
+//         new StaleWhileRevalidate({
+//             cacheName: 'cors-cache',
+//             plugins: [
+//                 new ExpirationPlugin({
+//                     // keep for 1 month
+//                     maxAgeSeconds: 30 * 7 * 24 * 60 * 60,
+//                 }),
+//             ],
+//         }),
+//     );
+// }
+// else {
+//     // console.log(self.__WB_MANIFEST);
+// }
 
 async function userFile({url, request}: {url: URL, request: Request}): Promise<Response> {
     let response: Response;

@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Modal as ReactModal, Button } from 'react-bootstrap';
 import { autorun } from 'mobx';
 
-import appStore from '@store/app-store';
+import store from '@store';
 import { Defer } from '@src/utils';
 
 export class ModalAbort extends Error {}
@@ -31,8 +31,8 @@ export function Modal() {
 
     useEffect(() => {
         autorun(() => {
-            setModal(appStore.modal);
-            const t = appStore.modal?.template;
+            setModal(store.app.modal);
+            const t = store.app.modal?.template;
             if (t) {
                 setTitle(t.title);
                 setSubmit(t.submit);
@@ -44,7 +44,7 @@ export function Modal() {
     }, []);
 
     function close() {
-        appStore.rejectModal(new ModalAbort());
+        store.app.rejectModal(new ModalAbort());
     }
 
     return (
@@ -67,7 +67,7 @@ export function Modal() {
                 </Button>
                 <Button
                     variant={type === 'danger' ? 'danger' : 'primary'}
-                    onClick={() => appStore.resolveModal()}
+                    onClick={() => store.app.resolveModal()}
                 >
                     {submit}
                 </Button>
@@ -80,4 +80,4 @@ export default Modal;
 export * from './mNewProject';
 export * from './mDeleteProject';
 export * from './mDownloadProject';
-export * from './mUploadProject';
+// export * from './mUploadProject';

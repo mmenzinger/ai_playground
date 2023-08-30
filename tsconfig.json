@@ -1,18 +1,15 @@
 {
     "compilerOptions": {
-        "jsx": "react",
         "module": "esnext",
         "target": "esnext",
         "sourceMap": true,
-        "moduleResolution": "node",
-        "lib": ["dom", "dom.iterable", "webworker", "es2019"],
+        "lib": ["dom", "dom.iterable", "webworker", "es2020"],
         "allowJs": true,
-        "noEmit": true,
-        "isolatedModules": true,
         "esModuleInterop": true,
         "experimentalDecorators": true,
         "skipLibCheck": true,
-        "strict": true,
+        "types": ["vite/client"],
+
         //"noImplicitThis": true,
         //"noImplicitAny": true,
         //"strictNullChecks": true,
@@ -21,8 +18,6 @@
         //"alwaysStrict": true,
         //"strictBindCallApply": true,
         "noImplicitReturns": true,
-        "noUnusedLocals": true,
-        "noUnusedParameters": true,
         "baseUrl": "src",
         "paths": {
             "@src/*": ["*"],
@@ -33,7 +28,22 @@
             "@modal/*": ["components/modal/*"],
             "@elements/*": ["components/elements/*"],
             "@pages/*": ["components/pages/*"]
-        }
+        },
+
+        /* Bundler mode */
+        "moduleResolution": "bundler",
+        "allowImportingTsExtensions": true,
+        "resolveJsonModule": true,
+        "isolatedModules": true,
+        "noEmit": true,
+        "jsx": "react-jsx",
+
+        /* Linting */
+        "strict": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "noFallthroughCasesInSwitch": true
     },
-    "include": ["src"]
+    "include": ["src"],
+    "references": [{ "path": "./tsconfig.node.json" }]
 }

@@ -2,7 +2,7 @@ import Dexie from 'dexie';
 import { editor } from 'monaco-editor';
 
 import type { File, Project } from '@store';
-import { BasicFile } from './webpack-utils';
+import { BasicFile } from './scenario-utils';
 
 export interface IFiles {
     id?: number,
