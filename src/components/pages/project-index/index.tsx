@@ -1,12 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Button, ButtonGroup } from 'react-bootstrap';
 // import { Link } from 'react-router-dom';
 // import { autorun } from 'mobx';
 
 // import appStore from '@store/app-store';
 import store, { Project } from '@store';
 
-import css from './project-index.module.css';
 
 import db from '@localdb';
 
@@ -129,59 +127,49 @@ export function ProjectIndex() {
     const elements: JSX.Element[] = [];
     projects.forEach((project) => {
         elements.push(
-            <Card
-                className={css.project}
+            <div 
+                className="card w-48 bg-base-100 shadow-xl cursor-pointer border hover:drop-shadow-lg"
                 key={project.id}
                 onClick={() => {
                     navigate(`/project/${project.id}/${project.name}`);
                 }}
             >
-                <Card.Img
-                    variant="top"
-                    src={`/${project.id}/first/logo.png`}
-                    onError={(e: any) => {
+                <figure className="bg-white">
+                    <img src={`/${project.id}/first/logo.png`} alt={project.name} onError={(e: any) => {
                         e.target.src = '/assets/logo.png';
-                    }}
-                />
-                <Card.Body>
-                    <Card.Text>{project.name}</Card.Text>
-                </Card.Body>
-                <Card.Footer>
-                    <ButtonGroup size="sm">
-                        <Button
-                            variant="outline-secondary"
-                            onClick={(e) => onDownloadProject(project, e)}
-                        >
-                            <img src="assets/interface/download.svg" />
-                        </Button>
-                        <Button
-                            variant="outline-danger"
-                            onClick={(e) => onDeleteProject(project, e)}
-                        >
-                            <img src="assets/interface/trash.svg" />
-                        </Button>
-                    </ButtonGroup>
-                </Card.Footer>
-            </Card>
+                    }}/>
+                </figure>
+                <div className="card-body justify-between p-2 pt-0 border-t">
+                    <h2 className="card-title text-base">{project.name}</h2>
+                    <div className="card-actions justify-end join gap-0">
+                        <button className="join-item btn btn-sm px-2" onClick={(e) => onDownloadProject(project, e)}>
+                            <img src="assets/interface/download.svg" className="w-4 h-4 rounded-none" />
+                        </button>
+                        <button className="join-item btn btn-error btn-sm px-2" onClick={(e) => onDeleteProject(project, e)}>
+                            <img src="assets/interface/trash.svg" className="w-4 h-4 rounded-none" />
+                        </button>
+                    </div>
+                </div>
+            </div>
         );
     });
-    elements.push(
-        <Card onClick={() => onNewProject()} className={css.project} key={0}>
-            <Card.Img variant="top" src="assets/logo.png" />
-            <Card.Body>
-                <Card.Text>New Project</Card.Text>
-            </Card.Body>
-            <Card.Footer>
-                <ButtonGroup size="sm">
-                    <Button variant="outline-secondary">
-                        <img src="assets/interface/upload.svg" />
-                    </Button>
-                </ButtonGroup>
-            </Card.Footer>
-        </Card>
-    );
+    // elements.push(
+    //     <Card onClick={() => onNewProject()} className={css.project} key={0}>
+    //         <Card.Img variant="top" src="assets/logo.png" />
+    //         <Card.Body>
+    //             <Card.Text>New Project</Card.Text>
+    //         </Card.Body>
+    //         <Card.Footer>
+    //             <ButtonGroup size="sm">
+    //                 <Button variant="outline-secondary">
+    //                     <img src="assets/interface/upload.svg" />
+    //                 </Button>
+    //             </ButtonGroup>
+    //         </Card.Footer>
+    //     </Card>
+    // );
 
-    return <div className={css.projectList}>{elements}</div>;
+    return <div className="flex gap-3 m-3">{elements}</div>;
 }
 
 export default ProjectIndex;

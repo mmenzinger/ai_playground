@@ -1,17 +1,15 @@
 import { useState, useEffect } from 'react';
 import { autorun } from 'mobx';
 import store, { File } from '@store';
-import { Tabs, Tab } from 'react-bootstrap';
 
 import Editor from './editor';
 import Markdown from './markdown';
 
-import css from './file-viewer.module.css';
-
 export function FileViewer() {
     const [tab, setTab] = useState<string>();
-    const [type, setType] = useState<string>();
-    const [toggle, setToggle] = useState<string>('');
+    const [editorEnabled, setEditorEnabled] = useState<boolean>(true);
+    const [markdownEnabled, setMarkdownEnabled] = useState<boolean>(true);
+    const [imageEnabled, setImageEnabled] = useState<boolean>(true);
     const [file, setFile] = useState<File>();
 
     let closed = false;
@@ -20,14 +18,22 @@ export function FileViewer() {
             if (!closed) {
                 const _file = store.project.activeFile;
                 const _type = _file?.name.split('.').pop();
-                setType(_type);
                 setFile(_file || undefined);
                 if (_type === 'md') {
                     setTab('markdown');
+                    setMarkdownEnabled(true);
+                    setEditorEnabled(true);
+                    setImageEnabled(false);
                 } else if (_type?.match(/(png|jpe?g)/)) {
                     setTab('image');
+                    setMarkdownEnabled(false);
+                    setEditorEnabled(false);
+                    setImageEnabled(true);
                 } else {
                     setTab('editor');
+                    setMarkdownEnabled(false);
+                    setEditorEnabled(true);
+                    setImageEnabled(false);
                 }
             }
         });
@@ -36,39 +42,27 @@ export function FileViewer() {
         };
     }, []);
 
-    useEffect(() => {
-        if (tab === 'markdown') {
-            setToggle('editor');
-        } else if (tab === 'editor' && type === 'md') {
-            setToggle('markdown');
-        } else {
-            setToggle('');
-        }
-    }, [tab, type]);
-
     return (
-        <div className={css.root}>
-            <Tabs
-                className={[css.tabs, toggle].join(' ')}
-                activeKey={tab}
-                onSelect={(tab) => setTab(tab || undefined)}
-                variant="pills"
-            >
-                <Tab eventKey="editor" title="Editor">
-                    <Editor />
-                </Tab>
-                <Tab eventKey="markdown" title="Markdown">
-                    <Markdown />
-                </Tab>
-                <Tab eventKey="image" title="Image">
-                    <img
-                        className={css.image}
-                        src={`/${store.project.activeProject?.id || 'assets'}/${
-                            file?.id ? `file/${file.id}` : 'logo.png'
-                        }`}
-                    />
-                </Tab>
-            </Tabs>
+        <div className="h-full flex flex-col">
+            <div className="tabs">
+                <div className={"tab tab-bordered" + (tab === 'editor' ? ' tab-active' : '') + (!editorEnabled ? ' tab-disabled' : '')} onClick={editorEnabled ? ()=>setTab('editor') : undefined}>Editor</div>
+                <div className={"tab tab-bordered" + (tab === 'markdown' ? ' tab-active' : '') + (!markdownEnabled ? ' tab-disabled' : '')} onClick={markdownEnabled ? ()=>setTab('markdown') : undefined}>Markdown</div>
+                <div className={"tab tab-bordered" + (tab === 'image' ? ' tab-active' : '') + (!imageEnabled ? ' tab-disabled' : '')} onClick={imageEnabled ? ()=>setTab('image') : undefined}>Image</div>
+            </div>
+            {tab === 'editor' ? <div className="flex-grow overflow-hidden">
+                <Editor />
+            </div> : null}
+            {tab === 'markdown' ? <div className="">
+                <Markdown />
+            </div> : null}
+            {tab === 'image' ? <div className="">
+                <img
+                    className=""
+                    src={`/${store.project.activeProject?.id || 'assets'}/${
+                        file?.id ? `file/${file.id}` : 'logo.png'
+                    }`}
+                />
+            </div> : null}
         </div>
     );
 }

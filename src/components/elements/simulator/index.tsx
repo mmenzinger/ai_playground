@@ -34,6 +34,7 @@ export function Simulator() {
 
     return (
         <iframe
+            className="w-full h-full"
             ref={iframe}
             src={src}
             sandbox="allow-scripts allow-same-origin"

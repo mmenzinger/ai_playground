@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Console as ConsoleFeed, Decode } from 'console-feed';
 
-import css from './console.module.css';
 import store from '@store';
 
 // https://github.com/samdenty/console-feed/blob/master/src/definitions/Styles.d.ts
@@ -34,7 +33,7 @@ export function Console() {
     }, [logs]);
 
     return (
-        <div className={css.root}>
+        <div className="h-full">
             <ConsoleFeed logs={logs} styles={theme} />
             <div ref={logEnd} />
         </div>

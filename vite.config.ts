@@ -6,13 +6,13 @@ import path from 'path';
 import { globSync } from 'glob';
 
 
-const __SCENARIO_DIRECTORY_JSON__ = JSON.stringify(globSync('src/scenario/**/*', {nodir: true}).map(normalizePath));
+const __SCENARIO_DIRECTORY_LIST__ = JSON.stringify(globSync('src/scenario/**/*', {nodir: true}).map(normalizePath));
 
 
 // https://vitejs.dev/config/
 export default defineConfig({
   define:{
-    '__SCENARIO_DIRECTORY_JSON__': __SCENARIO_DIRECTORY_JSON__,
+    '__SCENARIO_DIRECTORY_LIST__': __SCENARIO_DIRECTORY_LIST__,
   },
   plugins: [
     react(),

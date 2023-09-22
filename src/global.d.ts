@@ -1,1 +1,1 @@
-declare const __SCENARIO_DIRECTORY_JSON__: string[];
+declare const __SCENARIO_DIRECTORY_LIST__: string[];

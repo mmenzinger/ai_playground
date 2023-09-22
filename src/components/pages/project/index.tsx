@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { Spinner, Tabs, Tab } from 'react-bootstrap';
-// @ts-ignore missing type definitions...
 import Split from 'react-split';
 
 // import { Link } from 'react-router-dom';
@@ -93,20 +92,7 @@ export function Project() {
                     </div>
                     <div className={css.pane}>
                         <div className={css.fillVertical}>
-                            <Tabs
-                                className={css.tabs}
-                                activeKey={centerTab}
-                                onSelect={(tab) =>
-                                    setCenterTab(tab || 'settings')
-                                }
-                            >
-                                <Tab eventKey="file" title="File">
-                                    <FileViewer />
-                                </Tab>
-                                <Tab eventKey="settings" title="Settings">
-                                    Settings
-                                </Tab>
-                            </Tabs>
+                            <FileViewer />
                         </div>
                     </div>
                 </Split>

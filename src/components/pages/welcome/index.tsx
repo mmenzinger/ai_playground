@@ -1,10 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Alert, Button, Spinner } from 'react-bootstrap';
 import { messageWithResult } from '@utils';
 
 import store from '@store';
-
-import css from './welcome.module.css';
 
 async function checkServiceWorker(): Promise<JSX.Element | true> {
     return 'serviceWorker' in navigator ? (
@@ -32,7 +29,7 @@ async function checkModuleWorker(): Promise<JSX.Element | true> {
                 resolve(true);
             } else {
                 resolve(
-                    <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/import">
+                    <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/import" target="_blank">
                         dynamic import inside Workers
                     </a>
                 );
@@ -40,7 +37,7 @@ async function checkModuleWorker(): Promise<JSX.Element | true> {
             worker.terminate();
         } catch (e) {
             resolve(
-                <a href="https://developer.mozilla.org/en-US/docs/Web/API/Worker/Worker">
+                <a href="https://developer.mozilla.org/en-US/docs/Web/API/Worker/Worker" target="_blank">
                     Worker with type module
                 </a>
             );
@@ -52,7 +49,7 @@ async function checkOffscreenCanvas(): Promise<JSX.Element | true> {
     return window.OffscreenCanvas ? (
         true
     ) : (
-        <a href="https://developer.mozilla.org/en-US/docs/Web/API/OffscreenCanvas">
+        <a href="https://developer.mozilla.org/en-US/docs/Web/API/OffscreenCanvas" target="_blank">
             OffscreenCanvas
         </a>
     );
@@ -83,21 +80,21 @@ export function Welcome() {
     }, []);
 
     const footer = missingFeatures ? (
-        <Button
-            variant={missingFeatures.length ? 'danger' : 'primary'}
+        <button
+            className={"btn m-4 " + (missingFeatures.length ? 'btn-error' : 'btn-success')}
             onClick={onContinue}
         >
             Continue {missingFeatures.length ? 'anyway' : ''}
-        </Button>
+        </button>
     ) : (
-        <div className={css.check}>
-            <Spinner animation="border" />
+        <div className="m-4">
+            <span className="loading loading-spinner loading-md"></span>
             checking browser features...
         </div>
     );
 
     const missing = missingFeatures?.length ? (
-        <Alert variant="danger">
+        <div className="alert alert-error block text-center">
             Your browser is missing the following <strong>required</strong>{' '}
             features:
             <ul>
@@ -112,22 +109,22 @@ export function Welcome() {
             <a href="https://www.google.com/chrome/">Chrome</a>,{' '}
             <a href="https://www.microsoft.com/en-us/edge">Edge</a>,{' '}
             <a href="https://www.opera.com/">Opera</a>, ...)!
-        </Alert>
+        </div>
     ) : null;
 
     const ok =
         !missingFeatures || missingFeatures?.length ? null : (
-            <Alert variant="success">
+            <div className="alert alert-success block text-center">
                 Your browser has all required features and should work fine. If
                 you still find any bugs let me know:{' '}
                 <a href="https://github.com/c4f-wtf/ai/issues">
                     https://github.com/c4f-wtf/ai/issues
                 </a>
-            </Alert>
+            </div>
         );
 
     return (
-        <div className={css.root}>
+        <div className="prose flex flex-col h-screen justify-center items-center mx-auto text-center">
             <h1>Welcome to ai.c4f.wtf</h1>
             <p>
                 This website is a new platform for teaching and experimenting
@@ -149,7 +146,7 @@ export function Welcome() {
             </p>
             <p>
                 Furthermore the app is open-source and its code can be found on{' '}
-                <a href="https://github.com/c4f-wtf/ai">GitHub</a>. It was
+                <a href="https://github.com/mmenzinger/ai_playground" target="_blank">GitHub</a>. It was
                 created with extensibility in mind, any contributions
                 (especially new scenarios) are very welcome.
             </p>

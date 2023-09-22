@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 import store from '@store';
 
-import Header from './pages/header';
+import Header from './elements/header';
 import Modal from './elements/modal';
 import ProjectIndex from './pages/project-index';
 import Project from './pages/project';
@@ -11,7 +11,7 @@ import News from './pages/news';
 import Impressum from './pages/impressum';
 import Welcome from './pages/welcome';
 
-import './app-light.scss';
+import './app.css';
 
 export function App() {
     if (store.settings.getLocal('firstTime', true)) {

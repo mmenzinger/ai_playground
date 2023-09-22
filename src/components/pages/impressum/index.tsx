@@ -1,10 +1,7 @@
-import css from './impressum.module.css';
 
 export function Impressum() {
     return (
-        <div className={css.root}>
-            <h1>Impressum</h1>
-
+        <div className="prose text-center mx-auto my-4">
             <h2>Media Owner</h2>
             <p>
                 Manuel Menzinger, Laßnitzhöhe, Austria
@@ -18,13 +15,13 @@ export function Impressum() {
             <h2>Privacy Policy</h2>
             <p>
                 This website does store all its user-data locally inside the
-                browser. No data is transmitted to any server at any time!
+                browser.
             </p>
 
             <h2>Source Code</h2>
             <p>
                 The source code can be found on{' '}
-                <a href="https://github.com/c4f-wtf/ai">GitHub</a>.
+                <a href="https://github.com/mmenzinger/ai_playground">GitHub</a>.
             </p>
         </div>
     );

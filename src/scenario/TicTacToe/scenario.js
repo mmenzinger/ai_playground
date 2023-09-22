@@ -200,22 +200,22 @@ export async function run(state, player1, player2 = undefined, updateGUI = true)
         player2 = {
             update: (state, actions) => {
                 if(updateGUI){
-                    _.setMessages(`<p>Your turn, pick a position...</p>`);
+                    console.log(`Your turn, pick a position...`);
                 }
                 return getUserUpdate(state, actions);
             },
             result: (oldState, action, newState, score) => {
                 if(updateGUI && !score){
-                    _.setMessages(`<p>Waiting for computer...</p>`);
+                    console.log(`Waiting for computer...`);
                 }
             },
             finish: (state, score) => {
                 if(updateGUI){
                     const winner = getWinner(state);
                     switch(winner){
-                        case EPlayer.Computer: _.setMessages(`<h1>You have lost!</h1>`); break;
-                        case EPlayer.Human: _.setMessages(`<h1>You have won!</h1>`); break;
-                        default: _.setMessages(`<h1>Draw!</h1>`);
+                        case EPlayer.Computer: console.log(`You have lost!`); break;
+                        case EPlayer.Human: console.log(`You have won!`); break;
+                        default: console.log(`Draw!`);
                     }
                 }
             }

@@ -77,7 +77,7 @@ export function Markdown() {
     return (
         <div
             ref={container}
-            className={css.root}
+            className="prose p-2"
             dangerouslySetInnerHTML={{ __html: text }}
         ></div>
     );

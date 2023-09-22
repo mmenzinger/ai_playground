@@ -37,7 +37,7 @@ export async function getScenarios(): Promise<{[key:string]: ScenarioTemplates}>
         return folder;
     }
 
-    const paths  = __SCENARIO_DIRECTORY_JSON__.map(path => path.replace('src/', ''));
+    const paths  = __SCENARIO_DIRECTORY_LIST__.map(path => path.replace('src/', ''));
     for(const path of paths){
         const parts = path.split('/');
         let i = 1; // skip src

@@ -91,13 +91,20 @@ export function Editor() {
             const newFile = store.project.activeFile;
             const newProject = store.project.activeProject;
 
+            const libUtil = await fetch('/lib/utils.js').then((res) => res.text());
+            monaco.languages.typescript.javascriptDefaults.setExtraLibs([
+                { filePath: '/lib/utils.js', content: libUtil },
+                // { filePath: 'lib/prolog.js', content: tProlog },
+                // { filePath: 'lib/tensorflow.js', content: tTensorflow },
+            ]);
+
             if (newProject !== project && newProject) {
                 project = newProject;
                 let files = await db.getProjectFilesResolved(project.id);
                 files = [
                     ...files,
                     ...(await db.getProjectFilesResolved(0)),
-                ].filter((file) => !(file.content instanceof Blob));
+                ].filter((file) => typeof file.content === 'string');
                 openProject(project, files);
             }
             if (newFile !== file && newFile) {
@@ -141,6 +148,8 @@ export function Editor() {
     }
 
     function createModel(file: File, uri: Uri) {
+        if (file.content instanceof Blob) return null;
+
         let language = 'javascript';
         const ending = file.name.match(/\.([a-z]+)$/);
         if (ending) {
@@ -162,7 +171,6 @@ export function Editor() {
                     break;
             }
         }
-        if (file.content instanceof Blob) return null;
         return (
             internals.current.monaco?.editor.createModel(
                 file.content || '',
@@ -178,11 +186,15 @@ export function Editor() {
             // preload files
             const modelsValidated = [];
             for (const file of files) {
+                console.log(file)
                 // (file.projectId ? '/project/' : '/global/') + file.name;
-                const uri = internals.current.monaco.Uri.parse(file.path);
+                const virtualPath = 'project/' + file.path;
+                const uri = internals.current.monaco.Uri.parse(virtualPath);
                 let model = internals.current.monaco.editor.getModel(uri);
+                console.log(uri);
                 if (!model) {
                     model = createModel(file, uri);
+                    // internals.current.monaco.languages.typescript.javascriptDefaults.addExtraLib(`export * from '${virtualPath}';`, `/${virtualPath}`);
                 } else {
                     if (!(file.content instanceof Blob)) {
                         model.setValue(file.content || '');
