@@ -153,21 +153,25 @@ export function ProjectIndex() {
             </div>
         );
     });
-    // elements.push(
-    //     <Card onClick={() => onNewProject()} className={css.project} key={0}>
-    //         <Card.Img variant="top" src="assets/logo.png" />
-    //         <Card.Body>
-    //             <Card.Text>New Project</Card.Text>
-    //         </Card.Body>
-    //         <Card.Footer>
-    //             <ButtonGroup size="sm">
-    //                 <Button variant="outline-secondary">
-    //                     <img src="assets/interface/upload.svg" />
-    //                 </Button>
-    //             </ButtonGroup>
-    //         </Card.Footer>
-    //     </Card>
-    // );
+    elements.push(
+        <div 
+            className="card w-48 bg-base-100 shadow-xl cursor-pointer border hover:drop-shadow-lg"
+            key={0}
+            onClick={() => onNewProject()}
+        >
+            <figure className="bg-white">
+                <img src={`/assets/interface/add.svg`} alt="New Project" className="p-10" />
+            </figure>
+            <div className="card-body justify-between p-2 pt-0 border-t">
+                <h2 className="card-title text-base">New Project</h2>
+                <div className="card-actions justify-end join gap-0">
+                    <button className="join-item btn btn-sm px-2" onClick={undefined/*(e) => onDownloadProject(project, e)*/}>
+                        <img src="assets/interface/upload.svg" className="w-4 h-4 rounded-none" />
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
 
     return <div className="flex gap-3 m-3">{elements}</div>;
 }
