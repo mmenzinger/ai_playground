@@ -4,7 +4,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import store from '@store';
 
 import Header from './elements/header';
-import Modal from './elements/modal';
+import ModalHandler, {ModalHandlerFunctions} from '@elements/modal/modal-handler';
 import ProjectIndex from './pages/project-index';
 import Project from './pages/project';
 import News from './pages/news';
@@ -12,15 +12,20 @@ import Impressum from './pages/impressum';
 import Welcome from './pages/welcome';
 
 import './app.css';
+import { useEffect, useRef } from 'react';
 
 export function App() {
     if (store.settings.getLocal('firstTime', true)) {
         return <Welcome />;
     }
 
+    const modalRef = useRef<ModalHandlerFunctions>(null);
+    useEffect(() => {
+        store.app.modalHandler = modalRef.current;
+    }, [modalRef]);
+
     return (
         <Router>
-            <Modal />
             <Header title="AI Playground" />
             <Routes>
                 <Route path="/news" element={<News />} />
@@ -31,6 +36,7 @@ export function App() {
                 <Route path="/" element={<ProjectIndex />} />
                 <Route element={<p>404</p>} />
             </Routes>
+            <ModalHandler ref={modalRef} />
         </Router>
     );
 }

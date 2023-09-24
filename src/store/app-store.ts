@@ -1,62 +1,38 @@
-import { observable, action, autorun, toJS, makeObservable } from 'mobx';
-import { Defer } from '@src/utils';
-import { ModalTemplate, ModalObject } from '@elements/modal';
+import { autorun, toJS, makeAutoObservable } from 'mobx';
+import { ModalHandlerFunctions } from '@elements/modal/modal-handler';
+// import { ModalTemplate, ModalObject } from '@elements/modal';
 
 class AppStore {
     page = '';
     params: string[][] = [];
     offline = false;
-    modal: ModalObject | null = null;
+    modalHandler: ModalHandlerFunctions | null = null;
     reportOpen = false;
 
     constructor(){
-        makeObservable(this, {
-            page: observable,
-            params: observable,
-            offline: observable,
-            modal: observable,
-            reportOpen: observable,
-            updateOfflineStatus: action,
-            showModal: action,
-            resolveModal: action,
-            rejectModal: action,
-            updateModalResult: action,
-            openReport: action,
-            closeReport: action,
-        });
+        makeAutoObservable(this);
     }
 
     async updateOfflineStatus(offline: boolean): Promise<void> {
         this.offline = offline;
     }
 
-    async showModal(template: ModalTemplate): Promise<any> {
-        const defer = new Defer<any>();
-        if (this.modal) {
-            this.modal.defer.reject(Error("Previous modal not closed!"));
+    openModal(name: string, props?: any): Promise<any>{
+        const handler = this.modalHandler;
+        if(handler){
+            return handler.openModal(name, props);
         }
-        this.modal = { template, defer }
-        return defer.promise;
-    }
-
-    resolveModal(data?: any) {
-        if (this.modal) {
-            this.modal.defer.resolve(data || toJS(this.modal.result));
-            this.modal = null;
+        else{
+            throw new Error('Modal handler not ready');
         }
     }
 
-    rejectModal(data?: any) {
-        if (this.modal) {
-            this.modal.defer.reject(data || toJS(this.modal.result));
-            this.modal = null;
-        }
+    resolveModal(value: any){
+        this.modalHandler?.resolveModal(value);
     }
 
-    updateModalResult(result: any){
-        if(this.modal){
-            this.modal.result = result;
-        }
+    rejectModal(error: Error){
+        this.modalHandler?.rejectModal(error);
     }
 
     openReport() {

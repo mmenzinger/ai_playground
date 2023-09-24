@@ -28,7 +28,7 @@ export function Header(props: { title: string }) {
     }
 
     return (
-        <div className="navbar p-0 px-2 min-h-0 border-b bg-base-100">
+        <div className="navbar p-0 px-2 min-h-0 border-b dark:border-gray-700 bg-base-100">
             <div className="navbar-start">
                 <div className="breadcrumbs text-base">
                     <ul>{breadcrumbs}</ul>

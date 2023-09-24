@@ -11,7 +11,7 @@ export function ThemeSwitcher() {
     }, []);
 
     function updateTheme(darkTheme: boolean){
-        const theme = darkTheme ? 'c4f_dark' : 'c4f_light';
+        const theme = darkTheme ? 'dark' : 'light';
         document?.querySelector('html')?.setAttribute('data-theme', theme);
     }
 

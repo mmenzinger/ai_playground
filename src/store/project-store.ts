@@ -1,4 +1,4 @@
-import { observable, action, makeObservable, autorun, runInAction, toJS, trace } from 'mobx';
+import { makeAutoObservable, autorun, runInAction, toJS, trace } from 'mobx';
 import db from '@localdb';
 
 import { editor, IPosition } from 'monaco-editor';
@@ -49,22 +49,7 @@ class ProjectStore {
     logCallbacks: ((logs: string[]) => void)[] = [];
 
     constructor() {
-        makeObservable(this, {
-            activeProject: observable,
-            activeFile: observable,
-            lastFileTreeChange: observable,
-            openProject: action,
-            closeProject: action,
-            updateProjectErrors: action,
-            openFile: action,
-            openVirtualFile: action,
-            closeFile: action,
-            createFile: action,
-            deleteFile: action,
-            saveFileContent: action,
-            saveFileState: action,
-            renameFile: action,
-        });
+        makeAutoObservable(this);
     }
 
     /**********************************************************************************+

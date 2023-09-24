@@ -4,7 +4,7 @@ const news = [
         major: true,
         content_text: <></>,
         content_list: [
-            <>completely reworked backbone (moved from polymer toreact)</>,
+            <>completely reworked backbone (moved from <a href="https://lit.dev" target="_blank">lit</a> to <a href="https://react.dev" target="_blank">React</a>)</>,
             <>switched design to tailwind/daisyui</>,
             <>new console</>,
             <>new file-tree (added folders)</>,
@@ -46,9 +46,9 @@ export function News() {
     return (
         <div className="max-w-3xl mx-auto prose">
             {news.map((item, index) => 
-                <div key={index} className={"collapse collapse-arrow my-4 " + (item.major ? "bg-primary" : "bg-base-200")}>
+                <div key={index} className={"collapse collapse-arrow my-4 bg-base-200"}>
                     <input type="radio" name="news-accordion" defaultChecked={index === 0} />
-                    <h2 className="collapse-title m-0">{item.title}</h2>
+                    <h2 className={"collapse-title m-0 " + (item.major ? "bg-primary text-neutral" : "")}>{item.title}</h2>
                     <div className="collapse-content">
                         {item.content_text}
                         { item.content_list.length > 0 ? 

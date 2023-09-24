@@ -1,4 +1,3 @@
-
 export function Impressum() {
     return (
         <div className="prose text-center mx-auto my-4">

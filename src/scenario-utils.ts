@@ -17,12 +17,12 @@ export type ScenarioTemplates = {
 
 export async function getScenarios(): Promise<{[key:string]: ScenarioTemplates}> {
     let scenarios:{[key:string]: ScenarioTemplates} = {
-                Examples: {
-                    name: 'Examples',
-                    templates: {},
-                    files: [],
-                },
-            };
+        Examples: {
+            name: 'Examples',
+            templates: {},
+            files: [],
+        },
+    };
 
     function getOrCreateFolder(files: BasicFile[], filename: string){
         for(const folder of files){

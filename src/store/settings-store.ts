@@ -1,4 +1,4 @@
-import { observable, action, autorun, toJS, makeObservable } from 'mobx';
+import { autorun, toJS, makeAutoObservable } from 'mobx';
 
 const STORAGE_KEY = 'settings';
 const STORAGE_KEY_LOCAL = 'settings-local';
@@ -8,12 +8,7 @@ class SettingsStore{
     localData = JSON.parse(window.localStorage.getItem(STORAGE_KEY_LOCAL) || '{}');
 
     constructor(){
-        makeObservable(this, {
-            data: observable,
-            localData: observable,
-            set: action,
-            setLocal: action,
-        });
+        makeAutoObservable(this);
     }
 
     set(key: string, value: any){
