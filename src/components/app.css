@@ -1,3 +1,97 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@plugin "daisyui" {
+    themes: light --default, dark --prefersdark;
+}
+
+/* 
+    https://daisyui.com/theme-generator/#theme=eJyNlN2OnDAMhV8lQqrUSjtR4vyQ9G0yYHbQMmSUMNptq757Q2hnYJOL3pH488E-NvxqZnfF5nszja-XpXlpOj_5cIrdBQ_Xp9MWOLuIJ85YCvm3qbt8Tc9fCCPs22cIdpA1dUbsGVVnOj8vOC8PDnjiKGOagFHUGLXPuIXx6sKPB9yuopQbQZSiVsgKW7yg1lHERPV7Za2zcmuJMlRwU6X_S9t13R5pZRZO7QmgWvMSLVSFyZZoQbgxVHK9z5nxvgQ3PUuQm39q8w9EBS7eYGFLkilJUwH7nHEe_BNkGVQmlc-oZQVZztNuxaeGpaBctQcn76njGJ-u2811wjVQaSpoaU6b9ds1x1B7WIF3F-Zxfn2wBrZ1scRIKsFW2EJf5n3kHIhMK8YO-hiCD8_JZm-45QSAwnFKmSy9ybXzNCsOlP2rPbh-vMe0ZRN2S9ZnVAW87oPDiFOfI_A5dPYfx5Q4_sSjGhxjNbGzDz2uNL995Iseb8tlPefT7Me4_j9YOvU4uPuUuhrcFPGluQUcMMT0gbz9vfv9B81hSos
+*/
+@plugin "daisyui/theme" {
+  name: "light";
+  default: false;
+  prefersdark: false;
+  color-scheme: "light";
+  --color-base-100: oklch(100% 0 0);
+  --color-base-200: oklch(98% 0 0);
+  --color-base-300: oklch(95% 0 0);
+  --color-base-content: oklch(21% 0.006 285.885);
+  --color-primary: oklch(75% 0.183 55.934);
+  --color-primary-content: oklch(100% 0 0);
+  --color-secondary: oklch(66% 0.179 58.318);
+  --color-secondary-content: oklch(100% 0 0);
+  --color-accent: oklch(74% 0.16 232.661);
+  --color-accent-content: oklch(38% 0.063 188.416);
+  --color-neutral: oklch(14% 0.005 285.823);
+  --color-neutral-content: oklch(92% 0.004 286.32);
+  --color-info: oklch(90% 0.058 230.902);
+  --color-info-content: oklch(29% 0.066 243.157);
+  --color-success: oklch(69% 0.17 162.48);
+  --color-success-content: oklch(37% 0.077 168.94);
+  --color-warning: oklch(82% 0.189 84.429);
+  --color-warning-content: oklch(41% 0.112 45.904);
+  --color-error: oklch(70% 0.191 22.216);
+  --color-error-content: oklch(27% 0.105 12.094);
+  --radius-selector: 0.5rem;
+  --radius-field: 0.25rem;
+  --radius-box: 0.5rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
+  --depth: 1;
+  --noise: 0;
+}
+
+/*
+    https://daisyui.com/theme-generator/#theme=eJyNlN2O2yAQhV8FWarUShvE8GND34bYuLHWMRE46nZXffdOIEpw8EUvYb5zPAzHfDWLPbvmZzPY8N68Nb2ffTjE_uTK3cMh7x9tdAdgDCv-fe5P37miQnwjjDJoCVecSv7jleclLyhvMy-RFxQqXJQ4UFAZ54hLykzF935Z3bI-NKajmnVJxA2KWqplV6ouYTrb8Och6NIXQAuiFDVC7rDVRxhKCCvJ6JAZSt82HRQ6Q5SmAvQu_R_Otu9LoEtnA8UJaKAGeM1WpkKnebQCNZpKaEvN4q5rsPMDBplgpgjXimouduB66jyL8FZ1S8WmqWkZ_bN9ndtHEIAq8QpWztzk3jFfEvOiNncZr3jgGJ_u95l3BFqM2rb3O1xPJ6cliTQ1mwD8tmGZll8PVvMcFkO0xLCbHbbyl5A0GGGJAWMbfxeCD8_2M2kkAYHuuiLr6eQ04GUBx7_j7h3sMF0jpmx2_Zr8GVXBncviOLl5SBX-Wjr6j60kTp9u68a3tT2zow-Du9Fw-Ugbg7usp9s6rRY_xdsTw3A1uNFeZzzVaOfo3ppLcKMLMb0-ee_vP421ULU
+*/
+@plugin "daisyui/theme" {
+  name: "dark";
+  default: false;
+  prefersdark: false;
+  color-scheme: "dark";
+  --color-base-100: oklch(25.33% 0.016 252.42);
+  --color-base-200: oklch(23.26% 0.014 253.1);
+  --color-base-300: oklch(21.15% 0.012 254.09);
+  --color-base-content: oklch(97.807% 0.029 256.847);
+  --color-primary: oklch(75% 0.183 55.934);
+  --color-primary-content: oklch(0% 0 0);
+  --color-secondary: oklch(66% 0.179 58.318);
+  --color-secondary-content: oklch(0% 0 0);
+  --color-accent: oklch(77% 0.152 181.912);
+  --color-accent-content: oklch(38% 0.063 188.416);
+  --color-neutral: oklch(14% 0.005 285.823);
+  --color-neutral-content: oklch(92% 0.004 286.32);
+  --color-info: oklch(78% 0.154 211.53);
+  --color-info-content: oklch(29% 0.066 243.157);
+  --color-success: oklch(76% 0.177 163.223);
+  --color-success-content: oklch(37% 0.077 168.94);
+  --color-warning: oklch(82% 0.189 84.429);
+  --color-warning-content: oklch(41% 0.112 45.904);
+  --color-error: oklch(71% 0.194 13.428);
+  --color-error-content: oklch(27% 0.105 12.094);
+  --radius-selector: 0.5rem;
+  --radius-field: 0.25rem;
+  --radius-box: 0.5rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
+  --depth: 1;
+  --noise: 0;
+}
+
+/* Custom prose overrides */
+@layer utilities {
+  .prose ul,
+  .prose ol {
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+  
+  .prose ul > li,
+  .prose ol > li {
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+}

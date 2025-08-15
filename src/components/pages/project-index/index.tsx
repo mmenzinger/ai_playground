@@ -86,11 +86,11 @@ export function ProjectIndex() {
     //     }
     // }
 
-    const elements: JSX.Element[] = [];
+    const elements: React.ReactElement[] = [];
     for(const project of projects){
         elements.push(
             <div 
-                className="card card-bordered w-48 bg-base-100 shadow-xl cursor-pointer hover:drop-shadow-lg hover:dark:shadow-lg-invert"
+                className="card card-border w-48 bg-base-100 shadow-xl cursor-pointer hover:drop-shadow-lg hover:dark:shadow-lg-invert"
                 key={project.id}
                 onClick={() => {
                     navigate(`/project/${project.id}/${project.name}`);
@@ -123,7 +123,7 @@ export function ProjectIndex() {
     }
     elements.push(
         <div 
-            className="card card-bordered w-48 bg-base-100 shadow-xl cursor-pointer hover:drop-shadow-lg"
+            className="card card-border w-48 bg-base-100 shadow-xl cursor-pointer hover:drop-shadow-lg"
             key={0}
             onClick={() => onNewProject()}
         >

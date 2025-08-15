@@ -72,7 +72,7 @@ export function FileTree(props: { project: Project }) {
     }) {
         setMenu({
             filename: info.node.title as string,
-            key: info.node.key,
+            key: String(info.node.key),
             parent: info.node.parent || 0,
             id: Number(info.node.key) || 0,
             x: info.event.pageX + 10,

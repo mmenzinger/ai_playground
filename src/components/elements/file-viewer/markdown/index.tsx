@@ -12,7 +12,6 @@ import 'prismjs/components/prism-javascript';
 import 'prismjs/components/prism-typescript';
 import 'prismjs/components/prism-json';
 
-import css from './markdown.module.css';
 import 'prismjs/themes/prism.css';
 
 function updateHyperlinks(element: HTMLElement) {

@@ -28,7 +28,7 @@ export const Modal = forwardRef((props: {
     title?: string;
     submitName?: string;
     cancelName?: string;
-    children?: JSX.Element;
+    children?: React.ReactElement;
     error?: string;
 }, ref: React.Ref<HTMLDialogElement>) => {
 

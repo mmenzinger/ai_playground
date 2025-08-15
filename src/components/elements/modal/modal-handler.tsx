@@ -25,7 +25,7 @@ export type ModalHandlerFunctions = {
 
 export const ModalHandler = forwardRef((_, ref) => {
     const container: React.MutableRefObject<HTMLDivElement | null> = useRef(null);
-    const [modals, setModals] = useState<JSX.Element[]>([]);
+    const [modals, setModals] = useState<React.ReactElement[]>([]);
     const dialogRef = useRef<HTMLDialogElement>(null);
     const returnValues = useRef<Defer<any>[]>([]);
 

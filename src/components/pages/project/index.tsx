@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Spinner, Tabs, Tab } from 'react-bootstrap';
+import { Spinner } from 'react-bootstrap';
 import Split from 'react-split';
 
 // import { Link } from 'react-router-dom';
@@ -12,7 +12,7 @@ import FileTree from '@elements/file-tree/index';
 import FileViewer from '@elements/file-viewer';
 import Simulator from '@elements/simulator';
 
-import { useParams } from 'react-router';
+import { useParams } from 'react-router-dom';
 import css from './project.module.css';
 import { autorun } from 'mobx';
 
@@ -30,7 +30,8 @@ export function Project() {
 
     const [project, setProject] = useState<tProject | null>(null);
 
-    const [centerTab, setCenterTab] = useState('settings');
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const [, setCenterTab] = useState('settings');
 
     useEffect(() => {
         store.project.openProject(Number(id)).then((p) => setProject(p));

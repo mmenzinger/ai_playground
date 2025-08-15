@@ -3,7 +3,7 @@ import { messageWithResult } from '@utils';
 
 import store from '@store';
 
-async function checkServiceWorker(): Promise<JSX.Element | true> {
+async function checkServiceWorker(): Promise<React.ReactElement | true> {
     return 'serviceWorker' in navigator ? (
         true
     ) : (
@@ -13,7 +13,7 @@ async function checkServiceWorker(): Promise<JSX.Element | true> {
     );
 }
 
-async function checkModuleWorker(): Promise<JSX.Element | true> {
+async function checkModuleWorker(): Promise<React.ReactElement | true> {
     return new Promise(async (resolve, _) => {
         try {
             const worker = new Worker(`/simulator/scenario-worker.js`, {
@@ -45,7 +45,7 @@ async function checkModuleWorker(): Promise<JSX.Element | true> {
     });
 }
 
-async function checkOffscreenCanvas(): Promise<JSX.Element | true> {
+async function checkOffscreenCanvas(): Promise<React.ReactElement | true> {
     return window.OffscreenCanvas ? (
         true
     ) : (
@@ -55,14 +55,14 @@ async function checkOffscreenCanvas(): Promise<JSX.Element | true> {
     );
 }
 
-async function checkBrowserFeatures(): Promise<JSX.Element[]> {
+async function checkBrowserFeatures(): Promise<React.ReactElement[]> {
     return (
         await Promise.all([
             checkServiceWorker(),
             checkModuleWorker(),
             checkOffscreenCanvas(),
         ])
-    ).filter((e) => e !== true) as JSX.Element[];
+    ).filter((e: any) => e !== true) as React.ReactElement[];
 }
 
 function onContinue() {
@@ -71,7 +71,7 @@ function onContinue() {
 }
 
 export function Welcome() {
-    const [missingFeatures, setMissingFeatures] = useState<JSX.Element[]>();
+    const [missingFeatures, setMissingFeatures] = useState<React.ReactElement[]>();
 
     useEffect(() => {
         checkBrowserFeatures().then((missing) => {

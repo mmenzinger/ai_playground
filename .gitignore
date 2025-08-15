@@ -1,5 +1,11 @@
-node_modules
-build
-dist
-.firebase
-.cache
+node_modules/
+build/
+dist/
+.firebase/
+
+# exclude general stuff
+.cache/
+.pnpm-store/
+.env*
+*.log
+pnpm-debug.log*

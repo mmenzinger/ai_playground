@@ -1,3 +1,6 @@
 {
-    "liveServer.settings.root": "dist/"
+    "liveServer.settings.root": "dist/",
+    "files.associations": {
+        "*.css": "tailwindcss"
+    }
 }
