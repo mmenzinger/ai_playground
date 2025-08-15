@@ -4,6 +4,7 @@ module.exports = {
         require('daisyui'),
         require('@tailwindcss/typography'),
     ],
+    darkMode: 'class',
     daisyui: {
         themes: [
             {
@@ -14,7 +15,7 @@ module.exports = {
             },
             {
                 dark: {
-                    ...require("daisyui/src/theming/themes")["[data-theme=dark]"],
+                    ...require("daisyui/src/theming/themes")["[data-theme=dracula]"],
                     "primary": "#f97316",
                 },
             },

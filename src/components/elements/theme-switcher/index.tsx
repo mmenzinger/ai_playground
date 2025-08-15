@@ -12,7 +12,16 @@ export function ThemeSwitcher() {
 
     function updateTheme(darkTheme: boolean){
         const theme = darkTheme ? 'dark' : 'light';
-        document?.querySelector('html')?.setAttribute('data-theme', theme);
+        const html = document?.querySelector('html');
+        if(html){
+            html.setAttribute('data-theme', theme);
+            if(theme === 'dark'){
+                html.classList.add('dark');
+            }
+            else{
+                html.classList.remove('dark');
+            }
+        }
     }
 
     function onChange(event: React.ChangeEvent<HTMLInputElement>){
