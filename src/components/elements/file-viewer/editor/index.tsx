@@ -1,11 +1,18 @@
 import { useState, useRef, useEffect } from 'react';
-import MonacoEditor, { Monaco } from '@monaco-editor/react';
+import MonacoEditor, { Monaco, loader } from '@monaco-editor/react';
 import { Uri, editor, languages, MarkerSeverity } from 'monaco-editor';
 import store, { File, FileError, Project, ProjectErrors } from '@store';
 import { prologTokensProvider } from './prolog';
 import { isString } from 'lodash-es';
 import { autorun } from 'mobx';
 import db from '@localdb';
+
+// Configure Monaco loader for local use with absolute URLs
+loader.config({ 
+    paths: { 
+        vs: `${window.location.origin}/node_modules/monaco-editor/min/vs` 
+    } 
+});
 
 const libFiles = [
     '/lib/utils.js',

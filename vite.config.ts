@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
 // import { VitePWA } from 'vite-plugin-pwa'
 import path from 'path';
+import fs from 'fs';
 import { globSync } from 'glob';
 import { sharedAliases } from './vite.shared';
 
@@ -26,6 +27,7 @@ export default defineConfig({
     {
       name: 'serve-utils',
       configureServer(server) {
+        // Serve custom transformed files
         for (const [path, resolvedPath] of Object.entries(DEV_FILES)) {
           server.middlewares.use(path, async (req, res, next) => {
             try {
@@ -37,6 +39,28 @@ export default defineConfig({
             }
           });
         }
+        
+        // Serve Monaco Editor files from node_modules
+        server.middlewares.use('/node_modules/monaco-editor', async (req, res, next) => {
+          try {
+            const filePath = path.resolve(__dirname, `./node_modules/monaco-editor${req.url}`);
+            if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+              const content = fs.readFileSync(filePath);
+              
+              // Set proper content type
+              if (req.url?.endsWith('.js')) {
+                res.setHeader('Content-Type', 'application/javascript');
+              } else if (req.url?.endsWith('.css')) {
+                res.setHeader('Content-Type', 'text/css');
+              }
+              res.end(content);
+            } else {
+              next();
+            }
+          } catch (error) {
+            next(error);
+          }
+        });
       }
     },
     viteStaticCopy({
@@ -52,6 +76,10 @@ export default defineConfig({
         {
           src: normalizePath(path.resolve(__dirname, './src/components/elements/simulator/default.html')),
           dest: './simulator/',
+        },
+        {
+          src: normalizePath(path.resolve(__dirname, './node_modules/monaco-editor/min/vs')),
+          dest: './node_modules/monaco-editor/min/',
         },
       ],
     }),

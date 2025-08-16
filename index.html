@@ -8,7 +8,6 @@
             name="description"
             content="Coding4Fun Educational Artificial Intelligence Platform"
         />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         <script type="module" src="/src/index.tsx"></script>
         <script>
             // Load and register pre-caching Service Worker
@@ -17,27 +16,8 @@
                     navigator.serviceWorker.register('/service-worker.js', { type: 'module' });
                 };
             }
-            // onload = () => {
-            //     try {
-            //         if ('serviceWorker' in navigator) {
-            //             navigator.serviceWorker.register('/service-worker.js');
-            //         } else {
-            //             throw Error(`could not create service worker`);
-            //         }
-            //     } catch (error) {
-            //         document.getElementById('app').style.display = 'none';
-            //         document.getElementById('notSupported').style.display =
-            //             'block';
-            //         const ul = document.getElementById('missing');
-            //         const li = document.createElement('li');
-            //         li.innerText = error.message;
-            //         ul.appendChild(li);
-            //     }
-            // };
         </script>
         <style>
-            @import url('https://fonts.googleapis.com/css2?family=Roboto&family=Roboto+Mono&family=Roboto+Slab&display=swap');
-
             html,
             body,
             #output {
@@ -48,22 +28,6 @@
                 display: flex;
                 flex-direction: column;
             }
-            /* :root {
-                --color-background-primary: #fff;
-                --color-background-secondary: #eee;
-                --color-background-tertiary: #ddd;
-                --color-highlight: #f82;
-                --color-warning: #ffa;
-                --color-border: #aaa;
-                --color-border-secondary: #ccc;
-                --color-text: #333;
-                --color-text-weak: #888;
-                --color-shadow: rgba(0, 0, 0, 0.25);
-
-                --font-serif: 'Roboto Slab', serif;
-                --font-sans-serif: 'Roboto', sans-serif;
-                --font-monospace: 'Roboto Mono', monospace;
-            } */
         </style>
     </head>
 
