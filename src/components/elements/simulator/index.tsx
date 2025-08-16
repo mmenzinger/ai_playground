@@ -6,7 +6,7 @@ import db from '@src/localdb';
 
 export function Simulator() {
     const iframe = useRef<HTMLIFrameElement>(null);
-    const [src, _] = useState<string>('/simulator/default.html');
+    const [src, _] = useState<string>(`/simulator/default.html?pid=${store.project.activeProject?.id}`);
 
     const iframeHandler: any = {
         log: (m: MessageEvent) => store.project.publishLogs(m.data.logs),

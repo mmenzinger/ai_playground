@@ -34,23 +34,23 @@
             import { ScenarioWorker } from '/simulator/worker-utils.js';
 
             const displayContainer = document.getElementById('display');
-            const worker = new ScenarioWorker({
+            const worker = new ScenarioWorker(displayContainer, {
                 onmousedown: true,
                 onmouseup: true,
                 onmousemove: true,
             });
 
             onload = async function () {
-                await worker.start(displayContainer);
+                await worker.start();
                 await worker.call('/project/index.js', 'start');
             };
 
             document.getElementById('start').onclick = async function () {
-                await worker.start(displayContainer);
+                await worker.start();
                 await worker.call('/project/index.js', 'start');
             };
             document.getElementById('train').onclick = async function () {
-                await worker.start(displayContainer);
+                await worker.start();
                 await worker.call('/project/index.js', 'train');
             };
             document.getElementById('terminate').onclick = async function () {

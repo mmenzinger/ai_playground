@@ -12,7 +12,7 @@ export type NewProjectModalResult = {
 };
 
 export const NewProjectModal = forwardRef((props: {
-    scenarios: { [key: string]: ScenarioTemplates };
+    scenarios: Map<string, ScenarioTemplates>;
 }, ref: React.Ref<HTMLDialogElement>) => {
     const scenarios = useMemo(() => getScenarios(props.scenarios), [props.scenarios]);
     const [scenario, setScenario] = useState(scenarios[0].key as string);
@@ -38,17 +38,24 @@ export const NewProjectModal = forwardRef((props: {
 
     async function onSubmit(): Promise<any | undefined>{
         try{
-            const scenarioTemplate = props.scenarios[scenario];
-            const projectTemplate = scenarioTemplate.templates[template];
-            if (projectTemplate.scenario) {
-                projectTemplate.files.push(...props.scenarios[projectTemplate.scenario].files);
+            const scenarioTemplate = props.scenarios.get(scenario);
+            const projectTemplate = scenarioTemplate?.templates.get(template);
+            const templateScenario = projectTemplate?.scenario;
+            if(templateScenario){
+                projectTemplate.files.push(...props.scenarios.get(templateScenario)?.files || []);
+                return await store.project.createProject(
+                    name,
+                    projectTemplate.scenario,
+                    projectTemplate.files
+                );
             }
+            else{
+                throw Error(`Scenario '${templateScenario}' not found`);
+            }
+            // if (projectTemplate && projectTemplate.scenario) {
+            //     projectTemplate.files.push(...(props.scenarios?.get(projectTemplate.scenario)?.files || []));
+            // }
             
-            return await store.project.createProject(
-                name,
-                projectTemplate.scenario,
-                projectTemplate.files
-            );
         }
         catch(error: any){
             if(error?.name === 'ConstraintError'){
@@ -60,7 +67,6 @@ export const NewProjectModal = forwardRef((props: {
         }
         return undefined;
     }
-
     return (
         <Modal ref={ref} title="New Project" submitName="create" onSubmit={onSubmit} error={error} >
             <>
@@ -81,22 +87,21 @@ export const NewProjectModal = forwardRef((props: {
     );
 });
 
-function getScenarios(scenarios: { [key: string]: ScenarioTemplates }) {
-    return Object.values(scenarios).map((scenario) => (
+function getScenarios(scenarios: Map<string, ScenarioTemplates>) {
+    return Array.from(scenarios.values()).map((scenario) => (
         <option value={scenario.name} key={scenario.name}>
-            {Object.values(scenario.name)}
+            {scenario.name}
         </option>
     ));
 }
 
 function getTemplates(
-    scenarios: { [key: string]: ScenarioTemplates },
+    scenarios: Map<string, ScenarioTemplates>,
     scenario: string
 ) {
-    return Object.entries(scenarios[scenario].templates)
-        .sort((a, b) => a[1].name.localeCompare(b[1].name))
+    return Array.from(scenarios.get(scenario)?.templates.entries() || [])
         .map(([key, template]) => (
-            <option value={key} key={key}>
+        <option value={key} key={key}>
                 {template.name}
             </option>
         ));

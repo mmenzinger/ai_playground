@@ -37,9 +37,9 @@ export interface MouseEventMessage {
 }
 
 interface ScenarioWorkerSettings{
-    onmousedown: boolean,
-    onmouseup: boolean,
-    onmousemove: boolean,
+    onmousedown?: boolean,
+    onmouseup?: boolean,
+    onmousemove?: boolean,
 }
 
 export class ScenarioWorker {
@@ -57,23 +57,29 @@ export class ScenarioWorker {
         },
     };
 
+    #container: HTMLElement;
+    #projectId: number | undefined;
+
     #settings: ScenarioWorkerSettings = {
         onmousedown: false,
         onmouseup: false,
         onmousemove: false,
     };
 
-    constructor(settings: ScenarioWorkerSettings){
+    constructor(container: HTMLElement, settings: ScenarioWorkerSettings){
+        const urlParams = new URLSearchParams(window.location.search);
+        this.#projectId = Number(urlParams.get('pid'));
+        this.#container = container;
         this.#settings = {...this.#settings, ...settings};
     }
 
-    async start(displayContainer: HTMLElement): Promise<void> {
+    async start(): Promise<void> {
         return new Promise((resolve, _) => {
             const canvas = document.createElement('canvas');
-            displayContainer.innerHTML = '';
-            displayContainer.appendChild(canvas);
-            canvas.width = displayContainer.offsetWidth;
-            canvas.height = displayContainer.offsetHeight;
+            this.#container.innerHTML = '';
+            this.#container.appendChild(canvas);
+            canvas.width = this.#container.offsetWidth;
+            canvas.height = this.#container.offsetHeight;
             const offscreenCanvas = canvas.transferControlToOffscreen();
 
             if(this.#settings.onmousedown){
@@ -91,7 +97,7 @@ export class ScenarioWorker {
                 this.#worker.terminate();
             }
             const channel = new MessageChannel();
-            this.#worker = new Worker('/simulator/scenario-worker.js', {
+            this.#worker = new Worker(`/simulator/scenario-worker.js?pid=${this.#projectId}`, {
                 type: 'module',
             });
 

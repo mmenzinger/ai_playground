@@ -7,6 +7,12 @@ import { isString } from 'lodash-es';
 import { autorun } from 'mobx';
 import db from '@localdb';
 
+const libFiles = [
+    '/lib/utils.js',
+    '/lib/prolog.js',
+    '/lib/tensorflow.js',
+];
+
 const options = {
     selectOnLineNumbers: true,
     automaticLayout: true,
@@ -134,14 +140,17 @@ export function Editor() {
             const newProject = store.project.activeProject;
 
             try {
-                const libUtil = await fetch('/lib/utils.js').then((res) => res.text());
-                if (internals.current.isDisposed) return; // Check again after async operation
+                // Create models for lib files
+                // switched from extraLibs to Models as the different methods
+                // led to parsing errors of the editor, requiring leading / to resolve
+                for(const file of libFiles) {
+                    const uri = monaco.Uri.parse(file);
+                    if (!monaco.editor.getModel(uri)) {
+                        const content = await fetch(file).then((res) => res.text());
+                        monaco.editor.createModel(content, 'javascript', uri);
+                    }
+                }
                 
-                monaco.languages.typescript.javascriptDefaults.setExtraLibs([
-                    { filePath: '/lib/utils.js', content: libUtil },
-                    // { filePath: 'lib/prolog.js', content: tProlog },
-                    // { filePath: 'lib/tensorflow.js', content: tTensorflow },
-                ]);
             } catch (error) {
                 console.error('Failed to load library utilities:', error);
                 return;
@@ -273,11 +282,11 @@ export function Editor() {
         for (const file of files) {
             if (internals.current.isDisposed) break; // Check during loop
             
-            console.log(file);
+            // console.log(file);
             const virtualPath = 'project/' + file.path;
             const uri = internals.current.monaco.Uri.parse(virtualPath);
             let model = internals.current.monaco.editor.getModel(uri);
-            console.log(uri);
+            // console.log(uri);
             if (!model) {
                 model = createModel(file, uri);
                 // internals.current.monaco.languages.typescript.javascriptDefaults.addExtraLib(`export * from '${virtualPath}';`, `/${virtualPath}`);

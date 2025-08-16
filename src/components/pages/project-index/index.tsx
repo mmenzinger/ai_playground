@@ -93,7 +93,7 @@ export function ProjectIndex() {
                 className="card card-border w-48 bg-base-100 shadow-xl cursor-pointer hover:drop-shadow-lg hover:dark:shadow-lg-invert"
                 key={project.id}
                 onClick={() => {
-                    navigate(`/project/${project.id}/${project.name}`);
+                    navigate(`/editor/${project.id}/${project.name}`);
                 }}
             >
                 <figure className="bg-white">
@@ -147,7 +147,7 @@ export function ProjectIndex() {
         </div>
     );
 
-    return <div className="flex gap-3 m-3">{elements}</div>;
+    return <div className="flex flex-wrap gap-3 m-3">{elements}</div>;
 }
 
 export default ProjectIndex;

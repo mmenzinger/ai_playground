@@ -14,7 +14,8 @@ export function Impressum() {
             <h2>Privacy Policy</h2>
             <p>
                 This website does store all its user-data locally inside the
-                browser.
+                browser and only uses technology necessary for the website to function.
+                There is no additional tracking or data collection.
             </p>
 
             <h2>Source Code</h2>

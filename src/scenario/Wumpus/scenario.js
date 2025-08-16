@@ -337,13 +337,13 @@ export function performAction(state, action) {
 export async function run(state, player, delay = 100, updateGUI = true) {
     if (updateGUI){
         await _.loadImages([
-            'project/explorer.png',
-            'project/wumpus.png',
-            'project/gold.png',
-            'project/pit.png',
-            'project/stench.png',
-            'project/breeze.png',
-            'project/glitter.png',
+            'project/assets/explorer.png',
+            'project/assets/wumpus.png',
+            'project/assets/gold.png',
+            'project/assets/pit.png',
+            'project/assets/stench.png',
+            'project/assets/breeze.png',
+            'project/assets/glitter.png',
         ]);
     }
 
@@ -367,10 +367,10 @@ export async function run(state, player, delay = 100, updateGUI = true) {
         }
         if (updateGUI){
             if(action.type & EAction.MoveTo){
-                _.addMessage(`<p>MoveTo: ${action.x}, ${action.y}</p>`);
+                console.log(`MoveTo: ${action.x}, ${action.y}`);
             }
             else {
-                _.addMessage(`<p>${EAction[action.type]}</p>`);
+                console.log(`${EAction[action.type]}`);
             }
             drawState(newState);
         }
@@ -378,10 +378,10 @@ export async function run(state, player, delay = 100, updateGUI = true) {
     }
     if (updateGUI){
         if(state.score < 0){
-            _.addMessage(`<h1>The explorer died!</h1>`);
+            console.log(`The explorer died!`);
         }
         else{
-            _.addMessage(`<h1>The explorer found the gold!</h1>`);
+            console.log(`The explorer found the gold!`);
         }
     }
 

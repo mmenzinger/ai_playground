@@ -1,21 +1,15 @@
-import { registerRoute } from 'workbox-routing';
+// import { registerRoute } from 'workbox-routing';
 // import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching';
 // import { StaleWhileRevalidate } from 'workbox-strategies';
 // import { ExpirationPlugin } from 'workbox-expiration';
-import { Project } from '@store';
+// import { Project } from '@store';
 import db from '@localdb';
 // import { isNumber } from 'lodash-es';
 
 declare var self: ServiceWorkerGlobalScope;
 // declare var PRODUCTION: boolean;
 
-let project: Project | null = null;
-
-onmessage = m => {
-    if (m.data.type === 'setProject') {
-        project = m.data.project;
-    }
-};
+let clientProjectId: Map<string, number> = new Map();
 
 self.addEventListener('install', (event) => {
     event.waitUntil(self.skipWaiting());
@@ -25,10 +19,18 @@ self.addEventListener('activate', (event) => {
 });
 
 
-registerRoute(
-    ({ url }) => url.origin === location.origin && /^\/(global|project|[0-9]+)\//.test(url.pathname),
-    userFile
-);
+self.addEventListener('fetch', async (event) => {
+    const { url } = event.request;
+    const urlObj = new URL(url);
+    if (urlObj.origin === location.origin && /^\/(global|project|[0-9]+)\//.test(urlObj.pathname)) {
+        event.respondWith(userFile({ url: urlObj, request: event.request, clientId: event.clientId }));
+    }
+});
+
+// registerRoute(
+//     ({ url }) => url.origin === location.origin && /^\/(global|project|[0-9]+)\//.test(url.pathname),
+//     userFile
+// );
 
 // if (PRODUCTION) {
 //     cleanupOutdatedCaches();
@@ -54,7 +56,7 @@ registerRoute(
 //     // console.log(self.__WB_MANIFEST);
 // }
 
-async function userFile({url, request}: {url: URL, request: Request}): Promise<Response> {
+async function userFile({url, request, clientId}: {url: URL, request: Request, clientId: string}): Promise<Response> {
     let response: Response;
     const header = {
         status: 200,
@@ -64,16 +66,28 @@ async function userFile({url, request}: {url: URL, request: Request}): Promise<R
 
     try {
         const path = url.pathname.split('/');
-        let projectId;
+        let projectId = clientProjectId.get(clientId);
         switch (path[1]) {
             case 'project': {
-                if (!project)
-                    throw Error('no project loaded');
-                projectId = project.id; break;
+                const pid = Number(request.referrer.match(/pid=([0-9]+)/)?.[1]);
+                if(pid){
+                    clientProjectId.set(clientId, pid);
+                    projectId = pid;
+                }
+                break;
             }
             case 'global': projectId = 0; break;
             default: projectId = Number(path[1]);
         }
+        if (!projectId) {
+            console.error('No project loaded for client:', clientId);
+            return new Response('Error: No project loaded', {
+                status: 400,
+                statusText: 'Bad Request',
+                headers: { 'Content-Type': 'text/plain' }
+            });
+        }
+
         let file;
         if(path[2] === 'first'){
             file = await db.loadFirstFileByName(projectId, path[path.length-1]);
@@ -96,6 +110,7 @@ async function userFile({url, request}: {url: URL, request: Request}): Promise<R
         response = new Response(file.content, header);
     }
     catch (error) {
+        
         if (url.pathname.endsWith('localstorage.json')) {
             response = new Response('{}', header);
         }
@@ -103,7 +118,7 @@ async function userFile({url, request}: {url: URL, request: Request}): Promise<R
             response = await fetch(request);
         }
         else {
-            console.error(`invalid request`);
+            console.error(`Error fetching user file (${url.toString()}): ${error}`);
             response = await fetch(url.toString());
         }
     }

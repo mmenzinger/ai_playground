@@ -32,7 +32,7 @@ export function App() {
                 <Route path="/impressum" element={<Impressum />} />
                 <Route path="/documentation" element={<p>documentation</p>} />
                 <Route path="/welcome" element={<Welcome />} />
-                <Route path="/project/:id/:name" element={<Project />} />
+                <Route path="/editor/:id/:name" element={<Project />} />
                 <Route path="/" element={<ProjectIndex />} />
                 <Route element={<p>404</p>} />
             </Routes>

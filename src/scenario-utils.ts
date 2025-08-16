@@ -11,72 +11,79 @@ export type ScenarioTemplate = {
 
 export type ScenarioTemplates = {
     name: string,
-    templates: {[key:string]: ScenarioTemplate},
+    templates: Map<string, ScenarioTemplate>,
     files: BasicFile[],
 }
 
-export async function getScenarios(): Promise<{[key:string]: ScenarioTemplates}> {
-    let scenarios:{[key:string]: ScenarioTemplates} = {
-        Examples: {
-            name: 'Examples',
-            templates: {},
-            files: [],
-        },
-    };
+export async function getScenarios(): Promise<Map<string, ScenarioTemplates>> {
+    let scenarios = new Map<string, ScenarioTemplates>();
+    scenarios.set('Examples', {
+        name: 'Examples',
+        templates: new Map<string, ScenarioTemplate>(),
+        files: [],
+    });
 
-    function getOrCreateFolder(files: BasicFile[], filename: string){
-        for(const folder of files){
-            if(folder.name === filename)
-                return folder;
-        }
-        const folder: BasicFile = {
-            name: filename,
-            content: [],
-        }
-        files.push(folder);
-        return folder;
+    function getFileIfExists(files: BasicFile[], filename: string): BasicFile | undefined {
+        return files.find(file => file.name === filename);
     }
 
-    const paths  = __SCENARIO_DIRECTORY_LIST__.map(path => path.replace('src/', ''));
+    function stripNumbering(name: string){
+        const matches = name.match(/^\d+~(.*)$/);
+        if (matches) {
+            return matches[1];
+        }
+        return name;
+    }
+
+    const paths  = __SCENARIO_DIRECTORY_LIST__.map(path => path.replace('src/scenario/', ''));
     for(const path of paths){
         const parts = path.split('/');
-        let i = 1; // skip src
+        let i = 0;
         let scenario = parts[i++];
         let template = undefined;
         if(parts[i] === '~examples'){
             scenario = 'Examples';
-            template = parts[i+1];
+            template = stripNumbering(parts[i+1]);
             i+=2;
         }
         else if(parts[i] === '~templates'){
-            template = parts[i+1];
+            template = stripNumbering(parts[i+1]);
             i+=2;
         }
 
-        if(scenario){
-            if(!scenarios[scenario]){
-                scenarios[scenario] =  {
-                    name: scenario,
-                    templates: {},
-                    files: [],
-                }
-            }
-            if(template && !scenarios[scenario].templates[template]){
-                scenarios[scenario].templates[template] = {
-                    name: template,
-                    scenario: parts[1],
-                    files: [],
-                }
-            }
-            let files = template ? scenarios[scenario].templates[template].files : scenarios[scenario].files;
-            for(; i < parts.length-1; i++){
-                const folder = getOrCreateFolder(files, parts[i])
-                files = folder.content as BasicFile[];
-            }
-            
-            const response = await fetch(path);
-            files.push(await getBasicFile(parts[parts.length-1], response));
+        if(!scenarios.get(scenario)){
+            scenarios.set(scenario,{
+                name: scenario,
+                templates: new Map<string, ScenarioTemplate>(),
+                files: [],
+            });
         }
+        if(template && !scenarios.get(scenario)?.templates.get(template)){
+            scenarios.get(scenario)?.templates.set(template, {
+                name: template,
+                scenario: parts[0],
+                files: [],
+            });
+        }
+        let files = (template ? scenarios.get(scenario)?.templates.get(template)?.files : scenarios.get(scenario)?.files) || [];
+        let folder = undefined;
+        for(; i < parts.length-1; i++){
+            const foldername = parts[i];
+            folder = getFileIfExists(files, foldername);
+            if(!folder){
+                folder = {
+                    name: foldername,
+                    content: [],
+                }
+                files.push(folder);
+            }
+            // step into each folder and set as base for new file
+            files = folder.content as BasicFile[];
+        }
+
+        const response = await fetch(`scenario/${path}`);
+        const newFile = await getBasicFile(parts[parts.length-1], response);
+        files.push(newFile);
     }
     return scenarios;
 }
@@ -89,7 +96,13 @@ async function getBasicFile(filename: string, response: Response): Promise<Basic
             content = await response.text();
             break;
         default:
-            content = await response.blob();
+            // .pl files have no content-type...
+            // if file ends with .pl, get as text
+            if (filename.endsWith('.pl')) {
+                content = await response.text();
+            } else {
+                content = await response.blob();
+            }
     }
     return {
         name: filename,

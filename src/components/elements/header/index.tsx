@@ -16,7 +16,7 @@ export function Header(props: { title: string }) {
 
     while (path[i]) {
         let name = // react automatically escapes all strings
-            path[i] === 'project'
+            path[i] === 'editor'
                 ? path[(i += 2)] // use project name
                 : path[i][0].toUpperCase() + path[i].slice(1);
         const url = '/' + path.slice(0, i + 1).join('/');

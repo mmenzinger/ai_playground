@@ -147,12 +147,12 @@ export async function run(settings, agent, render = true, frameDelay = 10) {
 
     if (render) {
         await _.loadImages([
-            'project/bird1.png',
-            'project/bird2.png',
-            'project/floor.png',
-            'project/crate.png',
-            'project/sign.png',
-            'project/background.png',
+            'project/assets/bird1.png',
+            'project/assets/bird2.png',
+            'project/assets/floor.png',
+            'project/assets/crate.png',
+            'project/assets/sign.png',
+            'project/assets/background.png',
         ]);
 
         ctx.setTransform(scale, 0, 0, scale, 0, 0);

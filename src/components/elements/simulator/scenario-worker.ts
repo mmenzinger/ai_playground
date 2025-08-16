@@ -8,6 +8,7 @@ import cfFunction from 'console-feed/lib/Transform/Function';
 import cfMap from 'console-feed/lib/Transform/Map';
 import cfReplicator from 'console-feed/lib/Transform/replicator';
 
+
 import { SetupMessage, CallMessage, MouseEventMessage } from './worker-utils';
 console.log("worker loaded");
 /***********************************************************************************************
@@ -35,7 +36,7 @@ replicator.addTransforms(transforms);
 for(let method of cfMethods){
     // const nativeMethod = (console as any)[method];
     (console as any)[method] = function(...args: any[]){
-        //nativeMethod.apply(this, args);
+        // nativeMethod.apply(this, args);
         const parsed = cfParse(method as Methods, args);
         const jsonData = replicator.encode(parsed);
         postLogMessage(jsonData);

@@ -4,7 +4,7 @@ import js from 'tau-prolog/modules/js';
 import random from 'tau-prolog/modules/random';
 import statistics from 'tau-prolog/modules/statistics';
 
-import { fixPath, getFileContent } from '@lib/utils';
+import { fixPath, getFileContent } from '/lib/utils.js';
 
 export const pl = prolog;
 
@@ -113,3 +113,4 @@ pl.type.Session.prototype.assertz = function( string ) {
 	});
 };
 
+export default pl;

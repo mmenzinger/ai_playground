@@ -6,5 +6,5 @@
     "moduleResolution": "bundler",
     "allowSyntheticDefaultImports": true
   },
-  "include": ["vite.config.ts", "vite.workers_libs.ts"]
+  "include": ["vite.config.ts", "vite.sw.config.ts", "vite.prolog.config.ts", "vite.tensorflow.config.ts", "vite.shared.ts"]
 }

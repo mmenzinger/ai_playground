@@ -1,5 +1,5 @@
 import * as $ from 'project/scenario.js';
-import { pl } from 'lib/prolog.js';
+import pl from 'lib/prolog.js';
 
 //------------------------------------------------------------------------------
 const SETTINGS = {

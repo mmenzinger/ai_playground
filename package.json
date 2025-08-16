@@ -7,6 +7,7 @@
     "dependencies": {
         "@monaco-editor/loader": "^1.5.0",
         "@monaco-editor/react": "^4.7.0",
+        "@tensorflow-models/face-landmarks-detection": "^1.0.6",
         "@tensorflow/tfjs": "^4.22.0",
         "bootstrap": "^5.3.7",
         "console-feed": "^3.8.0",
@@ -73,11 +74,12 @@
     },
     "scripts": {
         "start": "pnpm run start:dev",
-        "buildEsm": "rollup -c rollup.config.mjs -w",
         "start:dev": "vite",
         "start:prod": "vite",
-        "build": "tsc && vite build --config vite.workers_libs.ts && vite build",
-        "build:libs": "tsc && vite build --config vite.workers_libs.ts",
+        "build:sw": "tsc && vite build --config vite.sw.config.ts",
+        "build:prolog": "tsc && vite build --config vite.prolog.config.ts",
+        "build:libs": "tsc && vite build --config vite.prolog.config.ts && vite build --config vite.tensorflow.config.ts",
+        "build": "tsc && pnpm run build:sw && pnpm run build:libs && vite build",
         "build:main": "tsc && vite build",
         "deploy": "firebase deploy",
         "update:check": "ncu",

@@ -1,7 +1,10 @@
-(function() {
+var pl = (function() {
 	
 	// VERSION
 	var version = { major: 0, minor: 2, patch: 73, status: "beta" };
+
+	// Global variable to store the pl object
+	var pl;
 
 
 
@@ -6309,4 +6312,10 @@
 		window.pl = pl;
 	}
 	
+	// Return pl for ES module export
+	return pl;
+	
 })();
+
+// Export for ES modules
+export default pl;
