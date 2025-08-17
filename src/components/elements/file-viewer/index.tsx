@@ -52,10 +52,10 @@ export function FileViewer() {
             {tab === 'editor' ? <div className="flex-grow overflow-hidden">
                 <Editor />
             </div> : null}
-            {tab === 'markdown' ? <div className="">
+            {tab === 'markdown' ? <div className="flex-grow overflow-auto">
                 <Markdown />
             </div> : null}
-            {tab === 'image' ? <div className="">
+            {tab === 'image' ? <div className="flex-grow overflow-auto">
                 <img
                     className=""
                     src={`/${store.project.activeProject?.id || 'assets'}/${

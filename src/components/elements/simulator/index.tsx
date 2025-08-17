@@ -4,7 +4,7 @@ import { StoreMessage } from './worker-utils';
 // import { project } from '@src/components/pages/project-index/project-index.module.css';
 import db from '@src/localdb';
 
-export function Simulator() {
+export function Simulator(props: { enableEventCapture: boolean }) {
     const iframe = useRef<HTMLIFrameElement>(null);
     const [src, _] = useState<string>(`/simulator/default.html?pid=${store.project.activeProject?.id}`);
 
@@ -20,7 +20,6 @@ export function Simulator() {
             if (contentWindow) {
                 // set message port on iframe
                 (contentWindow as any).__port = channel.port2;
-                clearInterval(interval);
 
                 channel.port1.onmessage = (m) => {
                     const type = m.data.type as string;
@@ -28,13 +27,15 @@ export function Simulator() {
                         iframeHandler[type](m);
                     }
                 };
+
+                clearInterval(interval);
             }
         }, 100);
     }, []);
 
     return (
         <iframe
-            className="w-full h-full"
+            className={`w-full h-full absolute top-0 left-0 bottom-0 right-0 ${props.enableEventCapture ? '' : '-z-10'}`}
             ref={iframe}
             src={src}
             sandbox="allow-scripts allow-same-origin"

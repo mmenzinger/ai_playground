@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Spinner } from 'react-bootstrap';
-import Split from 'react-split';
+import Splitter, { SplitDirection } from '@devbookhq/splitter';
 
 // import { Link } from 'react-router-dom';
 // import { autorun } from 'mobx';
@@ -13,7 +13,6 @@ import FileViewer from '@elements/file-viewer';
 import Simulator from '@elements/simulator';
 
 import { useParams } from 'react-router-dom';
-import css from './project.module.css';
 import { autorun } from 'mobx';
 
 export function Project() {
@@ -29,6 +28,8 @@ export function Project() {
     const [split3, setSplit3] = useState(splits.split3);
 
     const [project, setProject] = useState<tProject | null>(null);
+
+    const [enableEventCapture, setEnableEventCapture] = useState(true);
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [, setCenterTab] = useState('settings');
@@ -55,7 +56,7 @@ export function Project() {
 
     if (!project) {
         return (
-            <div className={css.loading}>
+            <div className="flex items-center justify-center h-full">
                 <Spinner animation="border" />
                 <span>Loading</span>
             </div>
@@ -63,48 +64,45 @@ export function Project() {
     }
 
     return (
-        <Split
-            className={`${css.root} ${css.horizontal}`}
-            sizes={split1}
-            minSize={200}
-            expandToMin={true}
-            gutterSize={6}
-            onDragEnd={(e: number[]) => setSplit1(e)}
+        <Splitter
+            initialSizes={split1}
+            direction={SplitDirection.Horizontal}
+            onResizeFinished={(_:number, e: number[]) => {
+                setSplit1(e);
+                setEnableEventCapture(true);
+            }}
+            onResizeStarted={(_:number) => {
+                setEnableEventCapture(false);
+            }}
+            gutterClassName="bg-base-300"
         >
-            <Split
-                className={css.vertical}
-                direction="vertical"
-                sizes={split2}
-                minSize={50}
-                expandToMin={true}
-                gutterSize={6}
-                onDragEnd={(e: number[]) => setSplit2(e)}
+            <Splitter
+                direction={SplitDirection.Vertical}
+                initialSizes={split2}
+                onResizeFinished={(_:number, e: number[]) => setSplit2(e)}
+                gutterClassName="bg-base-300"
             >
-                <Split
-                    className={css.horizontal}
-                    sizes={split3}
-                    minSize={100}
-                    gutterSize={6}
-                    // expandToMin={true} // somehow this one is buggy... (always jumps to min after reload)
-                    onDragEnd={(e: number[]) => setSplit3(e)}
+                <Splitter
+                    direction={SplitDirection.Horizontal}
+                    initialSizes={split3}
+                    onResizeFinished={(_:number, e: number[]) => setSplit3(e)}
+                    gutterClassName="bg-base-300"
                 >
-                    <div className={css.pane}>
+                    <div className="h-full">
                         <FileTree project={project} />
                     </div>
-                    <div className={css.pane}>
-                        <div className={css.fillVertical}>
-                            <FileViewer />
-                        </div>
+                    <div className="h-full">
+                        <FileViewer />
                     </div>
-                </Split>
-                <div className={css.pane}>
+                </Splitter>
+                <div className="h-full">
                     <Console />
                 </div>
-            </Split>
-            <div className={css.pane}>
-                <Simulator />
+            </Splitter>
+            <div className="h-full relative">
+                <Simulator enableEventCapture={enableEventCapture} />
             </div>
-        </Split>
+        </Splitter>
     );
 }
 

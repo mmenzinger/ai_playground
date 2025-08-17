@@ -5,6 +5,7 @@
     "type": "module",
     "description": "AI Playground",
     "dependencies": {
+        "@devbookhq/splitter": "^1.4.2",
         "@monaco-editor/loader": "^1.5.0",
         "@monaco-editor/react": "^4.7.0",
         "@tensorflow-models/face-landmarks-detection": "^1.0.6",

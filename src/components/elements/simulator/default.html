@@ -39,6 +39,7 @@
                 onmouseup: true,
                 onmousemove: true,
             });
+            window.worker = worker;
 
             onload = async function () {
                 await worker.start();

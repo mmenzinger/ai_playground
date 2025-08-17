@@ -5,6 +5,52 @@
     themes: light --default, dark --prefersdark;
 }
 
+/* Local variable fonts served from /public/assets/fonts */
+@font-face {
+  font-family: "Roboto";
+  src: url("/assets/fonts/Roboto-VariableFont_wdth,wght.ttf") format("truetype-variations");
+  font-weight: 100 900;
+  font-stretch: 75% 100%;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Roboto";
+  src: url("/assets/fonts/Roboto-Italic-VariableFont_wdth,wght.ttf") format("truetype-variations");
+  font-weight: 100 900;
+  font-stretch: 75% 100%;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Roboto Mono";
+  src: url("/assets/fonts/RobotoMono-VariableFont_wght.ttf") format("truetype-variations");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Roboto Mono";
+  src: url("/assets/fonts/RobotoMono-Italic-VariableFont_wght.ttf") format("truetype-variations");
+  font-weight: 100 900;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Roboto Slab";
+  src: url("/assets/fonts/RobotoSlab-VariableFont_wght.ttf") format("truetype-variations");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Tailwind v4: set default fonts for the whole app (DaisyUI inherits these) */
+@theme {
+  --font-sans: "Roboto", ui-sans-serif, system-ui, -apple-system, "Segoe UI", "Noto Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  --font-mono: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --font-serif: "Roboto Slab", ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+}
+
 /* 
     https://daisyui.com/theme-generator/#theme=eJyNlN2OnDAMhV8lQqrUSjtR4vyQ9G0yYHbQMmSUMNptq757Q2hnYJOL3pH488E-NvxqZnfF5nszja-XpXlpOj_5cIrdBQ_Xp9MWOLuIJ85YCvm3qbt8Tc9fCCPs22cIdpA1dUbsGVVnOj8vOC8PDnjiKGOagFHUGLXPuIXx6sKPB9yuopQbQZSiVsgKW7yg1lHERPV7Za2zcmuJMlRwU6X_S9t13R5pZRZO7QmgWvMSLVSFyZZoQbgxVHK9z5nxvgQ3PUuQm39q8w9EBS7eYGFLkilJUwH7nHEe_BNkGVQmlc-oZQVZztNuxaeGpaBctQcn76njGJ-u2811wjVQaSpoaU6b9ds1x1B7WIF3F-Zxfn2wBrZ1scRIKsFW2EJf5n3kHIhMK8YO-hiCD8_JZm-45QSAwnFKmSy9ybXzNCsOlP2rPbh-vMe0ZRN2S9ZnVAW87oPDiFOfI_A5dPYfx5Q4_sSjGhxjNbGzDz2uNL995Iseb8tlPefT7Me4_j9YOvU4uPuUuhrcFPGluQUcMMT0gbz9vfv9B81hSos
 */

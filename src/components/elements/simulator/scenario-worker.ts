@@ -52,19 +52,19 @@ const messageHandler:any = {
         const data = m.data as CallMessage;
         call(data.file, data.functionName, data.args, m.ports[0]);
     },
-    onmousedown: (m: MessageEvent) => {
+    mousedown: (m: MessageEvent) => {
         const data = m.data as MouseEventMessage;
         if((self as any).onmousedown instanceof Function){
             (self as any).onmousedown(data);
         }
     },
-    onmouseup: (m: MessageEvent) => {
+    mouseup: (m: MessageEvent) => {
         const data = m.data as MouseEventMessage;
         if((self as any).onmouseup instanceof Function){
             (self as any).onmouseup(data);
         }
     },
-    onmousemove: (m: MessageEvent) => {
+    mousemove: (m: MessageEvent) => {
         const data = m.data as MouseEventMessage;
         if((self as any).onmousemove instanceof Function){
             (self as any).onmousemove(data);

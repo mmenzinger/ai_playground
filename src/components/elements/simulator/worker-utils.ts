@@ -1,5 +1,5 @@
 import { messageWithResult } from '@src/utils';
-import { throttle } from 'lodash-es';
+// import { throttle } from 'lodash-es';
 
 export interface SetupMessage {
     type: 'setup',
@@ -45,6 +45,7 @@ interface ScenarioWorkerSettings{
 export class ScenarioWorker {
     #worker: Worker | null = null;
     #messagePortWorker: MessagePort | null = null;
+    #canvas: HTMLCanvasElement;
 
     #workerHandler: any = {
         log: (m: MessageEvent) => {
@@ -57,6 +58,11 @@ export class ScenarioWorker {
         },
     };
 
+    #parentHandler: any = {
+        disableCaptures: this.disableCaptures.bind(this),
+        enableCaptures: this.enableCaptures.bind(this),
+    }
+
     #container: HTMLElement;
     #projectId: number | undefined;
 
@@ -66,32 +72,32 @@ export class ScenarioWorker {
         onmousemove: false,
     };
 
+    #mouseEventHandler = this.#sendMouseEvent.bind(this);
+
     constructor(container: HTMLElement, settings: ScenarioWorkerSettings){
         const urlParams = new URLSearchParams(window.location.search);
         this.#projectId = Number(urlParams.get('pid'));
         this.#container = container;
         this.#settings = {...this.#settings, ...settings};
+
+        window.onmessage = (m: MessageEvent) => {
+            const type = m.data.type;
+            if (this.#parentHandler[type]) {
+                this.#parentHandler[type](m);
+            }
+        };
     }
 
     async start(): Promise<void> {
         return new Promise((resolve, _) => {
-            const canvas = document.createElement('canvas');
+            this.#canvas = document.createElement('canvas');
             this.#container.innerHTML = '';
-            this.#container.appendChild(canvas);
-            canvas.width = this.#container.offsetWidth;
-            canvas.height = this.#container.offsetHeight;
-            const offscreenCanvas = canvas.transferControlToOffscreen();
+            this.#container.appendChild(this.#canvas);
+            this.#canvas.width = this.#container.offsetWidth;
+            this.#canvas.height = this.#container.offsetHeight;
+            const offscreenCanvas = this.#canvas.transferControlToOffscreen();
 
-            if(this.#settings.onmousedown){
-                canvas.onmousedown = (e) => this.#sendMouseEvent(e, canvas, 'onmousedown');
-            }
-            if(this.#settings.onmouseup){
-                canvas.onmouseup = (e) => this.#sendMouseEvent(e, canvas, 'onmouseup');
-            }
-            if(this.#settings.onmousemove){
-                canvas.onmousemove = throttle((e) => this.#sendMouseEvent(e, canvas, 'onmousemove'), 100);
-            }
-            
+            this.enableCaptures();
 
             if (this.#worker) {
                 this.#worker.terminate();
@@ -127,6 +133,30 @@ export class ScenarioWorker {
         });
     }
 
+    enableCaptures(){
+        if(this.#settings.onmousedown){
+            this.#canvas.addEventListener('mousedown', this.#mouseEventHandler);
+        }
+        if(this.#settings.onmouseup){
+            this.#canvas.addEventListener('mouseup', this.#mouseEventHandler);
+        }
+        if(this.#settings.onmousemove){
+            this.#canvas.addEventListener('mousemove', this.#mouseEventHandler);
+        }
+    }
+
+    disableCaptures(){
+        if(this.#settings.onmousedown){
+            this.#canvas.removeEventListener('mousedown', this.#mouseEventHandler);
+        }
+        if(this.#settings.onmouseup){
+            this.#canvas.removeEventListener('mouseup', this.#mouseEventHandler);
+        }
+        if(this.#settings.onmousemove){
+            this.#canvas.removeEventListener('mousemove', this.#mouseEventHandler);
+        }
+    }
+
     async call(file: string, functionName: string, ...args: any[]) {
         return new Promise((resolve, _) => {
             const channel = new MessageChannel();
@@ -150,12 +180,12 @@ export class ScenarioWorker {
         this.#worker = null;
     }
 
-    #sendMouseEvent(event: MouseEvent, target: HTMLElement, callbackName: MouseEvents) {
-        var rect = target.getBoundingClientRect();
+    #sendMouseEvent(event: MouseEvent) {
+        var rect = this.#canvas.getBoundingClientRect();
         var x = event.clientX - rect.left; //x position within the element.
         var y = event.clientY - rect.top;  //y position within the element.
         this.#messagePortWorker?.postMessage({
-                type: callbackName,
+                type: event.type,
                 x,
                 y,
                 width: rect.width,
