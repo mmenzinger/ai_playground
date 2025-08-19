@@ -1,440 +1,278 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import store, { File, Project } from '@store';
 import { autorun } from 'mobx';
+import { ControlledTreeEnvironment, Tree, TreeItemIndex, TreeItem, DraggingPosition } from 'react-complex-tree';
+import 'react-complex-tree/lib/style-modern.css';
 
-import Tree from 'rc-tree';
-import { DataNode, EventDataNode, Key } from 'rc-tree/lib/interface';
 
-import 'rc-tree/assets/index.css';
-// import './animation.css';
-import './contextmenu.css';
-import css from './file-tree.module.css';
-import { ListGroup, Popover } from 'react-bootstrap';
-
-// for collapse/expand animation
-// bugs out when fast clicking!
-// const motion = {
-//     motionName: 'node-motion',
-//     motionAppear: false,
-//     onAppearStart: () => ({ height: 0 }),
-//     onAppearActive: (node: any) => ({ height: node.scrollHeight }),
-//     onLeaveStart: (node: any) => ({ height: node.offsetHeight }),
-//     onLeaveActive: () => ({ height: 0 }),
-// };
-
-type Menu = {
-    filename: string;
-    key: string | number;
-    parent: number;
-    id: number;
-    x: number;
-    y: number;
-};
-
-interface ExtendedDataNode extends DataNode {
-    parent?: number;
+function isFolder(fileName: string): boolean {
+  return !fileName.includes('.');
 }
 
-export function FileTree(props: { project: Project }) {
-    const [files, setFiles] = useState<DataNode[]>([]);
-    const [selected, setSelected] = useState<Key[]>([]);
-    const [expanded, setExpanded] = useState<Key[]>([]);
-    const [menu, setMenu] = useState<Menu | null>(null);
-
-    let closed = false;
-    useEffect(() => {
-        autorun(async () => {
-            store.project.lastFileTreeChange;
-
-            const [projectFiles, globalFiles] = await Promise.all([
-                store.project.getProjectFiles(props.project.id),
-                store.project.getProjectFiles(0),
-            ]);
-
-            if (!closed) {
-                setFiles(getTreeData(projectFiles, globalFiles));
-                setExpanded([...expanded, 'project']);
-                const activeFileId = store.project.activeFile?.id;
-                if (activeFileId) {
-                    setSelected([activeFileId]);
-                }
-            }
-        });
-        return () => {
-            closed = true;
-        };
-    }, []);
-
-    // context menu
-    function onRightClick(info: {
-        event: React.MouseEvent<Element, MouseEvent>;
-        node: ExtendedDataNode;
-    }) {
-        setMenu({
-            filename: info.node.title as string,
-            key: String(info.node.key),
-            parent: info.node.parent || 0,
-            id: Number(info.node.key) || 0,
-            x: info.event.pageX + 10,
-            y: info.event.pageY - 45,
-        });
-        document.addEventListener('click', () => setMenu(null), { once: true });
-    }
-
-    // on select
-    function onSelect(
-        keys: Key[],
-        info: {
-            event: 'select';
-            selected: boolean;
-            node: EventDataNode<DataNode>;
-            selectedNodes: DataNode[];
-            nativeEvent: MouseEvent;
-        }
-    ): void {
-        const title = info.node.title as string;
-        const key = info.node.key;
-        // folder
-        if (isFolder(title)) {
-            const index = expanded.indexOf(key);
-            if (index > -1) {
-                const newExpanded = [...expanded];
-                newExpanded.splice(index, 1);
-                setExpanded(newExpanded);
-            } else {
-                if (info.node.children?.length) {
-                    setExpanded([...expanded, key]);
-                }
-            }
-        }
-        // file
-        else {
-            // keys can be empty sometimes...
-            setSelected([...keys, info.node.key]);
-            store.project.openFile(info.node.key as number);
-        }
-    }
-
-    // on expand
-    function onExpand(keys: Key[]): void {
-        setExpanded(keys);
-    }
-    return (
-        <div>
-            {menu ? (
-                <Popover
-                    id="contextMenu"
-                    style={{ top: menu.y, left: menu.x }}
-                    className={css.contextMenu}
-                    title={menu.filename} // h3 ?
-                >
-                    <ListGroup>
-                        <ListGroup.Item
-                            action
-                            onClick={() => {
-                                createFile(props.project.id, menu.parent);
-                            }}
-                        >
-                            Create File
-                        </ListGroup.Item>
-                        <ListGroup.Item action>
-                            Create Folder
-                        </ListGroup.Item>
-                        {isProtected(menu) ? null : (
-                            <ListGroup.Item action>
-                                Rename <em>{menu.filename}</em>
-                            </ListGroup.Item>
-                        )}
-                        <ListGroup.Item action>Upload Files</ListGroup.Item>
-                        <ListGroup.Item action>
-                            Download <em>{menu.filename}</em>
-                        </ListGroup.Item>
-                        {isProtected(menu) ? null : (
-                            <ListGroup.Item action>
-                                Delete <em>{menu.filename}</em>
-                            </ListGroup.Item>
-                        )}
-                    </ListGroup>
-                </Popover>
-            ) : null}
-            <Tree
-                onRightClick={onRightClick}
-                onSelect={onSelect}
-                onExpand={onExpand}
-                treeData={files}
-                // motion={motion}
-                expandedKeys={expanded}
-                selectedKeys={selected}
-                className={css.fileTree}
-            />
-        </div>
-    );
+// Function to get the appropriate icon for a file or folder
+function getFileIcon(name: string, isFolder: boolean): string {
+  if (isFolder) {
+    return '/assets/filetree/folder.svg';
+  }
+  
+  const parts = name.split('.');
+  if (parts.length === 1) {
+    return '/assets/filetree/folder.svg'; // Fallback for items without extension
+  }
+  
+  const extension = parts[parts.length - 1].toLowerCase();
+  const supportedExtensions = ['jpg', 'js', 'json', 'md', 'pl', 'png'];
+  
+  if (supportedExtensions.includes(extension)) {
+    return `/assets/filetree/${extension}.svg`;
+  }
+  
+  return '/assets/filetree/unknown.svg';
 }
 
-function createFile(projectId: number, parentId: number) {
-    console.log('create file', projectId, parentId);
-}
+// Convert File[] to react-complex-tree item map
+type TreeItems = Record<string, {
+  index: string;
+  isFolder: boolean;
+  children: string[];
+  data: string;
+  file?: File;
+}>;
 
-function fileToDataNode(
-    file: File,
-    children: DataNode[] = []
-): ExtendedDataNode {
-    return {
-        key: file.id,
-        parent: file.parentId,
-        title: file.name,
-        icon: fileNameToIcon(file.name),
-        children,
+function filesToTreeItems(projectFiles: File[], globalFiles: File[]): TreeItems {
+  // Helper to build children with sorting
+  function buildItems(files: File[], parentId: number | string) {
+    return files
+      .filter(f => f.parentId === parentId)
+      .sort((a, b) => {
+        const aIsFolder = !a.name.includes('.');
+        const bIsFolder = !b.name.includes('.');
+        
+        // Folders before files
+        if (aIsFolder && !bIsFolder) return -1;
+        if (!aIsFolder && bIsFolder) return 1;
+        
+        // Alphabetical within same type
+        return a.name.localeCompare(b.name);
+      })
+      .map(f => String(f.id));
+  }
+
+  const items: TreeItems = {
+    root: {
+      index: 'root',
+      isFolder: true,
+      children: ['global', 'project'],
+      data: 'Root',
+    },
+    global: {
+      index: 'global',
+      isFolder: true,
+      children: buildItems(globalFiles, 0),
+      data: 'global',
+    },
+    project: {
+      index: 'project',
+      isFolder: true,
+      children: buildItems(projectFiles, 0),
+      data: 'project',
+    },
+  };
+
+  // Add all global files
+  for (const file of globalFiles) {
+    items[String(file.id)] = {
+      index: String(file.id),
+      isFolder: !file.name.includes('.'),
+      children: buildItems(globalFiles, file.id),
+      data: file.name,
+      file,
     };
+  }
+
+  // Add all project files
+  for (const file of projectFiles) {
+    items[String(file.id)] = {
+      index: String(file.id),
+      isFolder: !file.name.includes('.'),
+      children: buildItems(projectFiles, file.id),
+      data: file.name,
+      file,
+    };
+  }
+
+  return items;
 }
 
-function isFolder(filename: string) {
-    return !filename.includes('.');
+interface FileTreeProps {
+  project: Project;
 }
 
-function isProtected(menu: Menu) {
-    if (menu.filename === 'index.js') return true;
-    return typeof menu.key === 'string';
-}
+function FileTree(props: FileTreeProps) {
+  const [treeItems, setTreeItems] = useState<TreeItems>({});
+  const [expandedItems, setExpandedItems] = useState(['project']);
+  const [selectedItems, setSelectedItems] = useState<string[]>([]);
+  const [focusedItem, setFocusedItem] = useState<string | undefined>(undefined);
 
-function fileNameToIcon(name: string) {
-    const parts = name.split('.');
-    if (parts.length === 1) {
-        return <img src="/assets/filetree/folder.svg" />;
-    } else {
-        const ending = parts[parts.length - 1];
-        if (['jpg', 'js', 'json', 'md', 'pl', 'png'].includes(ending)) {
-            return <img src={'/assets/filetree/' + ending + '.svg'} />;
+  useEffect(() => {
+    let closed = false;
+    const disposer = autorun(async () => {
+      store.project.lastFileTreeChange;
+      const [projectFiles, globalFiles] = await Promise.all([
+        store.project.getProjectFiles(props.project.id),
+        store.project.getProjectFiles(0),
+      ]);
+      if (!closed) {
+        const items = filesToTreeItems(projectFiles, globalFiles);
+        setTreeItems(items);
+        
+        // Update selected items based on active file
+        if (store.project.activeFile) {
+          const activeItemId = store.project.activeFile.projectId === 0 
+            ? 'g' + store.project.activeFile.id 
+            : 'p' + store.project.activeFile.id;
+          setSelectedItems([activeItemId]);
+        } else {
+          setSelectedItems([]);
         }
+      }
+    });
+    return () => {
+      closed = true;
+      disposer();
+    };
+  }, [props.project.id]);
+
+  const handleSelectItems = (items: TreeItemIndex[]) => {
+    // Handle file selection
+    setSelectedItems(items.map(String));
+    if (items.length > 0) {
+      const selectedItem = treeItems?.[String(items[0])];
+      // Only open file if the selected item is actually a file (not a folder)
+      if (selectedItem?.file && !selectedItem.isFolder) {
+        store.project.openFile(selectedItem.file.id);
+      }
     }
-    return <img src="/assets/filetree/unknown.svg" />;
-}
+  };
 
-function sortByTypeAndName(a: DataNode, b: DataNode): number {
-    const titleA = (a.title as string).toUpperCase();
-    const titleB = (b.title as string).toUpperCase();
-    const isFolderA = isFolder(titleA);
-    const isFolderB = isFolder(titleB);
+  // Helper function to sort children alphabetically with folders first
+  const sortChildren = (items: TreeItems, parentIndex: string): string[] => {
+    const parent = items[parentIndex];
+    if (!parent) return [];
+    
+    return parent.children.sort((a, b) => {
+      const itemA = items[a];
+      const itemB = items[b];
+      
+      if (!itemA || !itemB) return 0;
+      
+      // Folders before files
+      if (itemA.isFolder && !itemB.isFolder) return -1;
+      if (!itemA.isFolder && itemB.isFolder) return 1;
+      
+      // Alphabetical within same type
+      return itemA.data.localeCompare(itemB.data);
+    });
+  };
 
-    if (isFolderA === isFolderB) {
-        return titleA < titleB ? -1 : 1;
+  const handleDrop = (items: TreeItem[], target: DraggingPosition) => {
+    if (!treeItems) return;
+    
+    // Create a copy of the current tree items
+    const newTreeItems = { ...treeItems };
+    
+    for (const item of items) {
+      const sourceItem = newTreeItems[String(item.index)];
+      
+      if (sourceItem?.file && target.targetType === 'item') {
+        const targetItem = newTreeItems[String(target.targetItem)];
+        
+        if (targetItem) {
+          let newParentIndex: string;
+          
+          if (targetItem.index === 'global' || targetItem.index === 'project') {
+            newParentIndex = targetItem.index;
+          } else if (targetItem.isFolder) {
+            newParentIndex = targetItem.index;
+          } else {
+            // Dropping onto a file - find its parent
+            const parentPrefix = targetItem.index.startsWith('g') ? 'g' : 'p';
+            const parentId = targetItem.file?.parentId || 0;
+            newParentIndex = parentId === 0 ? (parentPrefix === 'g' ? 'global' : 'project') : parentPrefix + parentId;
+          }
+          
+          // Remove item from old parent's children
+          for (const parentKey of Object.keys(newTreeItems)) {
+            const parent = newTreeItems[parentKey];
+            const itemIndex = parent.children.indexOf(sourceItem.index);
+            if (itemIndex > -1) {
+              parent.children.splice(itemIndex, 1);
+              // Sort the old parent's children
+              parent.children = sortChildren(newTreeItems, parentKey);
+              break;
+            }
+          }
+          
+          // Add item to new parent's children
+          const newParent = newTreeItems[newParentIndex];
+          if (newParent && !newParent.children.includes(sourceItem.index)) {
+            newParent.children.push(sourceItem.index);
+            // Sort the new parent's children
+            newParent.children = sortChildren(newTreeItems, newParentIndex);
+          }
+        }
+      }
     }
-    return isFolderA ? -1 : 1;
-}
+    
+    // Update the tree items state
+    setTreeItems(newTreeItems);
+  };
+  
+  return (
+    <ControlledTreeEnvironment
+      items={treeItems}
+      getItemTitle={item => item.data}
+      viewState={{
+        'file-tree': {
+          expandedItems,
+          selectedItems,
+          focusedItem,
+        }
+      }}
+      onExpandItem={(item) => setExpandedItems([...expandedItems, String(item.index)])}
+      onCollapseItem={(item) => setExpandedItems(expandedItems.filter(id => id !== String(item.index)))}
+      onSelectItems={handleSelectItems}
+      onFocusItem={(item) => setFocusedItem(String(item.index))}
+      onDrop={handleDrop}
+      canDragAndDrop={true}
+      canDropOnFolder={true}
+      canReorderItems={false}
+      renderItemTitle={({ title, item }) => {
+        const treeItem = treeItems?.[item.index];
+        const iconSrc = getFileIcon(title, treeItem?.isFolder || false);
+        
+        return (
+          <div
+            className="w-full flex items-center gap-1"
+            onContextMenu={e => {
+              e.preventDefault();
 
-function getTreeData(
-    projectFiles: File[],
-    globalFiles: File[]
-): ExtendedDataNode[] {
-    function recFilesToDataNode(
-        files: File[],
-        parentId: number = 0
-    ): DataNode[] {
-        return files
-            .filter((file) => file.parentId === parentId)
-            .map((file) =>
-                fileToDataNode(file, recFilesToDataNode(files, file.id))
-            )
-            .sort(sortByTypeAndName);
-    }
-
-    return [
-        {
-            key: 'global',
-            title: 'global',
-            icon: <img src="/assets/filetree/folder.svg" />,
-            children: recFilesToDataNode(globalFiles),
-        },
-        {
-            key: 'project',
-            title: 'project',
-            icon: <img src="/assets/filetree/folder.svg" />,
-            children: recFilesToDataNode(projectFiles),
-        },
-    ];
+              if (treeItem?.file && !treeItem.isFolder) {
+                setSelectedItems([String(item.index)]);
+                store.project.openFile(treeItem.file.id);
+              }
+              console.log('Context menu for item:', item);
+            }}
+          >
+            <img src={iconSrc} alt="" className={`w-${isFolder(title) ? 4 : 3} h-4`} />
+            <span>{title}</span>
+          </div>
+        );
+      }}
+    >
+      <Tree treeId="file-tree" rootItem="root" treeLabel="File Tree" />
+    </ControlledTreeEnvironment>
+  );
 }
 
 export default FileTree;
-
-// import { html, LitElement } from 'lit-element';
-// import { autorun, toJS } from 'mobx';
-// import projectStore from '@store/project-store';
-// import appStore from '@store/app-store';
-// import { Defer, dispatchIframeEvents, thisShouldNotHappen } from '@src/utils';
-
-// import { Modals, ModalAbort } from '@element/c4f-modal';
-// import { createFileTemplate, deleteFileTemplate, uploadFileTemplate } from '@modal/templates';
-// import { JSTreeWindow } from '@iframe/jstree';
-// import { File } from '@store/types';
-// import { saveAs } from 'file-saver';
-
-// import db from '@localdb';
-
-// // @ts-ignore
-// import sharedStyles from '@shared-styles';
-// // @ts-ignore
-// import style from './file-tree.css';
-// //const jstreeStyles = unsafeCSS(require('jstree/dist/themes/default/style.css').toString());
-// //const icons32 = require('jstree/dist/themes/default/32px.png');
-// //const icons40 = require('jstree/dist/themes/default/40px.png');
-// //const iconsThrobber = require('jstree/dist/themes/default/throbber.gif');
-
-// class FileTree extends LitElement {
-//     #fileTree = new Defer<JSTreeWindow>();
-
-//     static get styles() {
-//         return [
-//             sharedStyles,
-//             style,
-//         ];
-//     }
-
-//     render() {
-//         return html`<iframe id="filetree" src="jstree.html"></iframe>`;
-//     }
-
-//     async onDelete(file: File) {
-//         if(projectStore.activeProject){
-//             try {
-//                 await appStore.showModal(Modals.GENERIC, deleteFileTemplate(file));
-//                 const selectFile = await db.loadFileByName(projectStore.activeProject.id, 'index.js');
-//                 await projectStore.openFile(selectFile.id);
-//                 await projectStore.deleteFile(file.id);
-//             }
-//             catch (error) {
-//                 if( ! (error instanceof ModalAbort) )
-//                     console.error(error);
-//             }
-//         }
-//     }
-
-//     onFile(file: File) {
-//         if(projectStore.activeProject){
-//             if(file.id){
-//                 projectStore.openFile(file.id);
-//             }
-//             else{
-//                 projectStore.openVirtualFile(file);
-//             }
-//         }
-
-//     }
-
-//     onAddFile() {
-//         if(projectStore.activeProject)
-//             this.addFile();
-//     }
-
-//     async onUploadFile() {
-//         try {
-//             const modal = await appStore.showModal(Modals.GENERIC, uploadFileTemplate(projectStore.activeProject?.id || 0));
-//             const id = await projectStore.createFile(modal.name, modal.projectId, modal.content);
-//             projectStore.openFile(id);
-//         }
-//         catch (error) {
-//             if( ! (error instanceof ModalAbort) )
-//                 console.error(error);
-//         }
-//     }
-
-//     onDownloadFile(file: File) {
-//         if(file.content instanceof Blob){
-//             saveAs(file.content, file.name);
-//         }
-//         else{
-//             const content = new Blob([file.content || ''], {
-//                 type: 'text/plain'
-//             });
-//             saveAs(content, file.name);
-//         }
-//     }
-
-//     async addFile() {
-//         try {
-//             const modal = await appStore.showModal(Modals.GENERIC, createFileTemplate(projectStore.activeProject?.id || 0));
-//             console.log(modal);
-//             const id = await projectStore.createFile(`${modal.name}.${modal.type}`, Number(modal.projectId), '');
-//             projectStore.openFile(id);
-//         }
-//         catch (error) {
-//             if( ! (error instanceof ModalAbort) )
-//                 console.error(error);
-//         }
-//     }
-
-//     async firstUpdated() {
-//         const iframe = this.shadowRoot?.getElementById('filetree') as HTMLIFrameElement;
-//         if(iframe){
-//             iframe.onload = async () => {
-//                 if(iframe.contentWindow){
-//                     this.#fileTree.resolve(iframe.contentWindow as JSTreeWindow)
-//                     const fileTree = await this.#fileTree.promise;
-//                     fileTree.onFile = this.onFile.bind(this);
-//                     fileTree.onAddFile = this.onAddFile.bind(this);
-//                     fileTree.onDownloadFile = this.onDownloadFile.bind(this);
-//                     fileTree.onUploadFile = this.onUploadFile.bind(this);
-//                     fileTree.onDelete = this.onDelete.bind(this);
-//                     dispatchIframeEvents(iframe);
-
-//                     autorun(async _ => {
-//                         projectStore.lastFileTreeChange;
-//                         const project = projectStore.activeProject;
-//                         if(project){
-//                             await this.updateTree();
-//                         }
-//                     });
-
-//                     autorun(async _ => {
-//                         const file = projectStore.activeFile;
-//                         if(file){
-//                             await fileTree.selectFile(file);
-//                         }
-//                     });
-
-//                     autorun(async _ => {
-//                         const errors = toJS(projectStore.activeProject?.errors) || {};
-//                         await fileTree.setErrors(errors);
-//                     });
-//                 }
-//                 else{
-//                     thisShouldNotHappen();
-//                 }
-//             }
-//         }
-//         else{
-//             thisShouldNotHappen();
-//         }
-//     }
-
-//     async updateTree() {
-//         let fileTree, projectFiles, globalFiles;
-//         [fileTree, projectFiles, globalFiles] = await Promise.all([
-//             this.#fileTree.promise,
-//             projectStore.activeProject ? db.getProjectFiles(projectStore.activeProject.id) : [],
-//             db.getProjectFiles(0),
-//         ]);
-//         projectFiles = projectFiles.sort(this.sort);
-//         globalFiles = globalFiles.sort(this.sort);
-
-//         const errors = projectStore.activeProject?.errors || {};
-//         if(!projectStore.activeFile){
-//             thisShouldNotHappen();
-//         }
-//         else{
-//             await fileTree.updateFiles(globalFiles, projectFiles, projectStore.activeFile, errors);
-//         }
-//     }
-
-//     sort(fileA: File, fileB: File) {
-//         // sort first by file endings, then by name
-//         const endingA = fileA.name.split('.').pop();
-//         const endingB = fileB.name.split('.').pop();
-//         let comp = endingA?.localeCompare(endingB || '');
-//         if( comp === 0 ){
-//             comp = fileA.name.localeCompare(fileB.name);
-//         }
-//         return comp || 0;
-//     }
-// }
-
-// window.customElements.define('file-tree', FileTree);
