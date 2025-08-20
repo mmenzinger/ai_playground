@@ -1,52 +1,41 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, JSX } from 'react';
 import store, { File, Project } from '@store';
 import { autorun } from 'mobx';
-import { ControlledTreeEnvironment, Tree, TreeItemIndex, TreeItem, DraggingPosition } from 'react-complex-tree';
-import 'react-complex-tree/lib/style-modern.css';
+import { Menu } from 'react-daisyui';
 
+
+type TreeItem = {
+    id: number | string;
+    name: string;
+    children: TreeItem[];
+    file?: File;
+};
 
 function isFolder(fileName: string): boolean {
-  return !fileName.includes('.');
+    return !fileName.includes('.');
 }
 
 // Function to get the appropriate icon for a file or folder
-function getFileIcon(name: string, isFolder: boolean): string {
-  if (isFolder) {
-    return '/assets/filetree/folder.svg';
-  }
-  
-  const parts = name.split('.');
-  if (parts.length === 1) {
-    return '/assets/filetree/folder.svg'; // Fallback for items without extension
-  }
-  
-  const extension = parts[parts.length - 1].toLowerCase();
-  const supportedExtensions = ['jpg', 'js', 'json', 'md', 'pl', 'png'];
-  
-  if (supportedExtensions.includes(extension)) {
-    return `/assets/filetree/${extension}.svg`;
-  }
-  
-  return '/assets/filetree/unknown.svg';
+function getFileIcon(name: string): string {
+    const parts = name.split('.');
+    if (parts.length === 1) {
+        return '/assets/filetree/folder.svg';
+    }
+
+    const extension = parts[parts.length - 1].toLowerCase();
+    const supportedExtensions = ['jpg', 'js', 'json', 'md', 'pl', 'png'];
+    
+    if (supportedExtensions.includes(extension)) {
+        return `/assets/filetree/${extension}.svg`;
+    }
+    
+    return '/assets/filetree/unknown.svg';
 }
 
-// Convert File[] to react-complex-tree item map
-type TreeItems = Record<string, {
-  index: string;
-  isFolder: boolean;
-  children: string[];
-  data: string;
-  file?: File;
-}>;
-
-function filesToTreeItems(projectFiles: File[], globalFiles: File[]): TreeItems {
-  // Helper to build children with sorting
-  function buildItems(files: File[], parentId: number | string) {
-    return files
-      .filter(f => f.parentId === parentId)
-      .sort((a, b) => {
-        const aIsFolder = !a.name.includes('.');
-        const bIsFolder = !b.name.includes('.');
+function sortTreeItems(items: TreeItem[]): TreeItem[] {
+    return items.sort((a, b) => {
+        const aIsFolder = isFolder(a.name);
+        const bIsFolder = isFolder(b.name);
         
         // Folders before files
         if (aIsFolder && !bIsFolder) return -1;
@@ -54,225 +43,213 @@ function filesToTreeItems(projectFiles: File[], globalFiles: File[]): TreeItems 
         
         // Alphabetical within same type
         return a.name.localeCompare(b.name);
-      })
-      .map(f => String(f.id));
-  }
+    });
+}
 
-  const items: TreeItems = {
-    root: {
-      index: 'root',
-      isFolder: true,
-      children: ['global', 'project'],
-      data: 'Root',
-    },
-    global: {
-      index: 'global',
-      isFolder: true,
-      children: buildItems(globalFiles, 0),
-      data: 'global',
-    },
-    project: {
-      index: 'project',
-      isFolder: true,
-      children: buildItems(projectFiles, 0),
-      data: 'project',
-    },
-  };
-
-  // Add all global files
-  for (const file of globalFiles) {
-    items[String(file.id)] = {
-      index: String(file.id),
-      isFolder: !file.name.includes('.'),
-      children: buildItems(globalFiles, file.id),
-      data: file.name,
-      file,
+function filesToFileTree(files: File[]): TreeItem {
+    const global: TreeItem = {
+        id: 'global',
+        name: 'global',
+        children: [],
     };
-  }
 
-  // Add all project files
-  for (const file of projectFiles) {
-    items[String(file.id)] = {
-      index: String(file.id),
-      isFolder: !file.name.includes('.'),
-      children: buildItems(projectFiles, file.id),
-      data: file.name,
-      file,
+    const project: TreeItem = {
+        id: 'project',
+        name: 'project',
+        children: [],
     };
-  }
 
-  return items;
+    const root: TreeItem = {
+        id: 'root',
+        name: 'root',
+        children: [global, project],
+    };
+
+    const getParent = (id: number, node: TreeItem): TreeItem | undefined => {
+        if(node.id === id)
+            return node;
+        for(const child of node.children){
+            const result = getParent(id, child);
+            if(result)
+                return result;
+        }
+        return undefined;
+    }
+    const pending = new Map<number, TreeItem[]>();
+    for (const file of files) {
+        if(file.parentId !== 0){
+            const parent = getParent(file.parentId, root);
+            const children = pending.get(file.id) || [];
+            if(children.length > 0){
+                pending.delete(file.id);
+            }
+            if(parent){
+                parent.children.push({
+                    id: file.id,
+                    name: file.name,
+                    children: children,
+                    file: file,
+                });
+            }
+            else{
+                pending.set(file.id, 
+                    [
+                        ...(pending.get(file.id) || []),
+                        {
+                            id: file.id,
+                            name: file.name,
+                            children: children,
+                            file: file,
+                        }
+                    ]
+                );
+            }
+        }
+        else{
+            const parent = file.projectId ? project : global;
+            parent.children.push({
+                id: file.id,
+                name: file.name,
+                children: [],
+                file: file,
+            });
+        }
+    }
+    return root;
 }
 
 interface FileTreeProps {
-  project: Project;
+    project: Project;
 }
 
 function FileTree(props: FileTreeProps) {
-  const [treeItems, setTreeItems] = useState<TreeItems>({});
-  const [expandedItems, setExpandedItems] = useState(['project']);
-  const [selectedItems, setSelectedItems] = useState<string[]>([]);
-  const [focusedItem, setFocusedItem] = useState<string | undefined>(undefined);
+    const [files, setFiles] = useState<File[]>([]);
+    const [contextMenu, setContextMenu] = useState<{
+        visible: boolean;
+        x: number;
+        y: number;
+        item: TreeItem | null;
+    }>({ visible: false, x: 0, y: 0, item: null });
+    
+    useEffect(() => {
+        const disposer = autorun(async () => {
+            store.project.lastFileTreeChange;
+            const [projectFiles, globalFiles] = await Promise.all([
+                store.project.getProjectFiles(props.project.id),
+                store.project.getProjectFiles(0),
+            ]);
+            setFiles([...projectFiles, ...globalFiles]);
+        });
+        return () => {
+            disposer();
+        };
+    }, []);
 
-  useEffect(() => {
-    let closed = false;
-    const disposer = autorun(async () => {
-      store.project.lastFileTreeChange;
-      const [projectFiles, globalFiles] = await Promise.all([
-        store.project.getProjectFiles(props.project.id),
-        store.project.getProjectFiles(0),
-      ]);
-      if (!closed) {
-        const items = filesToTreeItems(projectFiles, globalFiles);
-        setTreeItems(items);
-        
-        // Update selected items based on active file
-        if (store.project.activeFile) {
-          const activeItemId = store.project.activeFile.projectId === 0 
-            ? 'g' + store.project.activeFile.id 
-            : 'p' + store.project.activeFile.id;
-          setSelectedItems([activeItemId]);
-        } else {
-          setSelectedItems([]);
+    // Close context menu when clicking elsewhere
+    useEffect(() => {
+        const handleClick = () => setContextMenu(prev => ({ ...prev, visible: false }));
+        if (contextMenu.visible) {
+            document.addEventListener('click', handleClick);
+            return () => document.removeEventListener('click', handleClick);
         }
-      }
-    });
-    return () => {
-      closed = true;
-      disposer();
+        return;
+    }, [contextMenu.visible]);
+
+    const selectHandler = (item: TreeItem) => {
+        console.log('Selected item:', item);
+        if (item.file && !isFolder(item.file.name)) {
+            store.project.openFile(item.file.id);
+        }
     };
-  }, [props.project.id]);
 
-  const handleSelectItems = (items: TreeItemIndex[]) => {
-    // Handle file selection
-    setSelectedItems(items.map(String));
-    if (items.length > 0) {
-      const selectedItem = treeItems?.[String(items[0])];
-      // Only open file if the selected item is actually a file (not a folder)
-      if (selectedItem?.file && !selectedItem.isFolder) {
-        store.project.openFile(selectedItem.file.id);
-      }
-    }
-  };
-
-  // Helper function to sort children alphabetically with folders first
-  const sortChildren = (items: TreeItems, parentIndex: string): string[] => {
-    const parent = items[parentIndex];
-    if (!parent) return [];
-    
-    return parent.children.sort((a, b) => {
-      const itemA = items[a];
-      const itemB = items[b];
-      
-      if (!itemA || !itemB) return 0;
-      
-      // Folders before files
-      if (itemA.isFolder && !itemB.isFolder) return -1;
-      if (!itemA.isFolder && itemB.isFolder) return 1;
-      
-      // Alphabetical within same type
-      return itemA.data.localeCompare(itemB.data);
-    });
-  };
-
-  const handleDrop = (items: TreeItem[], target: DraggingPosition) => {
-    if (!treeItems) return;
-    
-    // Create a copy of the current tree items
-    const newTreeItems = { ...treeItems };
-    
-    for (const item of items) {
-      const sourceItem = newTreeItems[String(item.index)];
-      
-      if (sourceItem?.file && target.targetType === 'item') {
-        const targetItem = newTreeItems[String(target.targetItem)];
+    const contextMenuHandler = (event: React.MouseEvent, item: TreeItem) => {
+        event.preventDefault();
+        event.stopPropagation();
         
-        if (targetItem) {
-          let newParentIndex: string;
-          
-          if (targetItem.index === 'global' || targetItem.index === 'project') {
-            newParentIndex = targetItem.index;
-          } else if (targetItem.isFolder) {
-            newParentIndex = targetItem.index;
-          } else {
-            // Dropping onto a file - find its parent
-            const parentPrefix = targetItem.index.startsWith('g') ? 'g' : 'p';
-            const parentId = targetItem.file?.parentId || 0;
-            newParentIndex = parentId === 0 ? (parentPrefix === 'g' ? 'global' : 'project') : parentPrefix + parentId;
-          }
-          
-          // Remove item from old parent's children
-          for (const parentKey of Object.keys(newTreeItems)) {
-            const parent = newTreeItems[parentKey];
-            const itemIndex = parent.children.indexOf(sourceItem.index);
-            if (itemIndex > -1) {
-              parent.children.splice(itemIndex, 1);
-              // Sort the old parent's children
-              parent.children = sortChildren(newTreeItems, parentKey);
-              break;
-            }
-          }
-          
-          // Add item to new parent's children
-          const newParent = newTreeItems[newParentIndex];
-          if (newParent && !newParent.children.includes(sourceItem.index)) {
-            newParent.children.push(sourceItem.index);
-            // Sort the new parent's children
-            newParent.children = sortChildren(newTreeItems, newParentIndex);
-          }
-        }
-      }
-    }
-    
-    // Update the tree items state
-    setTreeItems(newTreeItems);
-  };
-  
-  return (
-    <ControlledTreeEnvironment
-      items={treeItems}
-      getItemTitle={item => item.data}
-      viewState={{
-        'file-tree': {
-          expandedItems,
-          selectedItems,
-          focusedItem,
-        }
-      }}
-      onExpandItem={(item) => setExpandedItems([...expandedItems, String(item.index)])}
-      onCollapseItem={(item) => setExpandedItems(expandedItems.filter(id => id !== String(item.index)))}
-      onSelectItems={handleSelectItems}
-      onFocusItem={(item) => setFocusedItem(String(item.index))}
-      onDrop={handleDrop}
-      canDragAndDrop={true}
-      canDropOnFolder={true}
-      canReorderItems={false}
-      renderItemTitle={({ title, item }) => {
-        const treeItem = treeItems?.[item.index];
-        const iconSrc = getFileIcon(title, treeItem?.isFolder || false);
-        
-        return (
-          <div
-            className="w-full flex items-center gap-1"
-            onContextMenu={e => {
-              e.preventDefault();
+        setContextMenu({
+            visible: true,
+            x: event.clientX,
+            y: event.clientY,
+            item: item
+        });
+    };
 
-              if (treeItem?.file && !treeItem.isFolder) {
-                setSelectedItems([String(item.index)]);
-                store.project.openFile(treeItem.file.id);
-              }
-              console.log('Context menu for item:', item);
-            }}
-          >
-            <img src={iconSrc} alt="" className={`w-${isFolder(title) ? 4 : 3} h-4`} />
-            <span>{title}</span>
-          </div>
-        );
-      }}
-    >
-      <Tree treeId="file-tree" rootItem="root" treeLabel="File Tree" />
-    </ControlledTreeEnvironment>
-  );
+    const handleRename = () => {
+        if (contextMenu.item) {
+            console.log('Rename:', contextMenu.item.name);
+            // Implement rename logic here
+        }
+        setContextMenu(prev => ({ ...prev, visible: false }));
+    };
+
+    const handleDelete = () => {
+        if (contextMenu.item) {
+            console.log('Delete:', contextMenu.item.name);
+            // Implement delete logic here
+        }
+        setContextMenu(prev => ({ ...prev, visible: false }));
+    };    
+    
+    const createMenuItems = (node: TreeItem): JSX.Element => {
+        const children = sortTreeItems(node.children).map(child => createMenuItems(child));
+        return (<Menu.Item key={node.id}>
+            {children.length > 0 || isNaN(Number(node.id)) ? (
+                <Menu.Details open={true} label={<>
+                        <img src={getFileIcon(node.name)} alt="file icon" className="w-4 h-4" />
+                        {node.name}
+                    </>}
+                    onContextMenu={(e) => {
+                        if(e.target instanceof HTMLElement && e.target.tagName === 'SUMMARY')
+                        contextMenuHandler(e, node)
+                    }}
+                >
+                    {children}
+                </Menu.Details>
+            ) : (
+                <a 
+                    onClick={() => selectHandler(node)}
+                    onContextMenu={(event) => contextMenuHandler(event, node)}
+                >
+                    <img src={getFileIcon(node.name)} alt="file icon" className="w-3 h-4" />
+                    {node.name}
+                </a>
+                
+            )}
+        </Menu.Item>);
+    }
+
+    const rootNode = filesToFileTree(files);
+    return (<>
+        <Menu 
+            className="w-full h-full"
+            size="md"
+        >
+            {createMenuItems(rootNode.children[0])}
+            {createMenuItems(rootNode.children[1])}
+        </Menu>
+        
+        {contextMenu.visible && (
+                <Menu
+                    className="fixed bg-base-100 border border-base-300 shadow-lg rounded z-50 w-48"
+                    style={{
+                        left: contextMenu.x,
+                        top: contextMenu.y,
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    <Menu.Item>
+                        <a onClick={handleRename}>
+                            Rename
+                        </a>
+                    </Menu.Item>
+                    <Menu.Item>
+                        <a onClick={handleDelete} className="text-error">
+                            Delete
+                        </a>
+                    </Menu.Item>
+                </Menu>
+            )}
+    </>);
 }
 
 export default FileTree;
