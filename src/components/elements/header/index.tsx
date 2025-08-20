@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { ThemeSwitcher } from '@elements/theme-switcher';
+import { Navbar, Breadcrumbs, Menu } from 'react-daisyui';
 
 
 export function Header(props: { title: string }) {
@@ -21,29 +22,26 @@ export function Header(props: { title: string }) {
                 : path[i][0].toUpperCase() + path[i].slice(1);
         const url = '/' + path.slice(0, i + 1).join('/');
         breadcrumbs.push(
-            <li key={url}><Link to={url}>{decodeURI(name)}</Link></li>
+            <Breadcrumbs.Item key={url}><Link to={url}>{decodeURI(name)}</Link></Breadcrumbs.Item>
         );
         
         i++;
     }
 
     return (
-        <div className="navbar p-0 px-2 min-h-0 border-b dark:border-gray-700 bg-base-100">
-            <div className="navbar-start">
-                <div className="breadcrumbs text-base">
-                    <ul>{breadcrumbs}</ul>
-                </div>
-            </div>
-            <div className="navbar-end">
-                <ul className="menu menu-horizontal p-0 pr-1 text-base">
-                    <li><Link to="/documentation">Documentation</Link></li>
-                    <li><Link to="/news">News</Link></li>
-                    <li><Link to="/impressum">Impressum</Link></li>
-                    <li><Link to="https://github.com/mmenzinger/ai_playground/issues" target="_blank">Issues</Link></li>
-                </ul>
-                <ThemeSwitcher />
-            </div>
-        </div>
+        <Navbar className="flex justify-between flex-wrap p-0 px-2 min-h-0 border-b border-b-neutral-200">
+            <Breadcrumbs className="text-base">
+                {breadcrumbs}
+            </Breadcrumbs>
+
+            <Menu className="menu menu-horizontal p-0 pr-1 text-base">
+                <Menu.Item><Link to="/documentation">Documentation</Link></Menu.Item>
+                <Menu.Item><Link to="/news">News</Link></Menu.Item>
+                <Menu.Item><Link to="/impressum">Impressum</Link></Menu.Item>
+                <Menu.Item><Link to="https://github.com/mmenzinger/ai_playground/issues" target="_blank">Issues</Link></Menu.Item>
+                <Menu.Item><ThemeSwitcher /></Menu.Item>
+            </Menu>
+        </Navbar>
     );
 }
 

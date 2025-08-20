@@ -1,6 +1,8 @@
+import { Collapse } from 'react-daisyui';
+
 const news = [
     {
-        title: 'Major Update 2023.?.?',
+        title: 'Major Update 2025.?.?',
         major: true,
         content_text: <></>,
         content_list: [
@@ -29,7 +31,7 @@ const news = [
         ],
     },
     {
-        title: 'Update Update 2020.07.11',
+        title: 'Update 2020.07.11',
         major: false,
         content_text: <></>,
         content_list: [
@@ -44,12 +46,12 @@ const news = [
 
 export function News() {
     return (
-        <div className="max-w-3xl mx-auto prose">
+        <div className="max-w-3xl mx-auto mt-4 prose">
             {news.map((item, index) => 
-                <div key={index} className={"collapse collapse-arrow my-4 bg-base-200"}>
+                <Collapse icon="arrow" key={index} className="border border-base-300 bg-base-200">
                     <input type="radio" name="news-accordion" defaultChecked={index === 0} />
-                    <h2 className={"collapse-title m-0 " + (item.major ? "bg-primary text-neutral" : "")}>{item.title}</h2>
-                    <div className="collapse-content">
+                    <Collapse.Title className={"text-xl font-medium " + (item.major ? "bg-primary text-neutral" : "")}>{item.title}</Collapse.Title>
+                    <Collapse.Content>
                         {item.content_text}
                         { item.content_list.length > 0 ? 
                             <ul className="m-0">
@@ -57,8 +59,8 @@ export function News() {
                             </ul>
                             : <></>
                         }
-                    </div>
-                </div>
+                    </Collapse.Content>
+                </Collapse>
             )}
         </div>
     );

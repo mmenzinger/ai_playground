@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Spinner } from 'react-bootstrap';
 import Splitter, { SplitDirection } from '@devbookhq/splitter';
+import { Loading } from 'react-daisyui';
 
 // import { Link } from 'react-router-dom';
 // import { autorun } from 'mobx';
@@ -57,7 +57,7 @@ export function Project() {
     if (!project) {
         return (
             <div className="flex items-center justify-center h-full">
-                <Spinner animation="border" />
+                <Loading />
                 <span>Loading</span>
             </div>
         );

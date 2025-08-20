@@ -1,9 +1,8 @@
 import { useState, useEffect, forwardRef, useMemo } from 'react';
-// import { Form, Row, Col } from 'react-bootstrap';
 import { ScenarioTemplates } from '@src/scenario-utils';
-// import appStore from '@src/store/app-store';
 import { Modal } from '@elements/modal';
 import store from '@store';
+import { Select, Input } from 'react-daisyui';
 
 export type NewProjectModalResult = {
     scenario: string;
@@ -52,10 +51,6 @@ export const NewProjectModal = forwardRef((props: {
             else{
                 throw Error(`Scenario '${templateScenario}' not found`);
             }
-            // if (projectTemplate && projectTemplate.scenario) {
-            //     projectTemplate.files.push(...(props.scenarios?.get(projectTemplate.scenario)?.files || []));
-            // }
-            
         }
         catch(error: any){
             if(error?.name === 'ConstraintError'){
@@ -68,20 +63,20 @@ export const NewProjectModal = forwardRef((props: {
         return undefined;
     }
     return (
-        <Modal ref={ref} title="New Project" submitName="create" onSubmit={onSubmit} error={error} >
+        <Modal ref={ref} title="New Project" submitName="create" onSubmit={onSubmit} error={error}>
             <>
                 <label className="label cursor-pointer" htmlFor="scenario">Scenario</label>
-                <select className="select select-bordered select-lg w-full" id="scenario" onChange={(e) => setScenario(e.target.value)} value={scenario}>
+                <Select className="w-full" id="scenario" size="lg" value={scenario} onChange={(e) => setScenario(e.target.value)}>
                     {scenarios}
-                </select>
+                </Select>
 
                 <label className="label cursor-pointer" htmlFor="template">Template</label>
-                <select className="select select-bordered select-lg w-full" id="template" onChange={(e) => setTemplate(e.target.value)} value={template}>
+                <Select className="w-full" id="template" size="lg" value={template} onChange={(e) => setTemplate(e.target.value)}>
                     {templates}
-                </select>
+                </Select>
 
                 <label className="label cursor-pointer" htmlFor="name">Name</label>
-                <input className="input input-bordered input-lg w-full" id="name" type="text" onChange={(e) => setName(e.target.value)} value={name} />
+                <Input className="w-full" size="lg" id="name" type="text" onChange={(e) => setName(e.target.value)} value={name} />
             </>
         </Modal>
     );

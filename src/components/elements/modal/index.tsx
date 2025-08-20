@@ -2,6 +2,7 @@
 // import { autorun } from 'mobx';
 
 import store from '@store';
+import { Modal as DaisyModal, Alert, Button } from 'react-daisyui';
 
 // import { Defer } from '@src/utils';
 
@@ -24,7 +25,7 @@ export class ModalAbort extends Error {}
 import { forwardRef } from 'react';
 
 export const Modal = forwardRef((props: {
-    onSubmit: () => Promise<any | undefined>;
+    onSubmit: () => Promise<any>;
     title?: string;
     submitName?: string;
     cancelName?: string;
@@ -32,33 +33,35 @@ export const Modal = forwardRef((props: {
     error?: string;
 }, ref: React.Ref<HTMLDialogElement>) => {
 
-    function onCancel(){
-        // @ts-ignore can't find correct ref type, but it works...
-        ref?.current?.close();
+    function onClose(){
+        (ref as React.RefObject<HTMLDialogElement>)?.current?.close();
         store.app.rejectModal(new ModalAbort());
     }
 
     async function onSubmit(){
         const value = await props.onSubmit();
         if (value !== undefined){
-            // @ts-ignore can't find correct ref type, but it works...
-            ref?.current?.close();
+            (ref as React.RefObject<HTMLDialogElement>)?.current?.close();
             store.app.resolveModal(value);
         }
     }
 
     return (
-        <dialog ref={ref} onClose={onCancel} className="modal ">
-            <div className="modal-box">
-                <h3 className="font-bold text-lg pb-4">{props.title ?? 'Title'}</h3>
+        <DaisyModal ref={ref} onClose={onClose} ariaHidden={false}>
+            <DaisyModal.Header className="font-bold mb-4">
+                {props.title ?? 'Title'}
+            </DaisyModal.Header>
+            <DaisyModal.Body>
                 {props.children}
-                {props.error && <div className="alert alert-error mt-8">{props.error}</div>}
-                <div className="modal-action flex justify-between pt-4">
-                    <button className="btn btn-error" onClick={onCancel}>{props.cancelName ?? 'Cancel'}</button>
-                    <button className="btn btn-success" onClick={onSubmit}>{props.submitName ?? 'Submit'}</button>
+                {props.error && <Alert status="error">{props.error}</Alert>}
+            </DaisyModal.Body>
+            <DaisyModal.Actions>
+                <div className="flex justify-between w-full">
+                    <Button color="error" onClick={onClose}>{props.cancelName ?? 'Cancel'}</Button>
+                    <Button color="success" onClick={onSubmit}>{props.submitName ?? 'Submit'}</Button>
                 </div>
-            </div>
-        </dialog>
+            </DaisyModal.Actions>
+        </DaisyModal>
     );
 });
 
@@ -66,7 +69,7 @@ export default Modal;
 export * from './m-new-project';
 export * from './m-delete-project';
 export * from './m-download-project';
-// export * from './mUploadProject';
+export * from './m-upload-project';
 
 
 

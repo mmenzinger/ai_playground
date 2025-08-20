@@ -1,6 +1,7 @@
 import { useRef, useState, createElement, ForwardRefExoticComponent, useImperativeHandle, forwardRef, useEffect } from "react";
 import { NewProjectModal } from "./m-new-project";
 import { DeleteProjectModal } from "./m-delete-project";
+import { UploadProjectModal } from "./m-upload-project";
 import { Defer } from "@src/utils";
 import { DownloadProjectModal } from ".";
 
@@ -8,12 +9,14 @@ export const MODAL = Object.freeze({
     NEW_PROJECT: 'newProject',
     DELETE_PROJECT: 'deleteProject',
     DOWNLOAD_PROJECT: 'downloadProject',
+    UPLOAD_PROJECT: 'uploadProject',
 });
 
 const modalElements: {[key:string]:ForwardRefExoticComponent<any>} = {};
 modalElements[MODAL.NEW_PROJECT] = NewProjectModal;
 modalElements[MODAL.DELETE_PROJECT] = DeleteProjectModal;
 modalElements[MODAL.DOWNLOAD_PROJECT] = DownloadProjectModal;
+modalElements[MODAL.UPLOAD_PROJECT] = UploadProjectModal;
 
 export type ModalHandlerFunctions = {
     openModal(name: string, props?: any): Promise<any>,
@@ -21,28 +24,23 @@ export type ModalHandlerFunctions = {
     rejectModal(error: Error): void,
 }
 
-
-
 export const ModalHandler = forwardRef((_, ref) => {
-    const container: React.MutableRefObject<HTMLDivElement | null> = useRef(null);
-    const [modals, setModals] = useState<React.ReactElement[]>([]);
+    const container: React.RefObject<HTMLDivElement | null> = useRef(null);
+    const [modal, setModal] = useState<React.ReactElement>();
     const dialogRef = useRef<HTMLDialogElement>(null);
     const returnValues = useRef<Defer<any>[]>([]);
 
     useEffect(() => {
-        if(modals.length){
-            // @ts-ignore it states ref does not exist, but it works...
-            modals[modals.length-1].ref?.current?.showModal();
+        if(modal){
+            dialogRef.current?.showModal();
         }
-    }, [modals]);
+    }, [modal]);
 
     const openModal = (name: string, props?: any): Promise<any> => {
         const modal = modalElements[name];
         if (modal){
-            setModals(prevModals => {
-                const element = createElement(modal, {key: prevModals.length, ref: dialogRef, ...props});
-                return [...prevModals, element]
-            });
+            const element = createElement(modal, {key: 0, ref: dialogRef, ...props});
+            setModal(element);
             const defer = new Defer();
             returnValues.current.push(defer);
             return defer.promise;
@@ -54,9 +52,8 @@ export const ModalHandler = forwardRef((_, ref) => {
     }
 
     function closeModal() {
-        setModals(prevModals => {
-            return prevModals.slice(0, prevModals.length-1);
-        });
+        setModal(undefined);
+        dialogRef.current?.close();
     }
 
     function resolveModal(value: any): void{
@@ -77,7 +74,7 @@ export const ModalHandler = forwardRef((_, ref) => {
     } as ModalHandlerFunctions));
 
     return (
-        <div ref={container}>{modals}</div>
+        <div ref={container}>{modal}</div>
     );
 });
 export default ModalHandler;

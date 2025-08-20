@@ -4,6 +4,7 @@ import { Project, File } from '@store';
 import db from '@localdb';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
+import { Input, Checkbox } from 'react-daisyui';
 
 export const DownloadProjectModal = forwardRef((props: { project: Project }, ref: React.Ref<HTMLDialogElement>) => {
     const [error, setError] = useState<string | undefined>(undefined);
@@ -30,13 +31,12 @@ export const DownloadProjectModal = forwardRef((props: { project: Project }, ref
         <Modal ref={ref} title="Download Project" submitName="download" onSubmit={onSubmit} error={error}>
             <>
                 <label className="label cursor-pointer" htmlFor="name">Name</label>
-                <input className="input input-bordered input-lg w-full" id="name" type="text" onChange={(e) => setName(e.target.value)} value={name} />
+                <Input className="w-full" size="lg" value={name} onChange={(e) => setName(e.target.value)} />
                 
                 <label className="label cursor-pointer mt-8 justify-start">
-                    <input type="checkbox" className="checkbox mr-4" checked={globals} onChange={onCheckGlobals}/>
-                    <span className="">Include globals</span>
+                    <Checkbox checked={globals} onChange={onCheckGlobals}/>
+                    Include globals
                 </label>
-                    
             </>
         </Modal>
     );

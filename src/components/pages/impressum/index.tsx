@@ -23,6 +23,11 @@ export function Impressum() {
                 The source code can be found on{' '}
                 <a href="https://github.com/mmenzinger/ai_playground">GitHub</a>.
             </p>
+
+            <h2>Attribution</h2>
+            <ul className="list-none">
+                <li>Icons from <a href="https://fontawesome.com/">Font Awesome</a></li>
+            </ul>
         </div>
     );
 }
