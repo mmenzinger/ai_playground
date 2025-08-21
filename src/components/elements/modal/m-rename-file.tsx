@@ -25,7 +25,8 @@ export const RenameFileModal = forwardRef((props: { id:number, name: string }, r
         const newName = event.target.value.trim();
 
         if (allowedCharacters.test(newName)) {
-            setNewName(newName);
+            const ext = props.name.split('.').pop();
+            setNewName(`${newName}.${ext}`);
         }
     }
 
@@ -34,7 +35,7 @@ export const RenameFileModal = forwardRef((props: { id:number, name: string }, r
     return (
         <Modal ref={ref} title={`Rename ${props.name}`} submitName="rename" onSubmit={onSubmit} error={error}>
             <>
-            {parts.length > 1 
+            {props.name.includes('.') 
                 ? <>
                     <label className="label cursor-pointer" htmlFor="name">Name</label>
                     <div className="flex items-center"><Input className="w-full" size="lg" id="name" type="text" onChange={handleChange} value={name} /><strong>.{ext}</strong></div>
