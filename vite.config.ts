@@ -23,7 +23,7 @@ export default defineConfig({
   },
   plugins: [
     react(),
-    // Custom plugin to serve utils files during development
+        // Custom plugin to serve utils files during development
     {
       name: 'serve-utils',
       configureServer(server) {
@@ -39,6 +39,44 @@ export default defineConfig({
             }
           });
         }
+
+        // Serve compiled CSS at fixed path during development
+        server.middlewares.use('/assets/app.css', async (req, res, next) => {
+          try {
+            const cssPath = path.resolve(__dirname, './src/components/app.css');
+            
+            // Use Vite's built-in CSS processing
+            const module = await server.moduleGraph.getModuleByUrl(cssPath);
+            if (module?.ssrTransformResult?.code) {
+              // Extract CSS from SSR transform result
+              let cssContent = module.ssrTransformResult.code;
+              const cssMatch = cssContent.match(/const css = `([^`]*)`/);
+              if (cssMatch) {
+                cssContent = cssMatch[1];
+              }
+              
+              res.setHeader('Content-Type', 'text/css');
+              res.setHeader('Cache-Control', 'no-cache');
+              res.end(cssContent);
+            } else {
+              // Process the CSS file through Vite's transform pipeline
+              const result = await server.transformRequest(cssPath + '?direct');
+              res.setHeader('Content-Type', 'text/css');
+              res.setHeader('Cache-Control', 'no-cache');
+              res.end(result?.code || '');
+            }
+          } catch (error) {
+            console.error('CSS processing error:', error);
+            // Fallback to raw file
+            try {
+              const cssContent = fs.readFileSync(path.resolve(__dirname, './src/components/app.css'), 'utf-8');
+              res.setHeader('Content-Type', 'text/css');
+              res.end(cssContent);
+            } catch (fallbackError) {
+              next(error);
+            }
+          }
+        });
         
         // Serve Monaco Editor files from node_modules
         server.middlewares.use('/node_modules/monaco-editor', async (req, res, next) => {
@@ -120,6 +158,14 @@ export default defineConfig({
           }
           // Default for main app files
           return `assets/[name]-[hash].js`;
+        },
+        assetFileNames: (assetInfo) => {
+          // Extract CSS files to a fixed path
+          if (assetInfo.name && assetInfo.name.endsWith('.css')) {
+            return 'assets/app.css';
+          }
+          // Default for other assets
+          return 'assets/[name]-[hash][extname]';
         },
       },
     },

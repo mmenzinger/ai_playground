@@ -8,9 +8,9 @@ import cfFunction from 'console-feed/lib/Transform/Function';
 import cfMap from 'console-feed/lib/Transform/Map';
 import cfReplicator from 'console-feed/lib/Transform/replicator';
 
+import { SetupMessage, CallMessage, MouseEventMessage, KeyboardEventMessage, ResizeEventMessage } from './worker-utils';
+import '@lib/global-types';
 
-import { SetupMessage, CallMessage, MouseEventMessage } from './worker-utils';
-console.log("worker loaded");
 /***********************************************************************************************
  *  console wrapper
  */
@@ -43,7 +43,6 @@ for(let method of cfMethods){
     }
 }
 
-
 /***********************************************************************************************
  *  message handling
  */
@@ -54,22 +53,46 @@ const messageHandler:any = {
     },
     mousedown: (m: MessageEvent) => {
         const data = m.data as MouseEventMessage;
-        if((self as any).onmousedown instanceof Function){
-            (self as any).onmousedown(data);
+        if(self.__onMouseDown instanceof Function){
+            self.__onMouseDown(data);
         }
     },
     mouseup: (m: MessageEvent) => {
         const data = m.data as MouseEventMessage;
-        if((self as any).onmouseup instanceof Function){
-            (self as any).onmouseup(data);
+        if(self.__onMouseUp instanceof Function){
+            self.__onMouseUp(data);
         }
     },
     mousemove: (m: MessageEvent) => {
         const data = m.data as MouseEventMessage;
-        if((self as any).onmousemove instanceof Function){
-            (self as any).onmousemove(data);
+        if(self.__onMouseMove instanceof Function){
+            self.__onMouseMove(data);
         }
     },
+    keydown: (m: MessageEvent) => {
+        const data = m.data as KeyboardEventMessage;
+        if(self.__onKeyDown instanceof Function){
+            self.__onKeyDown(data);
+        }
+    },
+    keyup: (m: MessageEvent) => {
+        const data = m.data as KeyboardEventMessage;
+        if(self.__onKeyUp instanceof Function){
+            self.__onKeyUp(data);
+        }
+    },
+    keypress: (m: MessageEvent) => {
+        const data = m.data as KeyboardEventMessage;
+        if(self.__onKeyPress instanceof Function){
+            self.__onKeyPress(data);
+        }
+    },
+    resize: (m: MessageEvent) => {
+        const data = m.data as ResizeEventMessage;
+        if(self.__onResize instanceof Function){
+            self.__onResize(data);
+        }
+    }
 };
 
 onmessage = async m => {

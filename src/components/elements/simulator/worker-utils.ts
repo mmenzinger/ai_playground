@@ -1,5 +1,5 @@
 import { messageWithResult } from '@src/utils';
-// import { throttle } from 'lodash-es';
+import { throttle } from 'lodash-es';
 
 export interface SetupMessage {
     type: 'setup',
@@ -36,10 +36,32 @@ export interface MouseEventMessage {
     timeStamp: number,
 }
 
+type KeyboardEvents = 'onkeydown' | 'onkeyup' | 'onkeypress';
+export interface KeyboardEventMessage {
+    type: KeyboardEvents,
+    key: string,
+    code: string,
+    altKey: boolean,
+    ctrlKey: boolean,
+    shiftKey: boolean,
+    timeStamp: number,
+}
+
+export interface ResizeEventMessage {
+    type: 'resize',
+    width: number,
+    height: number,
+}
+
 interface ScenarioWorkerSettings{
-    onmousedown?: boolean,
-    onmouseup?: boolean,
-    onmousemove?: boolean,
+    captureEvents: {
+        mouseDown?: boolean,
+        mouseUp?: boolean,
+        mouseMove?: boolean,
+        keyDown?: boolean,
+        keyUp?: boolean,
+        keyPress?: boolean,
+    }
 }
 
 export class ScenarioWorker {
@@ -67,18 +89,31 @@ export class ScenarioWorker {
     #projectId: number | undefined;
 
     #settings: ScenarioWorkerSettings = {
-        onmousedown: false,
-        onmouseup: false,
-        onmousemove: false,
+        captureEvents: {
+            mouseDown: false,
+            mouseUp: false,
+            mouseMove: false,
+            keyDown: false,
+            keyUp: false,
+            keyPress: false,
+        }
     };
 
     #mouseEventHandler = this.#sendMouseEvent.bind(this);
+    #keyboardEventHandler = this.#sendKeyboardEvent.bind(this);
 
     constructor(container: HTMLElement, settings: ScenarioWorkerSettings){
         const urlParams = new URLSearchParams(window.location.search);
         this.#projectId = Number(urlParams.get('pid'));
         this.#container = container;
         this.#settings = {...this.#settings, ...settings};
+        window.addEventListener('resize', throttle((_) => {
+            this.#messagePortWorker?.postMessage({
+                type: 'resize',
+                width: this.#container.offsetWidth,
+                height: this.#container.offsetHeight,
+            } as ResizeEventMessage);
+        }, 100));
 
         window.onmessage = (m: MessageEvent) => {
             const type = m.data.type;
@@ -96,6 +131,7 @@ export class ScenarioWorker {
             this.#canvas.width = this.#container.offsetWidth;
             this.#canvas.height = this.#container.offsetHeight;
             const offscreenCanvas = this.#canvas.transferControlToOffscreen();
+            this.#canvas.focus();
 
             this.enableCaptures();
 
@@ -134,26 +170,44 @@ export class ScenarioWorker {
     }
 
     enableCaptures(){
-        if(this.#settings.onmousedown){
+        if(this.#settings.captureEvents.mouseDown){
             this.#canvas.addEventListener('mousedown', this.#mouseEventHandler);
         }
-        if(this.#settings.onmouseup){
+        if(this.#settings.captureEvents.mouseUp){
             this.#canvas.addEventListener('mouseup', this.#mouseEventHandler);
         }
-        if(this.#settings.onmousemove){
+        if(this.#settings.captureEvents.mouseMove){
             this.#canvas.addEventListener('mousemove', this.#mouseEventHandler);
+        }
+        if(this.#settings.captureEvents.keyDown){
+            this.#canvas.addEventListener('keydown', this.#keyboardEventHandler);
+        }
+        if(this.#settings.captureEvents.keyUp){
+            this.#canvas.addEventListener('keyup', this.#keyboardEventHandler);
+        }
+        if(this.#settings.captureEvents.keyPress){
+            this.#canvas.addEventListener('keypress', this.#keyboardEventHandler);
         }
     }
 
     disableCaptures(){
-        if(this.#settings.onmousedown){
+        if(this.#settings.captureEvents.mouseDown){
             this.#canvas.removeEventListener('mousedown', this.#mouseEventHandler);
         }
-        if(this.#settings.onmouseup){
+        if(this.#settings.captureEvents.mouseUp){
             this.#canvas.removeEventListener('mouseup', this.#mouseEventHandler);
         }
-        if(this.#settings.onmousemove){
+        if(this.#settings.captureEvents.mouseMove){
             this.#canvas.removeEventListener('mousemove', this.#mouseEventHandler);
+        }
+        if(this.#settings.captureEvents.keyDown){
+            this.#canvas.removeEventListener('keydown', this.#keyboardEventHandler);
+        }
+        if(this.#settings.captureEvents.keyUp){
+            this.#canvas.removeEventListener('keyup', this.#keyboardEventHandler);
+        }
+        if(this.#settings.captureEvents.keyPress){
+            this.#canvas.removeEventListener('keypress', this.#keyboardEventHandler);
         }
     }
 
@@ -195,6 +249,18 @@ export class ScenarioWorker {
                 ctrlKey: event.ctrlKey,
                 timeStamp: event.timeStamp,
         } as MouseEventMessage);
+    }
+
+    #sendKeyboardEvent(event: KeyboardEvent) {
+        this.#messagePortWorker?.postMessage({
+            type: event.type,
+            key: event.key,
+            code: event.code,
+            altKey: event.altKey,
+            ctrlKey: event.ctrlKey,
+            shiftKey: event.shiftKey,
+            timeStamp: event.timeStamp,
+        } as KeyboardEventMessage);
     }
 }
 

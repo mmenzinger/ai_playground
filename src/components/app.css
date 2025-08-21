@@ -141,3 +141,35 @@
     margin-bottom: 0;
   }
 }
+
+
+/* Simulator styles */
+html.simulator, html.simulator > body {
+    height: 100%;
+    padding: 0;
+    margin: 0;
+}
+html.simulator > body  {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+html.simulator header {
+    flex: 0 1;
+    padding: 0.5rem;
+}
+html.simulator main {
+    flex: 1;
+    position: relative;
+}
+html.simulator #display {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+}
+html.simulator canvas {
+    width: 100%;
+    height: 100%;
+    /* background-color: white; */
+}

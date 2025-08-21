@@ -1,8 +1,8 @@
-import { StoreMessage } from '@src/components/elements/simulator/worker-utils';
+import { StoreMessage, MouseEventMessage, KeyboardEventMessage, ResizeEventMessage } from '@src/components/elements/simulator/worker-utils';
 import { serialize, deserialize, messageWithResult } from '@src/utils';
-
 import seedrandom from 'seedrandom';
 
+import '@lib/global-types';
 
 export function seedRandom(seed: string){
     return seedrandom(seed);
@@ -168,18 +168,33 @@ export function getImage(name: string): ImageBitmap | undefined{
 }
 
 export function onVideoFrameUpdate(callback: (data: ImageBitmap) => void){
-    // @ts-ignore
     self.__onVideoFrameUpdate = callback;
 }
 
-export function onMouseDown(callback: (e?: MouseEvent) => void){
-    self.onmousedown = callback;
+export function onMouseDown(callback: (e?: MouseEventMessage) => void){
+    self.__onMouseDown = callback;
 }
 
-export function onMouseMove(callback: (e?: MouseEvent) => void){
-    self.onmousemove = callback;
+export function onMouseMove(callback: (e?: MouseEventMessage) => void){
+    self.__onMouseMove = callback;
 }
 
-export function onMouseUp(callback: (e?: MouseEvent) => void){
-    self.onmouseup = callback;
+export function onMouseUp(callback: (e?: MouseEventMessage) => void){
+    self.__onMouseUp = callback;
+}
+
+export function onKeyDown(callback: (e?: KeyboardEventMessage) => void){
+    self.__onKeyDown = callback;
+}
+
+export function onKeyUp(callback: (e?: KeyboardEventMessage) => void){
+    self.__onKeyUp = callback;
+}
+
+export function onKeyPress(callback: (e?: KeyboardEventMessage) => void){
+    self.__onKeyPress = callback;
+}
+
+export function onResize(callback: (e?: ResizeEventMessage) => void){
+    self.__onResize = callback;
 }

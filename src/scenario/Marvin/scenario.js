@@ -122,10 +122,18 @@ export async function run(agent, settings){
 
     const canvas = _.getCanvas();
     const ctx = canvas.getContext("2d");
-    const size = Math.min(canvas.width, canvas.height);
-    const tileSize = size / Math.max(map.length, map[0].length);
+    let size = Math.min(canvas.width, canvas.height);
+    let tileSize = size / Math.max(map.length, map[0].length);
 
-    ctx.imageSmoothingEnabled = false;
+    _.onResize((e) => {
+        canvas.width = e.width;
+        canvas.height = e.height;
+        size = Math.min(canvas.width, canvas.height);
+        tileSize = size / Math.max(map.length, map[0].length);
+        drawMap(ctx, tileSize, map, level.type);
+        updateTile(ctx, tileSize, map, x, y, dir);
+    });
+
     ctx.textAlign = "center";
     await _.loadImages([
         'project/assets/diamond.png',
@@ -247,15 +255,24 @@ function drawMap(ctx, tileSize, map, type){
 
             if(tile === 0){
                 // draw wall
-                ctx.drawImage(img, type*size, 0, size, size, x, y, tileSize, tileSize);
+                ctx.imageSmoothingEnabled = false;
+                ctx.drawImage(img, type*size, 0, size, size, x, y, tileSize+1, tileSize+1);
             }
             else{
                 // draw path
-                ctx.drawImage(img, 0*size, 0, size, size, x, y, tileSize, tileSize);
+                ctx.drawImage(img, 0*size, 0, size, size, x, y, tileSize+1, tileSize+1);
+            }
+            if(tile > 0){
+                // draw number
+                ctx.fillStyle = '#fff';
+                ctx.font = `${tileSize}px Arial`;
+                ctx.textAlign = "center";
+                ctx.fillText(`${tile-1}`, x + tileSize/2, y + tileSize - tileSize/10);
             }
             if(tile === -2){
                 // draw diamond
                 const img = _.getImage('diamond');
+                ctx.imageSmoothingEnabled = true;
                 ctx.drawImage(img, x, y, tileSize, tileSize);
             }
         }
@@ -271,11 +288,13 @@ function updateTile(ctx, tileSize, map, col, row, dir = undefined, state = undef
     const size = img.height;
     const x = col * tileSize;
     const y = (map.length - row - 1) * tileSize;
+    ctx.imageSmoothingEnabled = false;
     ctx.drawImage(img, 0*size, 0, size, size, x, y, tileSize, tileSize);
     if(tile > 0){
         // draw number
         ctx.fillStyle = '#fff';
         ctx.font = `${tileSize}px Arial`;
+        ctx.textAlign = "center";
         ctx.fillText(`${tile-1}`, x + tileSize/2, y + tileSize - tileSize/10);
     }
     if(dir !== undefined){
@@ -287,11 +306,13 @@ function updateTile(ctx, tileSize, map, col, row, dir = undefined, state = undef
             case 3: str = 'left'; break;
         }
         const img = _.getImage(`robot_${str}`);
+        ctx.imageSmoothingEnabled = true;
         ctx.drawImage(img, x, y, tileSize, tileSize);
         if(state){
             // draw state
             ctx.fillStyle = '#fff';
             ctx.font = `${tileSize/3}px Arial`;
+            ctx.textAlign = "center";
             ctx.fillText(`${state}`, x + tileSize/2, y + tileSize - tileSize/2.5);
         }
     }

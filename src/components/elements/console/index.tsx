@@ -33,7 +33,7 @@ export function Console() {
     }, [logs]);
 
     return (
-        <div className="h-full">
+        <div className="h-full overflow-auto">
             <ConsoleFeed logs={logs} styles={theme} />
             <div ref={logEnd} />
         </div>

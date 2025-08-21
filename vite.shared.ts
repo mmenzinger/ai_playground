@@ -10,6 +10,7 @@ export const sharedAliases = {
   '@modal': path.resolve(__dirname, './src/components/modal'),
   '@elements': path.resolve(__dirname, './src/components/elements'),
   '@pages': path.resolve(__dirname, './src/components/pages'),
+  '@lib': path.resolve(__dirname, './src/lib'),
   '/lib/utils.js': path.resolve(__dirname, './src/lib/utils.ts'),
 };
 
