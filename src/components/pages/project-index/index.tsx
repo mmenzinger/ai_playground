@@ -112,17 +112,19 @@ export function ProjectIndex() {
                     navigate(`/editor/${project.id}/${project.name}`);
                 }}
             >
-                {/* <figure className="bg-white">
-                    <img className="h-48" src={`/${project.id}/first/logo.png`} alt={project.name} onError={(e: any) => {
-                        e.target.src = '/assets/logo.png';
-                    }}/>
-                </figure> */}
-                <Card.Image src={`/${project.id}/first/logo.png`} alt={project.name} onError={(e: any) => {
-                    e.target.src = '/assets/logo.png';
-                }}/>
+                <figure className="bg-white flex justify-center items-center">
+                    <img 
+                        className="h-48"
+                        src={`/${project.id}/first/logo.png`}
+                        alt={project.name}
+                        onError={(e: any) => {
+                            e.target.src = '/assets/logo.png';
+                        }}
+                    />
+                </figure>
                 <Card.Body className="justify-between p-2 pt-0">
                     <Card.Title className="text-base">{project.name}</Card.Title>
-                    <Card.Actions className="justify-end gap-0">
+                    <Card.Actions className="flex justify-end">
                         <Button
                             className="btn-ghost btn-circle tooltip"
                             size="sm"
@@ -150,12 +152,12 @@ export function ProjectIndex() {
             key={0}
             onClick={() => onNewProject()}
         >
-            <figure className="h-48">
+            <figure className="h-48 bg-white flex justify-center items-center">
                 <FaPlus className="w-24 h-24 fill-primary" />
             </figure>
             <Card.Body className="justify-between p-2 pt-0">
                 <Card.Title className="card-title text-base">New Project</Card.Title>
-                <Card.Actions className="justify-end join gap-0">
+                <Card.Actions className="flex justify-end">
                     <Button 
                         className="btn-ghost btn-circle tooltip"
                         size="sm" 
