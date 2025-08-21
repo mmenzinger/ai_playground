@@ -69,16 +69,23 @@ async function userFile({url, request, clientId}: {url: URL, request: Request, c
         let projectId = clientProjectId.get(clientId);
         switch (path[1]) {
             case 'project': {
-                const pid = Number(request.referrer.match(/pid=([0-9]+)/)?.[1]);
+                let pid = Number(request.referrer.match(/(editor\/|\?pid=)([0-9]+)/)?.[2]);
                 if(pid){
-                    clientProjectId.set(clientId, pid);
                     projectId = pid;
+                    clientProjectId.set(clientId, pid);
+                }
+                else{
+                    pid = Number(url.search.match(/pid=([0-9]+)/)?.[1]);     
+                    if(pid){
+                        projectId = pid;
+                    }
                 }
                 break;
             }
             case 'global': projectId = 0; break;
             default: projectId = Number(path[1]);
         }
+
         if (!projectId) {
             console.error('No project loaded for client:', clientId);
             return new Response('Error: No project loaded', {
@@ -106,6 +113,9 @@ async function userFile({url, request, clientId}: {url: URL, request: Request, c
         }
         else if (file.name.endsWith('.png')) {
             header.headers = { 'Content-Type': 'image/png' };
+        }
+        else if(file.name.endsWith('.html')){
+            header.headers = { 'Content-Type': 'text/html' };
         }
         response = new Response(file.content, header);
     }

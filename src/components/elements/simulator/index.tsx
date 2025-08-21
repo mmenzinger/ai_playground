@@ -38,7 +38,7 @@ export function Simulator(props: { enableEventCapture: boolean }) {
                 const id = store.project.activeProject.id;
                 try{
                     await db.loadFirstFileByName(id, 'index.html');
-                    url = '/project/index.html';
+                    url = '/project/first/index.html';
                 }
                 catch(e){
                     // no file found, keep default

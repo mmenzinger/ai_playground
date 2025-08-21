@@ -1,6 +1,6 @@
 # TicTacToe - MinMax
 
-This is an exemplary implementation of a minmax algorithm. The solution is loosely based on the article [Tic Tac Toe - Creating Unbeatable AI](https://towardsdatascience.com/tic-tac-toe-creating-unbeatable-ai-with-minimax-algorithm-8af9e52c1e7d) which provides a good introduction into a minmax-based ai.
+This is an exemplary implementation of a minmax algorithm. The solution is loosely based on the article [Tic Tac Toe - Creating Unbeatable AI](https://towardsdatascience.com/tic-tac-toe-creating-unbeatable-ai-with-minimax-algorithm-8af9e52c1e7d) which provides a good introduction into a minmax-based AI.
 
 ## Hints
 

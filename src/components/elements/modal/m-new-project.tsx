@@ -1,5 +1,5 @@
 import { useState, useEffect, forwardRef, useMemo } from 'react';
-import { ScenarioTemplates } from '@src/scenario-utils';
+import { BasicFile, ScenarioTemplates } from '@src/scenario-utils';
 import { Modal } from '@elements/modal';
 import store from '@store';
 import { Select, Input } from 'react-daisyui';
@@ -37,19 +37,42 @@ export const NewProjectModal = forwardRef((props: {
 
     async function onSubmit(): Promise<any | undefined>{
         try{
-            const scenarioTemplate = props.scenarios.get(scenario);
-            const projectTemplate = scenarioTemplate?.templates.get(template);
-            const templateScenario = projectTemplate?.scenario;
-            if(templateScenario){
-                projectTemplate.files.push(...props.scenarios.get(templateScenario)?.files || []);
+            let projectScenario = props.scenarios.get(scenario);
+            const projectTemplate = projectScenario?.templates.get(template);
+            if(projectTemplate && projectTemplate.scenario !== projectScenario?.name){
+                projectScenario = props.scenarios.get(projectTemplate.scenario);
+            }
+
+            const projectFiles = projectScenario?.files || [];
+            const templateFiles = projectTemplate?.files || [];
+            // add template files and overwrite existing ones
+            const recMergeFiles = (files: BasicFile[], templateFiles: BasicFile[]) => {
+                for(const file of templateFiles){
+                    const existingFile = files.find(f => f.name === file.name);
+                    if(existingFile){
+                        if(file.name.includes('.')){
+                            existingFile.content = file.content;
+                        }
+                        else{
+                            recMergeFiles(existingFile.content as BasicFile[], file.content as BasicFile[]);
+                        }
+                    }
+                    else{
+                        files.push(file);
+                    }
+                }
+            }
+            recMergeFiles(projectFiles, templateFiles)
+
+            if(projectScenario && projectTemplate){
                 return await store.project.createProject(
                     name,
                     projectTemplate.scenario,
-                    projectTemplate.files
+                    projectFiles
                 );
             }
             else{
-                throw Error(`Scenario '${templateScenario}' not found`);
+                throw Error(`Scenario '${projectScenario}' not found`);
             }
         }
         catch(error: any){
@@ -96,7 +119,7 @@ function getTemplates(
 ) {
     return Array.from(scenarios.get(scenario)?.templates.entries() || [])
         .map(([key, template]) => (
-        <option value={key} key={key}>
+            <option value={key} key={key}>
                 {template.name}
             </option>
         ));

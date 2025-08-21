@@ -23,7 +23,7 @@ function getFileIcon(name: string): string {
     }
 
     const extension = parts[parts.length - 1].toLowerCase();
-    const supportedExtensions = ['jpg', 'js', 'json', 'md', 'pl', 'png'];
+    const supportedExtensions = ['jpg', 'js', 'json', 'md', 'pl', 'png', 'html'];
     
     if (supportedExtensions.includes(extension)) {
         return `/assets/filetree/${extension}.svg`;
@@ -122,8 +122,12 @@ interface FileTreeProps {
     project: Project;
 }
 
-function FileTree(props: FileTreeProps) {
+//#############################################################################
+// FileTree Component
+//#############################################################################
+function FileTree(props: FileTreeProps): JSX.Element {
     const [files, setFiles] = useState<File[]>([]);
+    const [hasIndexHtml, setHasIndexHtml] = useState<boolean>(false);
     const [contextMenu, setContextMenu] = useState<{
         visible: boolean;
         x: number;
@@ -139,6 +143,7 @@ function FileTree(props: FileTreeProps) {
                 store.project.getProjectFiles(0),
             ]);
             setFiles([...projectFiles, ...globalFiles]);
+            setHasIndexHtml(projectFiles.some(file => file.name === 'index.html'));
         });
         return () => {
             disposer();
@@ -188,10 +193,17 @@ function FileTree(props: FileTreeProps) {
             // Implement delete logic here
         }
         setContextMenu(prev => ({ ...prev, visible: false }));
-    };    
+    };
+
+    const handleCreateIndexHtml = async () => {
+        console.log('Create index.html');
+        const content = await fetch('/simulator/default.html').then(res => res.text());
+        await store.project.createFile('index.html', props.project.id, content, 0);
+        setContextMenu(prev => ({ ...prev, visible: false }));
+    }
     
-    const createMenuItems = (node: TreeItem): JSX.Element => {
-        const children = sortTreeItems(node.children).map(child => createMenuItems(child));
+    const createFileTreeItems = (node: TreeItem): JSX.Element => {
+        const children = sortTreeItems(node.children).map(child => createFileTreeItems(child));
         return (<Menu.Item key={node.id}>
             {children.length > 0 || isNaN(Number(node.id)) ? (
                 <Menu.Details open={true} label={<>
@@ -224,8 +236,8 @@ function FileTree(props: FileTreeProps) {
             className="w-full h-full"
             size="md"
         >
-            {createMenuItems(rootNode.children[0])}
-            {createMenuItems(rootNode.children[1])}
+            {createFileTreeItems(rootNode.children[0])}
+            {createFileTreeItems(rootNode.children[1])}
         </Menu>
         
         {contextMenu.visible && (
@@ -237,6 +249,14 @@ function FileTree(props: FileTreeProps) {
                     }}
                     onClick={(e) => e.stopPropagation()}
                 >
+                    { !hasIndexHtml ? 
+                        <Menu.Item>
+                            <a onClick={handleCreateIndexHtml}>
+                                Create index.html
+                            </a>
+                        </Menu.Item> 
+                        : <></>
+                    }
                     <Menu.Item>
                         <a onClick={handleRename}>
                             Rename

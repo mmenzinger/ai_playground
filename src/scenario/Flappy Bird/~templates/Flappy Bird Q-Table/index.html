@@ -12,10 +12,10 @@
             const worker = new ScenarioWorker(displayContainer, {
                 captureEvents: {
                     mouseDown: true,
-                    mouseUp: true,
+                    mouseUp: false,
                     mouseMove: false,
                     keyDown: true,
-                    keyUp: true,
+                    keyUp: false,
                     keyPress: false,
                 },
             });
@@ -25,18 +25,24 @@
                 await worker.start();
                 await worker.call('/project/index.js', 'start');
             }
+            const train = async () => {
+                await worker.start();
+                await worker.call('/project/index.js', 'train');
+            }
             const terminate = async () => {
                 await worker.terminate();
             }
 
             onload = start;
             document.getElementById('start').onclick = start;
+            document.getElementById('train').onclick = train;
             document.getElementById('terminate').onclick = terminate;
         </script>
     </head>
     <body>
         <header id="control">
             <button class="btn btn-sm btn-success" id="start">start&nbsp;/&nbsp;restart</button>
+            <button class="btn btn-sm" id="train">call&nbsp;train</button>
             <button class="btn btn-sm btn-error" id="terminate">terminate</button>
         </header>
         <main id="display"></main>

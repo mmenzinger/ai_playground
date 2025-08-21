@@ -102,11 +102,16 @@ export class ScenarioWorker {
     #mouseEventHandler = this.#sendMouseEvent.bind(this);
     #keyboardEventHandler = this.#sendKeyboardEvent.bind(this);
 
-    constructor(container: HTMLElement, settings: ScenarioWorkerSettings){
+    constructor(container: HTMLElement, settings?: ScenarioWorkerSettings){
         const urlParams = new URLSearchParams(window.location.search);
         this.#projectId = Number(urlParams.get('pid'));
         this.#container = container;
-        this.#settings = {...this.#settings, ...settings};
+        this.#settings = {
+            captureEvents: {
+                ...this.#settings.captureEvents,
+                ...settings?.captureEvents,
+            }
+        };
         window.addEventListener('resize', throttle((_) => {
             this.#messagePortWorker?.postMessage({
                 type: 'resize',

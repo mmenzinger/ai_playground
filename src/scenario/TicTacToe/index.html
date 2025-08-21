@@ -13,9 +13,9 @@
                 captureEvents: {
                     mouseDown: true,
                     mouseUp: true,
-                    mouseMove: false,
-                    keyDown: true,
-                    keyUp: true,
+                    mouseMove: true,
+                    keyDown: false,
+                    keyUp: false,
                     keyPress: false,
                 },
             });
@@ -37,6 +37,7 @@
     <body>
         <header id="control">
             <button class="btn btn-sm btn-success" id="start">start&nbsp;/&nbsp;restart</button>
+            <button class="btn btn-sm" id="train">call&nbsp;train</button>
             <button class="btn btn-sm btn-error" id="terminate">terminate</button>
         </header>
         <main id="display"></main>

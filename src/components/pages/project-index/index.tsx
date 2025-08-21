@@ -85,23 +85,6 @@ export function ProjectIndex() {
         }
     }
 
-    // async function onUploadProject() {
-    //     try {
-    //         // const modal = await appStore.showModal(Modals.GENERIC, uploadProjectTemplate());
-    //         // await projectStore.importProject(
-    //         //     modal.name,
-    //         //     modal.settings.scenario,
-    //         //     modal.projectFiles,
-    //         //     modal.globalFiles,
-    //         //     modal.collision
-    //         // );
-    //         // this._projects = await db.getProjects();
-    //     } catch (error) {
-    //         // if( ! (error instanceof ModalAbort) )
-    //         //     console.error(error);
-    //     }
-    // }
-
     const elements: React.ReactElement[] = [];
     for(const project of projects){
         elements.push(
