@@ -53,11 +53,11 @@ export const Modal = forwardRef((props: {
             </DaisyModal.Header>
             <DaisyModal.Body>
                 {props.children}
-                {props.error && <Alert status="error">{props.error}</Alert>}
+                {props.error && <Alert status="error" className="mt-4">{props.error}</Alert>}
             </DaisyModal.Body>
             <DaisyModal.Actions>
                 <div className="flex justify-between w-full">
-                    <Button color="error" onClick={onClose}>{props.cancelName ?? 'Cancel'}</Button>
+                    <Button onClick={onClose}>{props.cancelName ?? 'Cancel'}</Button>
                     <Button color="success" onClick={onSubmit}>{props.submitName ?? 'Submit'}</Button>
                 </div>
             </DaisyModal.Actions>

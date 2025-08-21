@@ -5,6 +5,16 @@
     themes: light --default, dark --prefersdark;
 }
 
+/* fix missing daisyUI classes */
+/* maybe change back from react-daisyui to daisyui, then these are not needed... */
+@source inline('alert alert-error alert-warning alert-info alert-success');
+@source inline('collapse collapse-title collapse-content collapse-arrow collapse-plus collapse-open collapse-close');
+@source inline('btn btn-primary btn-secondary btn-accent btn-neutral btn-info btn-success btn-warning btn-error');
+@source inline('menu menu-title menu-content menu-arrow menu-plus menu-open menu-close menu-disabled');
+@source inline('card card-body card-title card-actions card-image card-footer card-header card-content');
+@source inline('modal modal-title modal-content modal-actions');
+@source inline('divider');
+
 /* Local variable fonts served from /public/assets/fonts */
 @font-face {
   font-family: "Roboto";

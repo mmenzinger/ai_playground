@@ -1,7 +1,7 @@
 import { useState, useEffect, JSX } from 'react';
 import store, { File, Project } from '@store';
 import { autorun } from 'mobx';
-import { Menu } from 'react-daisyui';
+import { Divider, Menu } from 'react-daisyui';
 import { ModalAbort } from '@elements/modal';
 import { MODAL } from '@elements/modal/modal-handler';
 
@@ -265,24 +265,35 @@ function FileTree(props: FileTreeProps): JSX.Element {
                     }}
                     onClick={(e) => e.stopPropagation()}
                 >
-                    { !hasIndexHtml ? 
-                        <Menu.Item>
-                            <a onClick={handleCreateIndexHtml}>
-                                Create index.html
-                            </a>
-                        </Menu.Item> 
-                        : <></>
+                    { contextMenu.item?.name ?
+                        <><Menu.Title>
+                            {contextMenu.item?.name}
+                        </Menu.Title>
+                        <Divider className="m-0"></Divider>
+                        </>
+                        :<></>
                     }
+                    
                     <Menu.Item>
                         <a onClick={handleRename}>
                             Rename
                         </a>
                     </Menu.Item>
+                    
                     <Menu.Item>
                         <a onClick={handleDelete} className="text-error">
                             Delete
                         </a>
                     </Menu.Item>
+                    { !hasIndexHtml ? <>
+                        <Divider className="m-0"></Divider>
+                        <Menu.Item>
+                            <a onClick={handleCreateIndexHtml}>
+                                Create index.html
+                            </a>
+                        </Menu.Item> 
+                    </> : <></> }
+                    
                 </Menu>
             )}
     </>);

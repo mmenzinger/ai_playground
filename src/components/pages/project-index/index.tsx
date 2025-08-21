@@ -107,7 +107,7 @@ export function ProjectIndex() {
                 </figure>
                 <Card.Body className="justify-between p-2 pt-0">
                     <Card.Title className="text-base">{project.name}</Card.Title>
-                    <Card.Actions className="flex justify-end">
+                    <Card.Actions className="flex justify-end gap-0">
                         <Button
                             className="btn-ghost btn-circle tooltip"
                             size="sm"
@@ -140,7 +140,7 @@ export function ProjectIndex() {
             </figure>
             <Card.Body className="justify-between p-2 pt-0">
                 <Card.Title className="card-title text-base">New Project</Card.Title>
-                <Card.Actions className="flex justify-end">
+                <Card.Actions className="flex justify-end gap-0">
                     <Button 
                         className="btn-ghost btn-circle tooltip"
                         size="sm" 

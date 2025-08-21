@@ -23,7 +23,7 @@ export const DeleteFileModal = forwardRef((props: { id:number, name: string }, r
     }
 
     return (
-        <Modal ref={ref} title="Delete File" submitName="delete" onSubmit={onSubmit} error={error}>
+        <Modal ref={ref} title={`Delete '${props.name}'`} submitName="delete" onSubmit={onSubmit} error={error}>
             <>
             {props.name.includes('.') 
                 ? <p>Are you sure you want to <strong>permanently</strong> delete the file '<strong>{props.name}</strong>'?</p>

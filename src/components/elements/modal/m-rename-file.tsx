@@ -9,7 +9,8 @@ export const RenameFileModal = forwardRef((props: { id:number, name: string }, r
 
     async function onSubmit(): Promise<any | undefined>{
         try{
-            if(newName.length === 0)
+            const [name, _] = newName.split('.');
+            if(name.length === 0)
                 throw Error(`The file name can not be empty!`);
             await store.project.renameFile(props.id, newName);
             return true;
@@ -33,7 +34,7 @@ export const RenameFileModal = forwardRef((props: { id:number, name: string }, r
     const parts = newName.split('.');
     const [name, ext] = parts.length > 1 ? parts : [parts[0], ''];
     return (
-        <Modal ref={ref} title={`Rename ${props.name}`} submitName="rename" onSubmit={onSubmit} error={error}>
+        <Modal ref={ref} title={`Rename '${props.name}'`} submitName="rename" onSubmit={onSubmit} error={error}>
             <>
             {props.name.includes('.') 
                 ? <>

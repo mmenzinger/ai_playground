@@ -28,7 +28,7 @@ export const DownloadProjectModal = forwardRef((props: { project: Project }, ref
     }
 
     return (
-        <Modal ref={ref} title="Download Project" submitName="download" onSubmit={onSubmit} error={error}>
+        <Modal ref={ref} title={`Download '${props.project.name}'`} submitName="download" onSubmit={onSubmit} error={error}>
             <>
                 <label className="label cursor-pointer" htmlFor="name">Name</label>
                 <Input className="w-full" size="lg" value={name} onChange={(e) => setName(e.target.value)} />

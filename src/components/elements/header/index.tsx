@@ -34,7 +34,7 @@ export function Header(props: { title: string }) {
                 {breadcrumbs}
             </Breadcrumbs>
 
-            <Menu className="menu menu-horizontal p-0 pr-1 text-base">
+            <Menu className="menu menu-horizontal p-0 pr-1 text-base flex items-center">
                 <Menu.Item><Link to="/documentation">Documentation</Link></Menu.Item>
                 <Menu.Item><Link to="/news">News</Link></Menu.Item>
                 <Menu.Item><Link to="/impressum">Impressum</Link></Menu.Item>
