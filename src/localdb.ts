@@ -135,6 +135,24 @@ class LocalDB {
         await this.#files.where('id').equals(id).delete();
     }
 
+    async recRemoveFiles(id: number): Promise<void> {
+        const parents: number[] = [];
+        const recGetParents = async (id: number) => {
+            const files = await this.#files.where('parentId').equals(id).toArray();
+            if(!files)
+                return;
+            for(const file of files){
+                if(file.id){
+                    parents.push(file.id);
+                    await recGetParents(file.id);
+                }
+            }
+        };
+        await recGetParents(id);
+        await this.#files.where('id').anyOf(parents).delete();
+        await this.#files.where('id').equals(id).delete();
+    }
+
     async renameFile(id: number, name: string, lastChange: number = Date.now()): Promise<void>{
         const iFile = await this.#files.get(id);
         if(!iFile)

@@ -200,6 +200,14 @@ class ProjectStore {
         });
     }
 
+    async deleteFolder(id: number): Promise<void> {
+        await db.recRemoveFiles(id);
+
+        runInAction(() => {
+            this.lastFileTreeChange = Date.now();
+        });
+    }
+
     async saveFileContent(id: number, content: string | Blob): Promise<void> {
         await db.saveFileContent(id, content);
         runInAction(() => {

@@ -2,6 +2,8 @@ import { useState, useEffect, JSX } from 'react';
 import store, { File, Project } from '@store';
 import { autorun } from 'mobx';
 import { Menu } from 'react-daisyui';
+import { ModalAbort } from '@elements/modal';
+import { MODAL } from '@elements/modal/modal-handler';
 
 
 type TreeItem = {
@@ -179,18 +181,32 @@ function FileTree(props: FileTreeProps): JSX.Element {
         });
     };
 
-    const handleRename = () => {
+    const handleDelete = async () => {
         if (contextMenu.item) {
-            console.log('Rename:', contextMenu.item.name);
-            // Implement rename logic here
+            try {
+                const file = contextMenu.item.file;
+                if(!file?.id || !file?.name)
+                {
+                    throw Error(`Invalid file for deletion ${JSON.stringify(file)}`);
+                }
+                await store.app.openModal(MODAL.DELETE_FILE, { id: file.id, name: file.name });
+            } catch (error) {
+                if (!(error instanceof ModalAbort)){
+                    console.error(error);
+                }
+            }
         }
         setContextMenu(prev => ({ ...prev, visible: false }));
     };
 
-    const handleDelete = () => {
+    const handleRename = async () => {
         if (contextMenu.item) {
-            console.log('Delete:', contextMenu.item.name);
-            // Implement delete logic here
+            const file = contextMenu.item.file;
+            if(!file?.id || !file?.name)
+            {
+                throw Error(`Invalid file for rename ${JSON.stringify(file)}`);
+            }
+            await store.app.openModal(MODAL.RENAME_FILE, { id: file.id, name: file.name });
         }
         setContextMenu(prev => ({ ...prev, visible: false }));
     };

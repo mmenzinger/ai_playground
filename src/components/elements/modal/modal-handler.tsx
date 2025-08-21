@@ -1,15 +1,21 @@
 import { useRef, useState, createElement, ForwardRefExoticComponent, useImperativeHandle, forwardRef, useEffect } from "react";
-import { NewProjectModal } from "./m-new-project";
-import { DeleteProjectModal } from "./m-delete-project";
-import { UploadProjectModal } from "./m-upload-project";
 import { Defer } from "@src/utils";
-import { DownloadProjectModal } from ".";
+import { 
+    NewProjectModal,
+    DeleteProjectModal,
+    DeleteFileModal,
+    UploadProjectModal,
+    DownloadProjectModal,
+    RenameFileModal
+} from ".";
 
 export const MODAL = Object.freeze({
     NEW_PROJECT: 'newProject',
     DELETE_PROJECT: 'deleteProject',
+    DELETE_FILE: 'deleteFile',
     DOWNLOAD_PROJECT: 'downloadProject',
     UPLOAD_PROJECT: 'uploadProject',
+    RENAME_FILE: 'renameFile',
 });
 
 const modalElements: {[key:string]:ForwardRefExoticComponent<any>} = {};
@@ -17,6 +23,8 @@ modalElements[MODAL.NEW_PROJECT] = NewProjectModal;
 modalElements[MODAL.DELETE_PROJECT] = DeleteProjectModal;
 modalElements[MODAL.DOWNLOAD_PROJECT] = DownloadProjectModal;
 modalElements[MODAL.UPLOAD_PROJECT] = UploadProjectModal;
+modalElements[MODAL.DELETE_FILE] = DeleteFileModal;
+modalElements[MODAL.RENAME_FILE] = RenameFileModal;
 
 export type ModalHandlerFunctions = {
     openModal(name: string, props?: any): Promise<any>,

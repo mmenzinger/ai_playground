@@ -70,6 +70,9 @@ export * from './m-new-project';
 export * from './m-delete-project';
 export * from './m-download-project';
 export * from './m-upload-project';
+export * from './m-delete-file';
+export * from './m-rename-file';
+
 
 
 
