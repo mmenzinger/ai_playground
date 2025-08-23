@@ -8,7 +8,7 @@
         "esModuleInterop": true,
         "experimentalDecorators": true,
         "skipLibCheck": true,
-        "types": ["vite/client", "react", "react-dom"],
+        "types": ["vite/client"],
 
         //"noImplicitThis": true,
         //"noImplicitAny": true,

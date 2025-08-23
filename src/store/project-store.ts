@@ -190,6 +190,17 @@ class ProjectStore {
         return id;
     }
 
+    async createOrUpdateFile(name: string, projectId: number = 0, content?: string | Blob, parentId: number = 0): Promise<number> {
+        try{
+            const existingFile = await db.loadFirstFileByName(projectId, name, parentId);
+            await this.saveFileContent(existingFile.id, content);
+            return existingFile.id;
+        }
+        catch(_){
+            return await this.createFile(name, projectId, content, parentId);
+        }
+    }
+
     async deleteFile(id: number): Promise<void> {
         if (this.activeFile && this.activeFile.id === id)
             await this.closeFile();
@@ -208,7 +219,7 @@ class ProjectStore {
         });
     }
 
-    async saveFileContent(id: number, content: string | Blob): Promise<void> {
+    async saveFileContent(id: number, content: string | Blob | undefined): Promise<void> {
         await db.saveFileContent(id, content);
         runInAction(() => {
             if (this.activeFile?.id === id) {

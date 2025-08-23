@@ -4,13 +4,13 @@ import { Modal } from '@elements/modal';
 import store from '@store';
 import { Select, Input } from 'react-daisyui';
 
-export type NewProjectModalResult = {
+export type CreateProjectModalResult = {
     scenario: string;
     template: string;
     name: string;
 };
 
-export const NewProjectModal = forwardRef((props: {
+export const CreateProjectModal = forwardRef((props: {
     scenarios: Map<string, ScenarioTemplates>;
 }, ref: React.Ref<HTMLDialogElement>) => {
     const scenarios = useMemo(() => getScenarios(props.scenarios), [props.scenarios]);
@@ -73,6 +73,7 @@ export const NewProjectModal = forwardRef((props: {
             }
             else{
                 throw Error(`Scenario '${projectScenario}' not found`);
+                return undefined;
             }
         }
         catch(error: any){
@@ -83,7 +84,6 @@ export const NewProjectModal = forwardRef((props: {
                 setError(String(error));
             }
         }
-        return undefined;
     }
     return (
         <Modal ref={ref} title="New Project" submitName="create" onSubmit={onSubmit} error={error}>

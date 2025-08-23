@@ -13,8 +13,8 @@ export const DeleteProjectModal = forwardRef((props: { project: Project }, ref: 
         }
         catch(error){
             setError(String(error));
+            return undefined;
         }
-        return undefined;
     }
 
     return (

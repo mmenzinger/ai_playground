@@ -60,24 +60,17 @@ export const UploadProjectModal = forwardRef((_props: {} = {}, ref: React.Ref<HT
             if (includeGlobals && projectData.globalFiles.length > 0) {
                 for (const globalFile of projectData.globalFiles) {
                     try {
-                        // Check if global file already exists
                         const existingFile = await db.loadFileByPath(0, globalFile.path);
-                        
                         if (overwriteGlobals) {
-                            // Overwrite existing file content
-                            await db.saveFileContent(existingFile.id, globalFile.content || '');
+                            await store.project.saveFileContent(existingFile.id, globalFile.content);
                         }
-                        // If not overwriting, skip this file (do nothing)
                     } catch (error) {
                         // File doesn't exist, create it
-                        await db.saveFile({
-                            ...globalFile,
-                            projectId: 0, // Global files have projectId 0
-                        });
+                        // TODO: fix for folders!
+                        await store.project.createFile(globalFile.name, 0, globalFile.content);
                     }
                 }
             }
-
             return project;
         } catch (error: any) {
             if (error?.name === 'ConstraintError') {
@@ -85,8 +78,8 @@ export const UploadProjectModal = forwardRef((_props: {} = {}, ref: React.Ref<HT
             } else {
                 setError(String(error));
             }
+            return undefined;
         }
-        return undefined;
     }
 
     return (

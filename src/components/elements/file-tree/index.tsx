@@ -4,6 +4,7 @@ import { autorun } from 'mobx';
 import { Divider, Menu } from 'react-daisyui';
 import { ModalAbort } from '@elements/modal';
 import { MODAL } from '@elements/modal/modal-handler';
+import db from '@src/localdb';
 
 
 type TreeItem = {
@@ -211,12 +212,57 @@ function FileTree(props: FileTreeProps): JSX.Element {
         setContextMenu(prev => ({ ...prev, visible: false }));
     };
 
+    const handleCreateFile = async () => {
+        if (contextMenu.item) {
+            const file = contextMenu.item.file;
+            if(!file){
+                throw Error(`Invalid parent item ${JSON.stringify(contextMenu.item)}`);
+            }
+            const parentId = isFolder(file.name) ? file.id : file.parentId;
+            await store.app.openModal(MODAL.CREATE_FILE, { parentId });
+        }
+        setContextMenu(prev => ({ ...prev, visible: false }));
+    };
+
+    const handleUploadFiles = async () => {
+        if (contextMenu.item) {
+            const file = contextMenu.item.file;
+            if(!file){
+                throw Error(`Invalid parent item ${JSON.stringify(contextMenu.item)}`);
+            }
+            const parentId = isFolder(file.name) ? file.id : file.parentId;
+            await store.app.openModal(MODAL.UPLOAD_FILES, { parentId });
+        }
+        setContextMenu(prev => ({ ...prev, visible: false }));
+    };
+
     const handleCreateIndexHtml = async () => {
         console.log('Create index.html');
         const content = await fetch('/simulator/default.html').then(res => res.text());
         await store.project.createFile('index.html', props.project.id, content, 0);
         setContextMenu(prev => ({ ...prev, visible: false }));
     }
+
+    const handleFileDrop = (node: TreeItem) => async (event: React.DragEvent<HTMLAnchorElement | HTMLDetailsElement>) => {
+        event.preventDefault();
+        event.stopPropagation();
+        const files = event.dataTransfer.files;
+        let parentId = node.id;
+        if(!isFolder(node.name)){
+            const file = await db.loadFile(node.id as number);
+            parentId = file.parentId;
+        }
+        console.log('Files dropped on parent:', parentId, files);
+        if(files){
+            await store.app.openModal(MODAL.UPLOAD_FILES, { parentId, files });
+        }
+    };
+
+    const handleDragOver = (event: React.DragEvent<HTMLAnchorElement | HTMLDetailsElement>) => {
+        // without preventDefault, the browser will open the files!
+        event.preventDefault();
+        event.stopPropagation();
+    };
     
     const createFileTreeItems = (node: TreeItem): JSX.Element => {
         const children = sortTreeItems(node.children).map(child => createFileTreeItems(child));
@@ -226,6 +272,8 @@ function FileTree(props: FileTreeProps): JSX.Element {
                         <img src={getFileIcon(node.name)} alt="file icon" className="w-4 h-4" />
                         {node.name}
                     </>}
+                    onDrop={handleFileDrop(node)}
+                    onDragOver={handleDragOver}
                     onContextMenu={(e) => {
                         if(e.target instanceof HTMLElement && e.target.tagName === 'SUMMARY')
                         contextMenuHandler(e, node)
@@ -235,6 +283,8 @@ function FileTree(props: FileTreeProps): JSX.Element {
                 </Menu.Details>
             ) : (
                 <a 
+                    onDrop={handleFileDrop(node)}
+                    onDragOver={handleDragOver}
                     onClick={() => selectHandler(node)}
                     onContextMenu={(event) => contextMenuHandler(event, node)}
                 >
@@ -273,13 +323,22 @@ function FileTree(props: FileTreeProps): JSX.Element {
                         </>
                         :<></>
                     }
-                    
+
+                    <Menu.Item>
+                        <a onClick={handleCreateFile}>
+                            New File
+                        </a>
+                    </Menu.Item>
+                    <Menu.Item>
+                        <a onClick={handleUploadFiles}>
+                            Upload Files
+                        </a>
+                    </Menu.Item>
                     <Menu.Item>
                         <a onClick={handleRename}>
                             Rename
                         </a>
                     </Menu.Item>
-                    
                     <Menu.Item>
                         <a onClick={handleDelete} className="text-error">
                             Delete

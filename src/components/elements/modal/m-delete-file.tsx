@@ -18,8 +18,8 @@ export const DeleteFileModal = forwardRef((props: { id:number, name: string }, r
         }
         catch(error){
             setError(String(error));
+            return undefined;
         }
-        return undefined;
     }
 
     return (

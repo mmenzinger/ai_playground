@@ -99,8 +99,13 @@ class LocalDB {
         return iFile as File;
     }
 
-    async loadFirstFileByName(projectId: number, name: string): Promise<File>{
-        let iFile = await this.#files.get({projectId, name});
+    async loadFirstFileByName(projectId: number, name: string, parentId?: number): Promise<File>{
+        let iFile;
+        if(parentId){
+            iFile = await this.#files.get({projectId, name, parentId});
+        } else {
+            iFile = await this.#files.get({projectId, name});
+        }
         if(!iFile)
             throw new LocalDBError(`file '${name}' does not exist`);
         return iFile as File;
@@ -116,7 +121,7 @@ class LocalDB {
             throw new LocalDBError(`could not save file ${file.id}`);
     }
 
-    async saveFileContent(id: number, content: string | Blob, lastChange: number = Date.now()): Promise<void> {
+    async saveFileContent(id: number, content: string | Blob | undefined, lastChange: number = Date.now()): Promise<void> {
         const records: number = await this.#files.update(id, {content, lastChange});
         if(records === 0){
             // TODO: remove debug output
@@ -184,8 +189,8 @@ class LocalDB {
             throw new LocalDBError(`could not move file ${id} into ${parentId}`);
     }
 
-    async fileExists(projectId:number, name: string): Promise<boolean>{
-        const iFile = await this.#files.get({projectId, name});
+    async fileExists(projectId:number, name: string, parentId?: number): Promise<boolean>{
+        const iFile = await this.#files.get({projectId, name, parentId});
         return iFile !== undefined;
     }
 

@@ -2,7 +2,6 @@
 // import { autorun } from 'mobx';
 
 import store from '@store';
-import { Modal as DaisyModal, Alert, Button } from 'react-daisyui';
 
 // import { Defer } from '@src/utils';
 
@@ -22,14 +21,14 @@ export class ModalAbort extends Error {}
 //     defer: Defer<any>;
 // };
 
-import { forwardRef } from 'react';
+import { forwardRef, useEffect, useRef } from 'react';
 
 export const Modal = forwardRef((props: {
     onSubmit: () => Promise<any>;
     title?: string;
     submitName?: string;
     cancelName?: string;
-    children?: React.ReactElement;
+    children?: React.ReactElement | React.ReactElement[];
     error?: string;
 }, ref: React.Ref<HTMLDialogElement>) => {
 
@@ -47,31 +46,64 @@ export const Modal = forwardRef((props: {
     }
 
     return (
-        <DaisyModal ref={ref} onClose={onClose} ariaHidden={false}>
-            <DaisyModal.Header className="font-bold mb-4">
-                {props.title ?? 'Title'}
-            </DaisyModal.Header>
-            <DaisyModal.Body>
-                {props.children}
-                {props.error && <Alert status="error" className="mt-4">{props.error}</Alert>}
-            </DaisyModal.Body>
-            <DaisyModal.Actions>
-                <div className="flex justify-between w-full">
-                    <Button onClick={onClose}>{props.cancelName ?? 'Cancel'}</Button>
-                    <Button color="success" onClick={onSubmit}>{props.submitName ?? 'Submit'}</Button>
+        <dialog className="modal" ref={ref} onClose={onClose}>
+            <div className="modal-box">
+                <h3 className="font-bold mb-4">
+                    {props.title ?? 'Title'}
+                </h3>
+                    {props.children}
+                    {props.error && <div className="alert alert-error mt-4" role="alert">{props.error}</div>}
+                <div className="modal-action">
+                    <div className="flex justify-between w-full">
+                        <button className="btn" onClick={onClose}>{props.cancelName ?? 'Cancel'}</button>
+                        <button className="btn btn-success" onClick={onSubmit}>{props.submitName ?? 'Submit'}</button>
+                    </div>
                 </div>
-            </DaisyModal.Actions>
-        </DaisyModal>
+            </div>
+        </dialog>
     );
 });
 
+export function useFocus<T extends HTMLElement>(): React.RefObject<T | null> {
+    const focus = useRef<T | null>(null);
+
+    useEffect(() => {
+        let waitWindow = 0;
+        let maxTries = 6;
+        let timer: NodeJS.Timeout;
+        const tryFocus = () => {
+            if (focus.current && maxTries > 0) {
+                focus.current.focus();
+                // Check if focus was successful
+                if (document.activeElement !== focus.current) {
+                    maxTries--;
+                    waitWindow += 10;
+                    timer = setTimeout(tryFocus, waitWindow);
+                }
+            }
+            else if(maxTries > 0){
+                maxTries--;
+                waitWindow += 10;
+                timer = setTimeout(tryFocus, waitWindow);
+            }
+        };
+        timer = setTimeout(tryFocus, waitWindow);
+
+        return () => clearTimeout(timer);
+    }, []);
+
+    return focus;
+}
+
 export default Modal;
-export * from './m-new-project';
+export * from './m-create-project';
 export * from './m-delete-project';
 export * from './m-download-project';
 export * from './m-upload-project';
 export * from './m-delete-file';
 export * from './m-rename-file';
+export * from './m-create-file';
+export * from './m-upload-files';
 
 
 

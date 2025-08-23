@@ -1,24 +1,33 @@
 import { useState, forwardRef } from 'react';
-import { Modal } from '@elements/modal';
+import { Modal, useFocus } from '@elements/modal';
 import store from '@store';
 import { Input } from 'react-daisyui';
 
 export const RenameFileModal = forwardRef((props: { id:number, name: string }, ref: React.Ref<HTMLDialogElement>) => {
     const [error, setError] = useState<string | undefined>(undefined);
     const [newName, setNewName] = useState(props.name);
+    const focus = useFocus<HTMLInputElement>();
 
     async function onSubmit(): Promise<any | undefined>{
         try{
             const [name, _] = newName.split('.');
             if(name.length === 0)
                 throw Error(`The file name can not be empty!`);
-            await store.project.renameFile(props.id, newName);
+            try{
+                await store.project.renameFile(props.id, newName);
+            }
+            catch(error){
+                if(String(error).includes('uniqueness requirements')){
+                    throw Error(`A file with the name '${newName}' already exists in this folder!`);
+                }
+                throw error;
+            }
             return true;
         }
         catch(error){
             setError(String(error));
+            return undefined;
         }
-        return undefined;
     }
 
     function handleChange(event: React.ChangeEvent<HTMLInputElement>) {
@@ -39,11 +48,11 @@ export const RenameFileModal = forwardRef((props: { id:number, name: string }, r
             {props.name.includes('.') 
                 ? <>
                     <label className="label cursor-pointer" htmlFor="name">Name</label>
-                    <div className="flex items-center"><Input className="w-full" size="lg" id="name" type="text" onChange={handleChange} value={name} /><strong>.{ext}</strong></div>
+                    <div className="flex items-center"><Input className="w-full" size="lg" id="name" type="text" onChange={handleChange} value={name} ref={focus}/>&nbsp;<strong>.{ext}</strong></div>
                 </>
                 : <>
                     <label className="label cursor-pointer" htmlFor="name">Name</label>
-                    <Input className="w-full" size="lg" id="name" type="text" onChange={handleChange} value={name} />
+                    <Input className="w-full" size="lg" id="name" type="text" onChange={handleChange} value={name} ref={focus} />
                 </>
             }
             </>

@@ -1,5 +1,5 @@
 import { useState, forwardRef } from 'react';
-import { Modal } from '@elements/modal';
+import { Modal, useFocus } from '@elements/modal';
 import { Project, File } from '@store';
 import db from '@localdb';
 import JSZip from 'jszip';
@@ -10,6 +10,7 @@ export const DownloadProjectModal = forwardRef((props: { project: Project }, ref
     const [error, setError] = useState<string | undefined>(undefined);
     const [name, setName] = useState(`${props.project.name}.zip`);
     const [globals, setGlobals] = useState(false);
+    const focus = useFocus<HTMLInputElement>();
 
     async function onSubmit(): Promise<any | undefined>{
         try{
@@ -19,8 +20,8 @@ export const DownloadProjectModal = forwardRef((props: { project: Project }, ref
         }
         catch(error){
             setError(String(error));
+            return undefined;
         }
-        return undefined;
     }
 
     function onCheckGlobals(){
@@ -31,7 +32,7 @@ export const DownloadProjectModal = forwardRef((props: { project: Project }, ref
         <Modal ref={ref} title={`Download '${props.project.name}'`} submitName="download" onSubmit={onSubmit} error={error}>
             <>
                 <label className="label cursor-pointer" htmlFor="name">Name</label>
-                <Input className="w-full" size="lg" value={name} onChange={(e) => setName(e.target.value)} />
+                <Input className="w-full" size="lg" value={name} onChange={(e) => setName(e.target.value)} ref={focus} />
                 
                 <label className="label cursor-pointer mt-8 justify-start">
                     <Checkbox checked={globals} onChange={onCheckGlobals}/>

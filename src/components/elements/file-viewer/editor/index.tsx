@@ -33,6 +33,8 @@ const OPTIONS = {
     lineNumbersMinChars: 3,
     // wordWrap: 'on',
     // model: null,
+    // fix overlay on top sometimes hidden
+    fixedOverflowWidgets: true,
 };
 
 // Configure Monaco loader for local use with absolute URLs
