@@ -1,19 +1,14 @@
 import { useEffect, useState } from 'react';
 import Splitter, { SplitDirection } from '@devbookhq/splitter';
-import { Loading } from 'react-daisyui';
-
-// import { Link } from 'react-router-dom';
-// import { autorun } from 'mobx';
-
 import store, { Project as tProject } from '@store';
+import { useParams } from 'react-router-dom';
+import { autorun } from 'mobx';
 
 import Console from '@elements/console';
 import FileTree from '@elements/file-tree/index';
 import FileViewer from '@elements/file-viewer';
 import Simulator from '@elements/simulator';
 
-import { useParams } from 'react-router-dom';
-import { autorun } from 'mobx';
 
 export function Project() {
     const { id } = useParams<{ id: string }>();
@@ -57,7 +52,7 @@ export function Project() {
     if (!project) {
         return (
             <div className="flex items-center justify-center h-full">
-                <Loading />
+                <span className="loading loading-spinner text-primary" />
                 <span>Loading</span>
             </div>
         );

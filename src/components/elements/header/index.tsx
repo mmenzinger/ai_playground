@@ -1,7 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { ThemeSwitcher } from '@elements/theme-switcher';
-import { Navbar, Breadcrumbs, Menu } from 'react-daisyui';
-
+import { FaLink } from 'react-icons/fa6';
 
 export function Header(props: { title: string }) {
     const location = useLocation();
@@ -9,7 +8,7 @@ export function Header(props: { title: string }) {
 
     let i = 0;
     const breadcrumbs = [
-        <li key="/"><Link to={"/"} className="text-3xl font-mono font-bold pr-2"><img
+        <li key="/"><Link to={"/"} className="text-3xl font-mono font-bold pr-2 hover:text-primary"><img
         src="/assets/logo.png"
         alt="Coding4Fun"
         className="w-14 -my-1 pr-2" />{props.title}</Link></li>,
@@ -22,26 +21,26 @@ export function Header(props: { title: string }) {
                 : path[i][0].toUpperCase() + path[i].slice(1);
         const url = '/' + path.slice(0, i + 1).join('/');
         breadcrumbs.push(
-            <Breadcrumbs.Item key={url}><Link to={url}>{decodeURI(name)}</Link></Breadcrumbs.Item>
+            <li key={url}><Link to={url} className="hover:text-primary">{decodeURI(name)}</Link></li>
         );
         
         i++;
     }
 
     return (
-        <Navbar className="flex justify-between flex-wrap p-0 px-2 min-h-0 border-b border-b-neutral-200">
-            <Breadcrumbs className="text-base">
-                {breadcrumbs}
-            </Breadcrumbs>
+        <div className="navbar flex justify-between flex-wrap p-0 px-2 min-h-0 border-b border-b-base-300">
+            <div className="breadcrumbs text-base">
+                <ul>{breadcrumbs}</ul>
+            </div>
 
-            <Menu className="menu menu-horizontal p-0 pr-1 text-base flex items-center">
-                <Menu.Item><Link to="/documentation">Documentation</Link></Menu.Item>
-                <Menu.Item><Link to="/news">News</Link></Menu.Item>
-                <Menu.Item><Link to="/impressum">Impressum</Link></Menu.Item>
-                <Menu.Item><Link to="https://github.com/mmenzinger/ai_playground/issues" target="_blank">Issues</Link></Menu.Item>
-                <Menu.Item><ThemeSwitcher /></Menu.Item>
-            </Menu>
-        </Navbar>
+            <ul className="menu menu-horizontal p-0 pr-1 text-base flex items-center">
+                {/* <li><Link className="hover:text-primary-content hover:bg-primary" to="/documentation">Documentation</Link></li> */}
+                <li><Link className="hover:text-primary-content hover:bg-primary" to="/news">News</Link></li>
+                <li><Link className="hover:text-primary-content hover:bg-primary" to="/impressum">Impressum</Link></li>
+                <li><Link className="hover:text-primary-content hover:bg-primary" to="https://github.com/mmenzinger/ai_playground/issues" target="_blank"><FaLink /> Issues</Link></li>
+                <li><ThemeSwitcher /></li>
+            </ul>
+        </div>
     );
 }
 

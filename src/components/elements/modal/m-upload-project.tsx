@@ -3,7 +3,6 @@ import { Modal } from '@elements/modal';
 import { Project } from '@store';
 import db from '@localdb';
 import JSZip from 'jszip';
-import { Input, Checkbox, FileInput } from 'react-daisyui';
 import store from '@store';
 import { BasicFile } from '@src/scenario-utils';
 
@@ -69,9 +68,9 @@ export const UploadProjectModal = forwardRef((_props: {} = {}, ref: React.Ref<HT
         <Modal ref={ref} title="Upload Project" submitName="upload" onSubmit={onSubmit} error={error}>
             <>
                 <label className="label cursor-pointer" htmlFor="file">Select Zip File</label>
-                <FileInput 
-                    className="w-full" 
-                    size="lg" 
+                <input
+                    type="file" 
+                    className="file-input file-input-lg w-full" 
                     accept=".zip"
                     onChange={onFileSelect}
                 />
@@ -79,12 +78,11 @@ export const UploadProjectModal = forwardRef((_props: {} = {}, ref: React.Ref<HT
                 {selectedFile && (
                     <>
                         <label className="label cursor-pointer" htmlFor="name">Project Name</label>
-                        <Input 
-                            className="w-full" 
-                            size="lg" 
-                            id="name" 
-                            type="text" 
-                            value={name} 
+                        <input
+                            className="input input-lg w-full"
+                            id="name"
+                            type="text"
+                            value={name}
                             onChange={(e) => setName(e.target.value.trim())}
                             placeholder="My Project"
                         />
@@ -93,8 +91,10 @@ export const UploadProjectModal = forwardRef((_props: {} = {}, ref: React.Ref<HT
                             {projectData && projectData.globalFiles.length > 0 && (
                                 <>
                                     <label className="label cursor-pointer justify-start">
-                                        <Checkbox 
-                                            checked={includeGlobals} 
+                                        <input
+                                            type="checkbox"
+                                            className="checkbox"
+                                            checked={includeGlobals}
                                             onChange={(e) => setIncludeGlobals(e.target.checked)}
                                         />
                                         <span className="ml-2">Include global files</span>
@@ -102,8 +102,10 @@ export const UploadProjectModal = forwardRef((_props: {} = {}, ref: React.Ref<HT
 
                                     {includeGlobals && (
                                         <label className="label cursor-pointer justify-start ml-6">
-                                            <Checkbox 
-                                                checked={overwriteGlobals} 
+                                            <input
+                                                type="checkbox"
+                                                className="checkbox"
+                                                checked={overwriteGlobals}
                                                 onChange={(e) => setOverwriteGlobals(e.target.checked)}
                                             />
                                             <span className="ml-2">Overwrite existing global files</span>

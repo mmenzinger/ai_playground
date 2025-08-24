@@ -6,7 +6,6 @@ import { getScenarios } from '@src/scenario-utils';
 import { ModalAbort } from '@elements/modal';
 import { MODAL } from '@elements/modal/modal-handler';
 
-import { Card, Button } from 'react-daisyui';
 import { FaUpload, FaDownload, FaPlus, FaTrash } from 'react-icons/fa6';
 
 
@@ -88,14 +87,14 @@ export function ProjectIndex() {
     const elements: React.ReactElement[] = [];
     for(const project of projects){
         elements.push(
-            <Card 
-                className="w-48 bg-base-100 shadow-xl cursor-pointer hover:bg-base-200"
+            <div 
+                className="card w-48 bg-base-100 border-1 border-base-300 cursor-pointer hover:bg-base-200 hover:border-primary"
                 key={project.id}
                 onClick={() => {
                     navigate(`/editor/${project.id}/${project.name}`);
                 }}
             >
-                <figure className="bg-white flex justify-center items-center">
+                <figure className="flex justify-center items-center">
                     <img 
                         className="h-48"
                         src={`/${project.id}/first/logo.png`}
@@ -105,53 +104,50 @@ export function ProjectIndex() {
                         }}
                     />
                 </figure>
-                <Card.Body className="justify-between p-2 pt-0">
-                    <Card.Title className="text-base">{project.name}</Card.Title>
-                    <Card.Actions className="flex justify-end gap-0">
-                        <Button
-                            className="btn-ghost btn-circle tooltip"
-                            size="sm"
+                <div className="card-body justify-between p-2 pt-0">
+                    <h2 className="card-title text-base">{project.name}</h2>
+                    <div className="card-actions flex justify-end gap-0">
+                        <button
+                            className="btn btn-sm btn-ghost tooltip hover:text-primary"
                             onClick={(e) => onDownloadProject(project, e)}
                             data-tip="Download"
                         >
                             <FaDownload className="w-4 h-4" />
-                        </Button>
-                        <Button 
-                            className="btn-ghost btn-circle tooltip"
-                            size="sm"
+                        </button>
+                        <button
+                            className="btn btn-sm btn-ghost tooltip text-error hover:bg-error hover:text-error-content"
                             onClick={(e) => onDeleteProject(project, e)}
                             data-tip="Delete"
                         >
-                            <FaTrash className="w-4 h-4 fill-error" />
-                        </Button>
-                    </Card.Actions>
-                </Card.Body>
-            </Card>
+                            <FaTrash className="w-4 h-4" />
+                        </button>
+                    </div>
+                </div>
+            </div>
         );
     }
     elements.push(
-        <Card 
-            className="w-48 bg-base-100 shadow-xl cursor-pointer hover:bg-base-200"
+        <div 
+            className="card w-48 bg-base-100 border-1 border-base-300 cursor-pointer hover:bg-base-200 hover:border-primary"
             key={0}
             onClick={() => onNewProject()}
         >
-            <figure className="h-48 bg-white flex justify-center items-center">
+            <figure className="h-48 flex justify-center items-center">
                 <FaPlus className="w-24 h-24 fill-primary" />
             </figure>
-            <Card.Body className="justify-between p-2 pt-0">
-                <Card.Title className="card-title text-base">New Project</Card.Title>
-                <Card.Actions className="flex justify-end gap-0">
-                    <Button 
-                        className="btn-ghost btn-circle tooltip"
-                        size="sm" 
+            <div className="card-body justify-between p-2 pt-0">
+                <h2 className="card-title text-base">New Project</h2>
+                <div className="card-actions flex justify-end gap-0">
+                    <button
+                        className="btn btn-sm btn-ghost tooltip hover:text-primary"
                         onClick={(e) => onUploadProject(e)}
                         data-tip="Upload"
                     >
                         <FaUpload className="w-4 h-4" />
-                    </Button>
-                </Card.Actions>
-            </Card.Body>
-        </Card>
+                    </button>
+                </div>
+            </div>
+        </div>
     );
 
     return <div className="flex flex-wrap gap-3 m-3">{elements}</div>;

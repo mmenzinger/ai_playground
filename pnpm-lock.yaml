@@ -65,9 +65,6 @@ importers:
       react:
         specifier: ^19.1.1
         version: 19.1.1
-      react-daisyui:
-        specifier: ^5.0.5
-        version: 5.0.5(daisyui@5.0.50)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(tailwindcss@4.1.12)
       react-dom:
         specifier: ^19.1.1
         version: 19.1.1(react@19.1.1)
@@ -2972,14 +2969,6 @@ packages:
 
   randombytes@2.1.0:
     resolution: {integrity: sha512-vYl3iOX+4CKUWuxGi9Ukhie6fsqXqS9FE2Zaic4tNFD2N2QQaXOMFbuKK4QmDHC0JO6B1Zp41J0LpT0oR68amQ==}
-
-  react-daisyui@5.0.5:
-    resolution: {integrity: sha512-bh2XjayCeCmV855GqdhvCwIGDsrHxDfbczuVSMze4B71Ou6VwIesMTaHu8LQ6qYFi7tN59mBF073b0EUh2khFA==}
-    peerDependencies:
-      daisyui: ^4.12.10
-      react: '>=16'
-      react-dom: '>=16'
-      tailwindcss: '>=3.2.7'
 
   react-dom@19.1.1:
     resolution: {integrity: sha512-Dlq/5LAZgF0Gaz6yiqZCf6VCcZs1ghAJyrsu84Q/GT0gV+mCxbfmKNoGRKBYMJ8IEdGPqu49YWXD02GCknEDkw==}
@@ -6610,13 +6599,6 @@ snapshots:
   randombytes@2.1.0:
     dependencies:
       safe-buffer: 5.2.1
-
-  react-daisyui@5.0.5(daisyui@5.0.50)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(tailwindcss@4.1.12):
-    dependencies:
-      daisyui: 5.0.50
-      react: 19.1.1
-      react-dom: 19.1.1(react@19.1.1)
-      tailwindcss: 4.1.12
 
   react-dom@19.1.1(react@19.1.1):
     dependencies:
