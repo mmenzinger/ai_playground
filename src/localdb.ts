@@ -170,23 +170,36 @@ class LocalDB {
             throw new LocalDBError(`could not rename file ${id}`);
     }
 
-    async moveFile(id: number, parentId: number, lastChange: number = Date.now()): Promise<void>{
-        const iFile = await this.#files.get(id);
-        if(!iFile)
-            throw new LocalDBError(`file ${id} does not exist`);
-        let parent = parentId;
-        let path = iFile.name;
-        while(parent !== 0){
-            const iFile: IFiles | undefined = await this.#files.get({id: parent});
-            if(!iFile){
-                break;
+    async moveFile(id: number, parentId: number, projectId: number, lastChange: number = Date.now()): Promise<void>{
+        return this.#db.transaction('rw', this.#files, async () => {
+            const iFile = await this.#files.get(id);
+            if(!iFile || !iFile.id)
+                throw new LocalDBError(`file ${id} does not exist`);
+
+            let parent = parentId;
+            let path = iFile.name;
+            while(parent !== 0){
+                const iFile: IFiles | undefined = await this.#files.get({id: parent});
+                if(!iFile){
+                    break;
+                }
+                parent = iFile.parentId || 0;
+                path = `${iFile.name}/${path}`;
             }
-            parent = iFile.parentId || 0;
-            path = `${iFile.name}/${path}`;
-        }
-        const records: number = await this.#files.update(id, {parentId, path, lastChange});
-        if(records === 0)
-            throw new LocalDBError(`could not move file ${id} into ${parentId}`);
+            await this.#files.update(id, {projectId, parentId, path, lastChange});
+
+            const updateChildren = async (parentId: number, path: string, projectId: number): Promise<void> => {
+                const iFiles = await this.#files.where('parentId').equals(parentId).toArray();
+                for(const file of iFiles){
+                    if(file.id){
+                        const newPath = `${path}/${file.name}`;
+                        await this.#files.update(file.id, {path: newPath, projectId});
+                        await updateChildren(file.id, newPath, projectId);
+                    }
+                }
+            }
+            await updateChildren(iFile.id, path, projectId);
+        });
     }
 
     async fileExists(projectId:number, name: string, parentId?: number): Promise<boolean>{
@@ -288,23 +301,23 @@ class LocalDB {
         await this.#projects.update(id, {openFileId: fileId});
     }
 
-    async importProject(name: string, scenario: string, projectFiles: File[], globalFiles: File[], collision: string): Promise<number>{
-        return this.#db.transaction('rw', this.#projects,this.#files, async () => {
-            const collisionFilesPromises = globalFiles.map(async (newFile) => {
-                try{
-                    const oldFile = await this.loadFileByPath(0, newFile.name);
-                    if(collision === 'new')
-                        await this.saveFileContent(oldFile.id, newFile.content || '');
-                }
-                catch(_){
-                    await this.createFile(0, newFile.name, newFile.content, newFile.parentId);
-                }
-            });
-            await Promise.all(collisionFilesPromises);
+    // async importProject(name: string, scenario: string, projectFiles: File[], globalFiles: File[], collision: string): Promise<number>{
+    //     return this.#db.transaction('rw', this.#projects,this.#files, async () => {
+    //         const collisionFilesPromises = globalFiles.map(async (newFile) => {
+    //             try{
+    //                 const oldFile = await this.loadFileByPath(0, newFile.name);
+    //                 if(collision === 'new')
+    //                     await this.saveFileContent(oldFile.id, newFile.content || '');
+    //             }
+    //             catch(_){
+    //                 await this.createFile(0, newFile.name, newFile.content, newFile.parentId);
+    //             }
+    //         });
+    //         await Promise.all(collisionFilesPromises);
 
-            return await this.createProject(name, scenario, projectFiles as BasicFile[]);
-        });
-    }
+    //         return await this.createProject(name, scenario, projectFiles as BasicFile[]);
+    //     });
+    // }
 
     async projectExists(name: string): Promise<boolean>{
         const project = await this.#projects.get({name});

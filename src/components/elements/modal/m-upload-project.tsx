@@ -57,20 +57,7 @@ export const UploadProjectModal = forwardRef((_props: {} = {}, ref: React.Ref<HT
             );
 
             // Add global files if requested
-            if (includeGlobals && projectData.globalFiles.length > 0) {
-                for (const globalFile of projectData.globalFiles) {
-                    try {
-                        const existingFile = await db.loadFileByPath(0, globalFile.path);
-                        if (overwriteGlobals) {
-                            await store.project.saveFileContent(existingFile.id, globalFile.content);
-                        }
-                    } catch (error) {
-                        // File doesn't exist, create it
-                        // TODO: fix for folders!
-                        await store.project.createFile(globalFile.name, 0, globalFile.content);
-                    }
-                }
-            }
+            // TODO: implement global file handling
             return project;
         } catch (error: any) {
             if (error?.name === 'ConstraintError') {

@@ -126,9 +126,9 @@ class ProjectStore {
         await db.removeProject(id);
     }
 
-    async importProject(name: string, scenario: string, projectFiles: Array<File>, globalFiles: Array<File>, collision: string): Promise<number> {
-        return db.importProject(name, scenario, projectFiles, globalFiles, collision);
-    }
+    // async importProject(name: string, scenario: string, projectFiles: Array<File>, globalFiles: Array<File>, collision: string): Promise<number> {
+    //     return db.importProject(name, scenario, projectFiles, globalFiles, collision);
+    // }
 
     async getProjectFiles(id: number): Promise<File[]>{
         return db.getProjectFiles(id);
@@ -244,8 +244,16 @@ class ProjectStore {
     async renameFile(id: number, name: string): Promise<void> {
         await db.renameFile(id, name);
         runInAction(() => {
-            if (this.activeFile?.id === id)
-            this.activeFile.name = name;
+            if (this.activeFile?.id === id) {
+                this.activeFile.name = name;
+            }
+            this.lastFileTreeChange = Date.now();
+        });
+    }
+
+    async moveFile(id: number, newParentId: number, projectId: number): Promise<void> {
+        await db.moveFile(id, newParentId, projectId);
+        runInAction(() => {
             this.lastFileTreeChange = Date.now();
         });
     }

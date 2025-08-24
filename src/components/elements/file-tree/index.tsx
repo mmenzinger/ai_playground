@@ -1,22 +1,33 @@
 import { useState, useEffect, JSX } from 'react';
 import store, { File, Project } from '@store';
 import { autorun } from 'mobx';
-import { Divider, Menu } from 'react-daisyui';
 import { ModalAbort } from '@elements/modal';
 import { MODAL } from '@elements/modal/modal-handler';
-import db from '@src/localdb';
 
 
 type TreeItem = {
     id: number | string;
     name: string;
     children: TreeItem[];
+    projectId: number;
+    parent?: TreeItem;
     file?: File;
 };
 
 function isFolder(fileName: string): boolean {
     return !fileName.includes('.');
 }
+
+function isChild(parent: TreeItem, testChild: TreeItem): boolean {
+    if(testChild.parent?.id === parent.id)
+        return true;
+    for(const child of parent.children){
+        if(isChild(child, testChild))
+            return true;
+    }
+    return false;
+}
+
 
 // Function to get the appropriate icon for a file or folder
 function getFileIcon(name: string): string {
@@ -49,22 +60,23 @@ function sortTreeItems(items: TreeItem[]): TreeItem[] {
     });
 }
 
-function filesToFileTree(files: File[]): TreeItem {
+function filesToFileTree(files: File[], projectId: number): TreeItem {
     const global: TreeItem = {
         id: 'global',
         name: 'global',
+        projectId: 0,
         children: [],
     };
-
     const project: TreeItem = {
         id: 'project',
         name: 'project',
+        projectId: projectId,
         children: [],
     };
-
     const root: TreeItem = {
         id: 'root',
         name: 'root',
+        projectId: 0,
         children: [global, project],
     };
 
@@ -80,44 +92,54 @@ function filesToFileTree(files: File[]): TreeItem {
     }
     const pending = new Map<number, TreeItem[]>();
     for (const file of files) {
-        if(file.parentId !== 0){
-            const parent = getParent(file.parentId, root);
-            const children = pending.get(file.id) || [];
-            if(children.length > 0){
-                pending.delete(file.id);
+        let parent = getParent(file.parentId, root);
+        if(file.parentId === 0){
+            if(file.projectId === 0){
+                parent = global;
+            } else {
+                parent = project;
             }
-            if(parent){
-                parent.children.push({
-                    id: file.id,
-                    name: file.name,
-                    children: children,
-                    file: file,
-                });
+        }
+        if(!parent){
+            exit:
+            for(const children of pending.values()){
+                for(const item of children){
+                    if(item.id === file.parentId){
+                        parent = item;
+                        break exit;
+                    }
+                }
             }
-            else{
-                pending.set(file.id, 
-                    [
-                        ...(pending.get(file.id) || []),
-                        {
-                            id: file.id,
-                            name: file.name,
-                            children: children,
-                            file: file,
-                        }
-                    ]
-                );
+        }
+        const children = pending.get(file.id) || [];
+        const newItem = {
+            id: file.id,
+            name: file.name,
+            children: children,
+            parent: parent,
+            projectId: parent?.projectId || 0,
+            file: file,
+        };
+        for(const child of children){
+            child.projectId = newItem.projectId;
+        }
+        if(children.length > 0){
+            pending.delete(file.id);
+            for(const child of children){
+                child.parent = newItem;
             }
+        }
+        if(parent){
+            parent.children.push(newItem);
         }
         else{
-            const parent = file.projectId ? project : global;
-            parent.children.push({
-                id: file.id,
-                name: file.name,
-                children: [],
-                file: file,
-            });
+            pending.set(file.parentId, [
+                ...(pending.get(file.parentId) || []),
+                newItem
+            ]);
         }
     }
+
     return root;
 }
 
@@ -131,6 +153,8 @@ interface FileTreeProps {
 function FileTree(props: FileTreeProps): JSX.Element {
     const [files, setFiles] = useState<File[]>([]);
     const [hasIndexHtml, setHasIndexHtml] = useState<boolean>(false);
+    const [draggedOverNode, setDraggedOverNode] = useState<number | string | null>(null);
+    const [draggedItem, setDraggedItem] = useState<TreeItem | null>(null);
     const [contextMenu, setContextMenu] = useState<{
         visible: boolean;
         x: number;
@@ -164,7 +188,6 @@ function FileTree(props: FileTreeProps): JSX.Element {
     }, [contextMenu.visible]);
 
     const selectHandler = (item: TreeItem) => {
-        console.log('Selected item:', item);
         if (item.file && !isFolder(item.file.name)) {
             store.project.openFile(item.file.id);
         }
@@ -215,11 +238,37 @@ function FileTree(props: FileTreeProps): JSX.Element {
     const handleCreateFile = async () => {
         if (contextMenu.item) {
             const file = contextMenu.item.file;
-            if(!file){
-                throw Error(`Invalid parent item ${JSON.stringify(contextMenu.item)}`);
+            let parentId = 0;
+            let projectId = 0;
+            if(file){
+                parentId = isFolder(file.name) ? file.id : file.parentId;
+                projectId = file.projectId;
             }
-            const parentId = isFolder(file.name) ? file.id : file.parentId;
-            await store.app.openModal(MODAL.CREATE_FILE, { parentId });
+            else{
+                if(contextMenu.item.id === 'project'){
+                    projectId = props.project.id;
+                }
+            }
+            await store.app.openModal(MODAL.CREATE_FILE, { parentId, projectId });
+        }
+        setContextMenu(prev => ({ ...prev, visible: false }));
+    };
+
+    const handleCreateFolder = async () => {
+        if (contextMenu.item) {
+            const file = contextMenu.item.file;
+            let parentId = 0;
+            let projectId = 0;
+            if(file){
+                parentId = isFolder(file.name) ? file.id : file.parentId;
+                projectId = file.projectId;
+            }
+            else{
+                if(contextMenu.item.id === 'project'){
+                    projectId = props.project.id;
+                }
+            }
+            await store.app.openModal(MODAL.CREATE_FOLDER, { parentId, projectId });
         }
         setContextMenu(prev => ({ ...prev, visible: false }));
     };
@@ -243,48 +292,123 @@ function FileTree(props: FileTreeProps): JSX.Element {
         setContextMenu(prev => ({ ...prev, visible: false }));
     }
 
-    const handleFileDrop = (node: TreeItem) => async (event: React.DragEvent<HTMLAnchorElement | HTMLDetailsElement>) => {
+    const handleDrop = async (event: React.DragEvent<HTMLDetailsElement>, node: TreeItem) => {
         event.preventDefault();
         event.stopPropagation();
-        const files = event.dataTransfer.files;
-        let parentId = node.id;
-        if(!isFolder(node.name)){
-            const file = await db.loadFile(node.id as number);
-            parentId = file.parentId;
+        setDraggedOverNode(null);
+
+        let parentId = Number(node.id);
+        let projectId = node.projectId;
+        if(isNaN(parentId)){
+            parentId = 0;
         }
-        console.log('Files dropped on parent:', parentId, files);
-        if(files){
-            await store.app.openModal(MODAL.UPLOAD_FILES, { parentId, files });
+        
+        // upload dropped files
+        const files = event.dataTransfer.files;
+        if (files && files.length > 0) {
+            await store.app.openModal(MODAL.UPLOAD_FILES, { projectId, parentId, files });
+        }
+        // move tree items
+        else if (draggedItem) {
+            if(draggedItem.parent?.id !== node.id 
+            && draggedItem.id !== node.id
+            && !isChild(draggedItem, node)
+            && draggedItem.file) {
+
+                try{
+                    await store.project.moveFile(draggedItem.file.id, parentId, projectId);
+                } catch (error) {
+                    let msg = String(error);
+                    if(msg.includes('uniqueness requirements')){
+                        msg = `A file with the same name already exists in folder '${node.name}'.`;
+                    }
+                    store.app.openModal(MODAL.ALERT, { title: 'Error moving file', message: msg, type: 'error' });
+                }
+            }
+            setDraggedItem(null);
         }
     };
 
-    const handleDragOver = (event: React.DragEvent<HTMLAnchorElement | HTMLDetailsElement>) => {
+    const handleDragStart = (event: React.DragEvent<HTMLAnchorElement | HTMLDetailsElement | HTMLLIElement>, node: TreeItem) => {
+        // console.log('Drag start:', node);
+        event.stopPropagation();
+
+        // create custom ghost to prevent bleeding
+        const ghost = document.createElement('div');
+        ghost.classList.add('alert', 'size-fit', 'px-2', 'py-0');
+        ghost.innerHTML = `
+            <img src="${getFileIcon(node.name)}" class="w-3 h-4" />
+            <span>${node.name}</span>
+        `;
+        document.body.appendChild(ghost);
+        event.dataTransfer.setDragImage(ghost, 10, 10);
+        event.dataTransfer.effectAllowed = 'move';
+        setTimeout(() => document.body.removeChild(ghost), 0);
+
+        setDraggedItem(node);
+    };
+
+    const handleDragEnd = (event: React.DragEvent<HTMLDetailsElement>, node: TreeItem) => {
+        // console.log('Drag end:', node);
+        event.stopPropagation();
+        setDraggedItem(null);
+        setDraggedOverNode(null);
+    };
+
+    const handleDragOver = (event: React.DragEvent<HTMLDetailsElement>, node: TreeItem) => {
         // without preventDefault, the browser will open the files!
         event.preventDefault();
         event.stopPropagation();
+        setDraggedOverNode(node.id);
+    };
+
+    const handleDragEnter = (event: React.DragEvent<HTMLAnchorElement | HTMLDetailsElement>, node: TreeItem) => {
+        event.preventDefault();
+        event.stopPropagation();
+        setDraggedOverNode(node.id);
+    };
+
+    const handleDragLeave = (event: React.DragEvent<HTMLAnchorElement | HTMLDetailsElement>, node: TreeItem) => {
+        event.preventDefault();
+        event.stopPropagation();
+
+        // to prevent flickering, only clear if we're actually leaving the element
+        const rect = event.currentTarget.getBoundingClientRect();
+        const x = event.clientX;
+        const y = event.clientY;
+        if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) {
+            setDraggedOverNode(null);
+        }
     };
     
     const createFileTreeItems = (node: TreeItem): JSX.Element => {
         const children = sortTreeItems(node.children).map(child => createFileTreeItems(child));
-        return (<Menu.Item key={node.id}>
-            {children.length > 0 || isNaN(Number(node.id)) ? (
-                <Menu.Details open={true} label={<>
-                        <img src={getFileIcon(node.name)} alt="file icon" className="w-4 h-4" />
-                        {node.name}
-                    </>}
-                    onDrop={handleFileDrop(node)}
-                    onDragOver={handleDragOver}
+        const isBeingDraggedOver = draggedOverNode === node.id;
+        
+        return (<li key={node.id} draggable={true} onDragStart={(e) => handleDragStart(e, node)}>
+            {isFolder(node.name) ? (
+                <details open={true}
+                    onDrop={(e) => handleDrop(e, node)}
+                    onDragOver={(e) => handleDragOver(e, node)}
+                    onDragEnter={(e) => handleDragEnter(e, node)}
+                    onDragLeave={(e) => handleDragLeave(e, node)}
+                    onDragEnd={(e) => handleDragEnd(e, node)}
+                    className={isBeingDraggedOver ? 'bg-blue-200 dark:bg-blue-800 rounded' : ''}
                     onContextMenu={(e) => {
                         if(e.target instanceof HTMLElement && e.target.tagName === 'SUMMARY')
                         contextMenuHandler(e, node)
                     }}
                 >
-                    {children}
-                </Menu.Details>
+                    <summary>
+                        <img src={getFileIcon(node.name)} alt="file icon" className="w-4 h-4" />
+                        {node.name}
+                    </summary>
+                    <ul>
+                        {children}
+                    </ul>
+                </details>
             ) : (
                 <a 
-                    onDrop={handleFileDrop(node)}
-                    onDragOver={handleDragOver}
                     onClick={() => selectHandler(node)}
                     onContextMenu={(event) => contextMenuHandler(event, node)}
                 >
@@ -293,67 +417,69 @@ function FileTree(props: FileTreeProps): JSX.Element {
                 </a>
                 
             )}
-        </Menu.Item>);
+        </li>);
     }
 
-    const rootNode = filesToFileTree(files);
+    const rootNode = filesToFileTree(files, props.project.id);
     return (<>
-        <Menu 
-            className="w-full h-full"
-            size="md"
+        <ul 
+            className="menu menu-md w-full h-full flex-nowrap overflow-auto"
         >
             {createFileTreeItems(rootNode.children[0])}
             {createFileTreeItems(rootNode.children[1])}
-        </Menu>
+        </ul>
         
         {contextMenu.visible && (
-                <Menu
-                    className="fixed bg-base-100 border border-base-300 shadow-lg rounded z-50 w-48"
+                <ul
+                    className="menu fixed bg-base-100 border border-base-300 shadow-lg rounded z-50 w-48"
                     style={{
                         left: contextMenu.x,
                         top: contextMenu.y,
                     }}
                     onClick={(e) => e.stopPropagation()}
                 >
-                    { contextMenu.item?.name ?
-                        <><Menu.Title>
+                    { contextMenu.item?.name && <>
+                        <li className="menu-title">
                             {contextMenu.item?.name}
-                        </Menu.Title>
-                        <Divider className="m-0"></Divider>
-                        </>
-                        :<></>
-                    }
+                        </li>
+                        <div className="divider m-0"></div>
+                    </>}
 
-                    <Menu.Item>
+                    <li>
                         <a onClick={handleCreateFile}>
                             New File
                         </a>
-                    </Menu.Item>
-                    <Menu.Item>
+                    </li>
+                    <li>
+                        <a onClick={handleCreateFolder}>
+                            New Folder
+                        </a>
+                    </li>
+                    <li>
                         <a onClick={handleUploadFiles}>
                             Upload Files
                         </a>
-                    </Menu.Item>
-                    <Menu.Item>
+                    </li>
+                    <li>
                         <a onClick={handleRename}>
                             Rename
                         </a>
-                    </Menu.Item>
-                    <Menu.Item>
+                    </li>
+                    <li>
                         <a onClick={handleDelete} className="text-error">
                             Delete
                         </a>
-                    </Menu.Item>
+                    </li>
                     { !hasIndexHtml ? <>
-                        <Divider className="m-0"></Divider>
-                        <Menu.Item>
+                        <div className="divider m-0"></div>
+                        <li>
                             <a onClick={handleCreateIndexHtml}>
                                 Create index.html
                             </a>
-                        </Menu.Item> 
+                        </li>
                     </> : <></> }
                     
-                </Menu>
+                </ul>
             )}
     </>);
 }

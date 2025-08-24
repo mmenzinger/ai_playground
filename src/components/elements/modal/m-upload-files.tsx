@@ -7,7 +7,7 @@ import { BasicFile } from '@src/scenario-utils';
 const SUPPORTED_FILE_EXT = ['png', 'js', 'json', 'md', 'pl', 'html'];
 const UNSUPPORTED_CHARACTERS = /[^a-zA-Z0-9-_]/g;
 
-export const UploadFileModal = forwardRef((props: { parentId:number, files?: FileList }, ref: React.Ref<HTMLDialogElement>) => {
+export const UploadFilesModal = forwardRef((props: { parentId:number, projectId:number, files?: FileList }, ref: React.Ref<HTMLDialogElement>) => {
     const [error, setError] = useState<string | undefined>(undefined);
     const [warning, setWarning] = useState<JSX.Element[]>([]);
     const [selectedFiles, setSelectedFiles] = useState<BasicFile[]>([]);
@@ -17,7 +17,7 @@ export const UploadFileModal = forwardRef((props: { parentId:number, files?: Fil
             throw new Error('No active project');
         }
         if (props.files) {
-            checkAndUpdateFiles(props.files, store.project.activeProject.id);
+            checkAndUpdateFiles(props.files, props.projectId);
         }
     }, []);
 
@@ -25,7 +25,7 @@ export const UploadFileModal = forwardRef((props: { parentId:number, files?: Fil
         if(!store.project.activeProject) {
             throw new Error('No active project');
         }
-        await checkAndUpdateFiles(event.target.files, store.project.activeProject.id);
+        await checkAndUpdateFiles(event.target.files, props.projectId);
     }
 
     async function checkAndUpdateFiles(files: FileList | null, projectId: number){
@@ -59,17 +59,17 @@ export const UploadFileModal = forwardRef((props: { parentId:number, files?: Fil
                 props.parentId,
             );
             if (existingFile) {
-                warningMessages.push((<p>File <strong>{file.name}</strong> already exists in the project and <strong>will be overwritten!</strong></p>));
+                warningMessages.push((<p key={`exists-${file.name}`}>File <strong>{file.name}</strong> already exists in the project and <strong>will be overwritten!</strong></p>));
             }
         }
 
         if(filteredFiles.length !== files.length) {
-            warningMessages.push((<p>Some selected files were not supported and have been removed.</p>));
+            warningMessages.push((<p key="unsupported">Some selected files were not supported and have been removed.</p>));
         }
 
         setSelectedFiles(filteredFiles);
         if (filteredFiles.some(file => !SUPPORTED_FILE_EXT.includes(file.name.split('.').pop()!))) {
-            warningMessages.push((<p>Some selected files are not supported. They can be uploaded but might not work as expected.<br />Supported filetypes are: {SUPPORTED_FILE_EXT.join(', ')}</p>));
+            warningMessages.push((<p key="unsupported-types">Some selected files are not supported. They can be uploaded but might not work as expected.<br />Supported filetypes are: {SUPPORTED_FILE_EXT.join(', ')}</p>));
         }
 
         setWarning(warningMessages);
@@ -86,9 +86,8 @@ export const UploadFileModal = forwardRef((props: { parentId:number, files?: Fil
             }
 
             for (const file of selectedFiles) {
-                const projectId = store.project.activeProject.id;
                 const content = Array.isArray(file.content) ? undefined : file.content;
-                await store.project.createOrUpdateFile(file.name, projectId, content, props.parentId);
+                await store.project.createOrUpdateFile(file.name, props.projectId, content, props.parentId);
             }
             return true;
         }

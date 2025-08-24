@@ -33,7 +33,7 @@ export function ProjectIndex() {
     async function onNewProject() {
         const scenarios = await getScenarios();
         try{
-            await store.app.openModal(MODAL.NEW_PROJECT, { scenarios });
+            await store.app.openModal(MODAL.CREATE_PROJECT, { scenarios });
             setProjects(await db.getProjects());
         }
         catch(error){

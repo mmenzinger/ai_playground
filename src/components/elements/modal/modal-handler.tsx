@@ -1,36 +1,42 @@
 import { useRef, useState, createElement, ForwardRefExoticComponent, useImperativeHandle, forwardRef, useEffect } from "react";
 import { Defer } from "@src/utils";
 import { 
+    AlertModal,
+    CreateFileModal,
+    CreateFolderModal,
     CreateProjectModal,
-    DeleteProjectModal,
     DeleteFileModal,
-    UploadProjectModal,
+    DeleteProjectModal,
     DownloadProjectModal,
     RenameFileModal,
-    CreateFileModal,
-    UploadFileModal,
+    UploadFilesModal,
+    UploadProjectModal,
 } from ".";
 
 export const MODAL = Object.freeze({
-    NEW_PROJECT: 'newProject',
-    DELETE_PROJECT: 'deleteProject',
-    DELETE_FILE: 'deleteFile',
-    DOWNLOAD_PROJECT: 'downloadProject',
-    UPLOAD_PROJECT: 'uploadProject',
-    RENAME_FILE: 'renameFile',
+    ALERT: 'alert',
     CREATE_FILE: 'createFile',
+    CREATE_FOLDER: 'createFolder',
+    CREATE_PROJECT: 'createProject',
+    DELETE_FILE: 'deleteFile',
+    DELETE_PROJECT: 'deleteProject',
+    DOWNLOAD_PROJECT: 'downloadProject',
+    RENAME_FILE: 'renameFile',
     UPLOAD_FILES: 'uploadFiles',
+    UPLOAD_PROJECT: 'uploadProject',
 });
 
 const modalElements: {[key:string]:ForwardRefExoticComponent<any>} = {};
-modalElements[MODAL.NEW_PROJECT] = CreateProjectModal;
+modalElements[MODAL.ALERT] = AlertModal;
+modalElements[MODAL.CREATE_FILE] = CreateFileModal;
+modalElements[MODAL.CREATE_FOLDER] = CreateFolderModal;
+modalElements[MODAL.CREATE_PROJECT] = CreateProjectModal;
+modalElements[MODAL.DELETE_FILE] = DeleteFileModal;
 modalElements[MODAL.DELETE_PROJECT] = DeleteProjectModal;
 modalElements[MODAL.DOWNLOAD_PROJECT] = DownloadProjectModal;
-modalElements[MODAL.UPLOAD_PROJECT] = UploadProjectModal;
-modalElements[MODAL.DELETE_FILE] = DeleteFileModal;
 modalElements[MODAL.RENAME_FILE] = RenameFileModal;
-modalElements[MODAL.CREATE_FILE] = CreateFileModal;
-modalElements[MODAL.UPLOAD_FILES] = UploadFileModal;
+modalElements[MODAL.UPLOAD_FILES] = UploadFilesModal;
+modalElements[MODAL.UPLOAD_PROJECT] = UploadProjectModal;
 
 export type ModalHandlerFunctions = {
     openModal(name: string, props?: any): Promise<any>,

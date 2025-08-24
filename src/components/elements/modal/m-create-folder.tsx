@@ -2,20 +2,19 @@ import { useState, forwardRef } from 'react';
 import { Modal, useFocus } from '@elements/modal';
 import store from '@store';
 
-export const CreateFileModal = forwardRef((props: { parentId:number, projectId:number }, ref: React.Ref<HTMLDialogElement>) => {
+export const CreateFolderModal = forwardRef((props: { parentId:number, projectId:number }, ref: React.Ref<HTMLDialogElement>) => {
     const [error, setError] = useState<string | undefined>(undefined);
-    const [name, setName] = useState('my_file');
-    const [ext, setExt] = useState('js');
+    const [name, setName] = useState('my_folder');
     const focus = useFocus<HTMLInputElement>();
 
     async function onSubmit(): Promise<any | undefined>{
         try{
             if(name.length === 0)
-                throw Error(`The file name can not be empty!`);
+                throw Error(`The folder name can not be empty!`);
             await store.project.createFile(
-                `${name}.${ext}`,
+                name,
                 props.projectId,
-                '',
+                undefined,
                 props.parentId,
             );
             return true;
@@ -36,16 +35,10 @@ export const CreateFileModal = forwardRef((props: { parentId:number, projectId:n
     }
 
     return (
-        <Modal ref={ref} title={`Create File`} submitName="create" onSubmit={onSubmit} error={error}>
+        <Modal ref={ref} title={`Create Folder`} submitName="create" onSubmit={onSubmit} error={error}>
             <label className="label cursor-pointer" htmlFor="name">Name</label>
-            <div className="flex items-center join">
-                <input className="input input-lg join-item w-full" id="name" type="text" onChange={handleChange} value={name} ref={focus}/>
-                <select className="select select-lg join-item w-24" onChange={(e) => setExt(e.target.value)}>
-                    <option value="js" selected>.js</option>
-                    <option value="json">.json</option>
-                    <option value="md">.md</option>
-                    <option value="pl">.pl</option>
-                </select>
+            <div className="flex items-center">
+                <input className="input input-lg w-full" id="name" type="text" onChange={handleChange} value={name} ref={focus}/>
             </div>
         </Modal>
     );

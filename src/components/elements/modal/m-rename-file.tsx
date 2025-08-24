@@ -35,8 +35,13 @@ export const RenameFileModal = forwardRef((props: { id:number, name: string }, r
         const newName = event.target.value.trim();
 
         if (allowedCharacters.test(newName)) {
-            const ext = props.name.split('.').pop();
-            setNewName(`${newName}.${ext}`);
+            if(props.name.includes('.')){
+                const ext = props.name.split('.').pop();
+                setNewName(`${newName}.${ext}`);
+            }
+            else{
+                setNewName(newName);
+            }
         }
     }
 
