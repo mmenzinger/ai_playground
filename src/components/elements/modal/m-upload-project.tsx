@@ -1,6 +1,6 @@
 import { useState, forwardRef } from 'react';
 import { Modal } from '@elements/modal';
-import { Project, File } from '@store';
+import { Project } from '@store';
 import db from '@localdb';
 import JSZip from 'jszip';
 import { Input, Checkbox, FileInput } from 'react-daisyui';
@@ -15,8 +15,8 @@ export const UploadProjectModal = forwardRef((_props: {} = {}, ref: React.Ref<HT
     const [selectedFile, setSelectedFile] = useState<globalThis.File | null>(null);
     const [projectData, setProjectData] = useState<{
         settings: Project;
-        projectFiles: File[];
-        globalFiles: File[];
+        projectFiles: BasicFile[];
+        globalFiles: BasicFile[];
     } | null>(null);
 
     async function onFileSelect(event: React.ChangeEvent<HTMLInputElement>) {
@@ -36,7 +36,7 @@ export const UploadProjectModal = forwardRef((_props: {} = {}, ref: React.Ref<HT
     }
 
     async function onSubmit(): Promise<any | undefined> {
-        if (!projectData || !name.trim()) {
+        if (!projectData || !name.length) {
             setError('Please select a valid zip file and provide a project name');
             return undefined;
         }
@@ -48,20 +48,16 @@ export const UploadProjectModal = forwardRef((_props: {} = {}, ref: React.Ref<HT
                 return undefined;
             }
 
-            // Create the project
-            const basicFiles = convertToBasicFiles(projectData.projectFiles);
-            const project = await store.project.createProject(
-                name,
-                projectData.settings.scenario || 'default',
-                basicFiles
+            return await store.project.importProject(
+                {...projectData.settings, name},
+                projectData.projectFiles,
+                includeGlobals ? projectData.globalFiles : [],
+                overwriteGlobals
             );
-
-            // Add global files if requested
-            // TODO: implement global file handling
-            return project;
         } catch (error: any) {
             if (error?.name === 'ConstraintError') {
                 setError(`Project with name '${name}' already exists!`);
+                console.warn(error);
             } else {
                 setError(String(error));
             }
@@ -89,7 +85,7 @@ export const UploadProjectModal = forwardRef((_props: {} = {}, ref: React.Ref<HT
                             id="name" 
                             type="text" 
                             value={name} 
-                            onChange={(e) => setName(e.target.value)}
+                            onChange={(e) => setName(e.target.value.trim())}
                             placeholder="My Project"
                         />
 
@@ -136,8 +132,8 @@ export const UploadProjectModal = forwardRef((_props: {} = {}, ref: React.Ref<HT
 
 async function loadZipFile(file: globalThis.File): Promise<{
     settings: Project;
-    projectFiles: File[];
-    globalFiles: File[];
+    projectFiles: BasicFile[];
+    globalFiles: BasicFile[];
 }> {
     const zipData = await file.arrayBuffer();
     const zip = await JSZip.loadAsync(zipData);
@@ -151,31 +147,26 @@ async function loadZipFile(file: globalThis.File): Promise<{
     const settingsText = await settingsFile.async('text');
     const settings: Project = JSON.parse(settingsText);
 
-    // Load project files
-    const projectFiles: File[] = [];
-    const projectFolder = zip.folder('project');
-    if (projectFolder) {
-        // Check if the project folder actually contains any files
-        const hasProjectFiles = Object.keys(projectFolder.files).some(path => 
-            path.startsWith('project/') && !projectFolder.files[path].dir
-        );
-        
-        if (hasProjectFiles) {
-            await processZipFolder(projectFolder, projectFiles);
-        }
-    }
-
-    // Load global files
-    const globalFiles: File[] = [];
-    const globalFolder = zip.folder('global');
-    if (globalFolder) {
-        // Check if the global folder actually contains any files
-        const hasGlobalFiles = Object.keys(globalFolder.files).some(path => 
-            path.startsWith('global/') && !globalFolder.files[path].dir
-        );
-        
-        if (hasGlobalFiles) {
-            await processZipFolder(globalFolder, globalFiles);
+    // Load files
+    const projectFiles: BasicFile[] = [];
+    const globalFiles: BasicFile[] = [];
+    for(const file of Object.values(zip.files)) {
+        if(!file.dir) {
+            if(file.name.startsWith('project/')) {
+                projectFiles.push({ 
+                    path: file.name.replace('project/', ''),
+                    content: await getFileContent(file, file.name),
+                });
+            }
+            else if(file.name.startsWith('global/')) {
+                globalFiles.push({
+                    path: file.name.replace('global/', ''),
+                    content: await getFileContent(file, file.name),
+                });
+            }
+            else if(file.name !== 'settings.json') {
+                throw new Error(`Invalid project file - invalid file path ${file.name}`);
+            }
         }
     }
 
@@ -187,142 +178,12 @@ async function loadZipFile(file: globalThis.File): Promise<{
 }
 
 async function getFileContent(zipFile: JSZip.JSZipObject, filename: string): Promise<string | Blob> {
-    // Handle binary files (images, etc.)
-    if (/\.(png|jpe?g)$/i.test(filename)) {
-        return await zipFile.async('blob');
-    }
     // Handle text files
-    return await zipFile.async('text');
-}
-
-function convertToBasicFiles(files: File[]): BasicFile[] {
-    // Separate folders and files
-    const folders = files.filter(f => f.content === undefined);
-    const regularFiles = files.filter(f => f.content !== undefined);
-    
-    // Create a map to build the hierarchy
-    const fileMap = new Map<number, BasicFile>();
-    const rootFiles: BasicFile[] = [];
-    
-    // First pass: create all folder entries
-    for (const folder of folders) {
-        const basicFile: BasicFile = {
-            name: folder.name,
-            content: [], // Folders have array content
-        };
-        fileMap.set(folder.id, basicFile);
-        
-        if (folder.parentId === 0) {
-            rootFiles.push(basicFile);
-        }
+    if(/\.(js|json|md|pl)$/.test(filename)) {
+        return await zipFile.async('text');
     }
-    
-    // Second pass: create file entries and place them in their parent folders
-    for (const file of regularFiles) {
-        const basicFile: BasicFile = {
-            name: file.name,
-            content: file.content || '',
-        };
-        
-        if (file.parentId === 0) {
-            rootFiles.push(basicFile);
-        } else {
-            const parentFolder = fileMap.get(file.parentId);
-            if (parentFolder && Array.isArray(parentFolder.content)) {
-                parentFolder.content.push(basicFile);
-            }
-        }
-    }
-    
-    // Third pass: place child folders in their parent folders
-    for (const folder of folders) {
-        if (folder.parentId !== 0) {
-            const parentFolder = fileMap.get(folder.parentId);
-            const currentFolder = fileMap.get(folder.id);
-            if (parentFolder && currentFolder && Array.isArray(parentFolder.content)) {
-                parentFolder.content.push(currentFolder);
-            }
-        }
-    }
-    
-    return rootFiles;
-}
-
-async function processZipFolder(folder: JSZip, files: File[]): Promise<void> {
-    // First, create directory entries for all folders and track their IDs
-    const directories = new Set<string>();
-    const pathToIdMap = new Map<string, number>();
-    let currentId = 1;
-    
-    // Root folder (empty path) has parentId 0
-    pathToIdMap.set('', 0);
-    
-    for (const [relativePath, zipFile] of Object.entries(folder.files)) {
-        if (!zipFile.dir) {
-            // Extract the clean path (remove the base folder name like 'project/')
-            const cleanPath = relativePath.replace(/^[^/]+\//, '');
-            const fileName = cleanPath.split('/').pop() || cleanPath;
-            
-            // Skip settings.json as it's project metadata, not a project file
-            if (fileName === 'settings.json') {
-                continue;
-            }
-            
-            // Add all parent directories to the set
-            const pathParts = cleanPath.split('/');
-            for (let i = 0; i < pathParts.length - 1; i++) {
-                const dirPath = pathParts.slice(0, i + 1).join('/');
-                directories.add(dirPath);
-            }
-        }
-    }
-    
-    // Sort directories by depth (shortest paths first) to create parent folders before children
-    const sortedDirectories = Array.from(directories).sort((a, b) => a.split('/').length - b.split('/').length);
-    
-    // Create directory entries with proper parent relationships
-    for (const dirPath of sortedDirectories) {
-        const dirName = dirPath.split('/').pop() || dirPath;
-        const parentPath = dirPath.split('/').slice(0, -1).join('/');
-        const parentId = pathToIdMap.get(parentPath) || 0;
-        
-        const dirId = currentId++;
-        pathToIdMap.set(dirPath, dirId);
-        
-        files.push({
-            id: dirId,
-            projectId: 0,
-            parentId: parentId,
-            name: dirName,
-            path: dirPath,
-            content: undefined, // Directories have no content
-        });
-    }
-    
-    // Then process all files with correct parent IDs
-    for (const [relativePath, zipFile] of Object.entries(folder.files)) {
-        if (!zipFile.dir) {
-            const cleanPath = relativePath.replace(/^[^/]+\//, '');
-            const fileName = cleanPath.split('/').pop() || cleanPath;
-            
-            // Skip settings.json as it's project metadata, not a project file
-            if (fileName === 'settings.json') {
-                continue;
-            }
-            
-            // Find the parent folder ID
-            const parentPath = cleanPath.split('/').slice(0, -1).join('/');
-            const parentId = pathToIdMap.get(parentPath) || 0;
-            
-            const content = await getFileContent(zipFile, fileName);
-            files.push({
-                id: currentId++,
-                projectId: 0,
-                parentId: parentId,
-                name: fileName,
-                path: cleanPath,
-                content: content,
-            });
-        }
+    // Handle other file types
+    else {
+        return await zipFile.async('blob');
     }
 }

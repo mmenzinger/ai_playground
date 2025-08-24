@@ -1,18 +1,23 @@
-export type BasicFile = {
+export type NestedFile = {
     name: string,
-    content: string | Blob | BasicFile[],
+    content: string | Blob | NestedFile[],
 };
+
+export type BasicFile = {
+    path: string,
+    content?: string | Blob,
+}
 
 export type ScenarioTemplate = {
     name: string,
     scenario: string,
-    files: BasicFile[],
+    files: NestedFile[],
 };
 
 export type ScenarioTemplates = {
     name: string,
     templates: Map<string, ScenarioTemplate>,
-    files: BasicFile[],
+    files: NestedFile[],
 }
 
 export async function getScenarios(): Promise<Map<string, ScenarioTemplates>> {
@@ -23,7 +28,7 @@ export async function getScenarios(): Promise<Map<string, ScenarioTemplates>> {
         files: [],
     });
 
-    function getFileIfExists(files: BasicFile[], filename: string): BasicFile | undefined {
+    function getFileIfExists(files: NestedFile[], filename: string): NestedFile | undefined {
         return files.find(file => file.name === filename);
     }
 
@@ -78,7 +83,7 @@ export async function getScenarios(): Promise<Map<string, ScenarioTemplates>> {
                 files.push(folder);
             }
             // step into each folder and set as base for new file
-            files = folder.content as BasicFile[];
+            files = folder.content as NestedFile[];
         }
 
         const response = await fetch(`scenario/${path}`);
@@ -88,7 +93,7 @@ export async function getScenarios(): Promise<Map<string, ScenarioTemplates>> {
     return scenarios;
 }
 
-async function getBasicFile(filename: string, response: Response): Promise<BasicFile>{
+async function getBasicFile(filename: string, response: Response): Promise<NestedFile>{
     let content;
     switch(response.headers.get("Content-Type")?.split('/')[0]){
         case 'application':

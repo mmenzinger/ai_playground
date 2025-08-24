@@ -2,7 +2,7 @@ import { makeAutoObservable, autorun, runInAction, toJS, trace } from 'mobx';
 import db from '@localdb';
 
 import { editor, IPosition } from 'monaco-editor';
-import { BasicFile } from '@src/scenario-utils';
+import { BasicFile, NestedFile } from '@src/scenario-utils';
 
 export type Caller = {
     fileId?: number,
@@ -91,8 +91,12 @@ class ProjectStore {
         this.activeFile = null;
     }
 
-    async createProject(name: string, scenario: string, files: Array<BasicFile>): Promise<number> {
+    async createProject(name: string, scenario: string, files: NestedFile[]): Promise<number> {
         return db.createProject(name, scenario, files);
+    }
+
+    async importProject(settings: Project, projectFiles: BasicFile[], globalFiles: BasicFile[], overwriteGlobals: boolean = false): Promise<number> {
+        return await db.importProject(settings, projectFiles, globalFiles, overwriteGlobals);
     }
 
     async updateProjectErrors(id: number, projectErrors: ProjectErrors): Promise<void> {
@@ -125,10 +129,6 @@ class ProjectStore {
             await this.closeProject();
         await db.removeProject(id);
     }
-
-    // async importProject(name: string, scenario: string, projectFiles: Array<File>, globalFiles: Array<File>, collision: string): Promise<number> {
-    //     return db.importProject(name, scenario, projectFiles, globalFiles, collision);
-    // }
 
     async getProjectFiles(id: number): Promise<File[]>{
         return db.getProjectFiles(id);
@@ -256,6 +256,10 @@ class ProjectStore {
         runInAction(() => {
             this.lastFileTreeChange = Date.now();
         });
+    }
+
+    async createFilesWithPath(files: BasicFile[], projectId: number, overwrite: boolean = false): Promise<void> {
+        return db.createFilesWithPath(files, projectId, overwrite);
     }
 
     /**********************************************************************************+

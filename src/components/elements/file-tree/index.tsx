@@ -348,7 +348,7 @@ function FileTree(props: FileTreeProps): JSX.Element {
         setDraggedItem(node);
     };
 
-    const handleDragEnd = (event: React.DragEvent<HTMLDetailsElement>, node: TreeItem) => {
+    const handleDragEnd = (event: React.DragEvent<HTMLDetailsElement>) => {
         // console.log('Drag end:', node);
         event.stopPropagation();
         setDraggedItem(null);
@@ -368,7 +368,7 @@ function FileTree(props: FileTreeProps): JSX.Element {
         setDraggedOverNode(node.id);
     };
 
-    const handleDragLeave = (event: React.DragEvent<HTMLAnchorElement | HTMLDetailsElement>, node: TreeItem) => {
+    const handleDragLeave = (event: React.DragEvent<HTMLAnchorElement | HTMLDetailsElement>) => {
         event.preventDefault();
         event.stopPropagation();
 
@@ -391,8 +391,8 @@ function FileTree(props: FileTreeProps): JSX.Element {
                     onDrop={(e) => handleDrop(e, node)}
                     onDragOver={(e) => handleDragOver(e, node)}
                     onDragEnter={(e) => handleDragEnter(e, node)}
-                    onDragLeave={(e) => handleDragLeave(e, node)}
-                    onDragEnd={(e) => handleDragEnd(e, node)}
+                    onDragLeave={(e) => handleDragLeave(e)}
+                    onDragEnd={(e) => handleDragEnd(e)}
                     className={isBeingDraggedOver ? 'bg-blue-200 dark:bg-blue-800 rounded' : ''}
                     onContextMenu={(e) => {
                         if(e.target instanceof HTMLElement && e.target.tagName === 'SUMMARY')

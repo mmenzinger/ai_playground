@@ -2,7 +2,7 @@ import { useState, forwardRef, JSX, useEffect } from 'react';
 import { Modal } from '@elements/modal';
 import db from '@localdb';
 import store from '@store';
-import { BasicFile } from '@src/scenario-utils';
+import { NestedFile } from '@src/scenario-utils';
 
 const SUPPORTED_FILE_EXT = ['png', 'js', 'json', 'md', 'pl', 'html'];
 const UNSUPPORTED_CHARACTERS = /[^a-zA-Z0-9-_]/g;
@@ -10,7 +10,7 @@ const UNSUPPORTED_CHARACTERS = /[^a-zA-Z0-9-_]/g;
 export const UploadFilesModal = forwardRef((props: { parentId:number, projectId:number, files?: FileList }, ref: React.Ref<HTMLDialogElement>) => {
     const [error, setError] = useState<string | undefined>(undefined);
     const [warning, setWarning] = useState<JSX.Element[]>([]);
-    const [selectedFiles, setSelectedFiles] = useState<BasicFile[]>([]);
+    const [selectedFiles, setSelectedFiles] = useState<NestedFile[]>([]);
 
     useEffect(() => {
         if(!store.project.activeProject) {

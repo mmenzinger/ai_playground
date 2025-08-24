@@ -2,7 +2,7 @@ import Dexie from 'dexie';
 import { editor } from 'monaco-editor';
 
 import type { File, Project } from '@store';
-import { BasicFile } from './scenario-utils';
+import { BasicFile, NestedFile } from './scenario-utils';
 
 export interface IFiles {
     id?: number,
@@ -207,14 +207,62 @@ class LocalDB {
         return iFile !== undefined;
     }
 
+    async createFilesWithPath(files: BasicFile[], projectId: number = 0, overwrite: boolean = false): Promise<void> {
+        const folders = new Map<string, number>();
+        folders.set('', 0);
+        await this.#db.transaction('rw', this.#files, async () => {
+            for (const file of files) {
+                try{
+                    const f = await this.loadFileByPath(projectId, file.path);
+                    if(overwrite){
+                        await this.saveFileContent(f.id, file.content);
+                    }
+                }
+                catch{
+                    const parts = file.path.split('/');
+                    const filename = parts.pop() as string;
+                    const folderPath = parts.join('/');
+                    let parentId = folders.get(folderPath);
+                    if(parentId === undefined){
+                        parentId = await this.createFolderPath(projectId, folderPath);
+                        folders.set(folderPath, parentId);
+                    }
+                    await this.createFile(projectId, filename, file.content, parentId);
+                }
+            }
+        });
+    }
+
+    async createFolderPath(projectId: number, folderPath: string): Promise<number> {
+        const parts = folderPath.split('/');
+        let parentId = 0;
+        let path;
+        for (const part of parts) {
+            if(!path){
+                path = part;
+            }
+            else{
+                path = `${path}/${part}`;
+            }
+            try{
+                const folder = await this.loadFileByPath(projectId, path);
+                parentId = folder.id;
+            }
+            catch(error){
+                parentId = await this.createFile(projectId, part, undefined, parentId);
+            }
+        }
+        return parentId;
+    }
+
     //------------------------------------------------------------------------------------------
     // P r o j e c t s
     //------------------------------------------------------------------------------------------
-    async createProject(name: string, scenario: string, files: BasicFile[] = []): Promise<number> {
+    async createProject(name: string, scenario: string, files: NestedFile[] = []): Promise<number> {
         return this.#db.transaction('rw', this.#projects, this.#files, async () => {
             const projectId: number = await this.#projects.add({ name, scenario });
             let projectFilePromises: Promise<number>[] = [];
-            const recAddFile = async (file: BasicFile, parentId: number = 0) => {
+            const recAddFile = async (file: NestedFile, parentId: number = 0) => {
                 if(Array.isArray(file.content)){
                     const newFileId = await this.createFile(projectId, file.name, undefined, parentId);
                     file.content.forEach(file => recAddFile(file, newFileId));
@@ -225,9 +273,17 @@ class LocalDB {
             }
             files.forEach((file) => recAddFile(file));
             
-            // const projectFilePromises = files.map(file => this.createFile(projectId, file.parentId, file.name, file.content));
             await Promise.all(projectFilePromises);
 
+            return projectId;
+        });
+    }
+
+    async importProject(settings: Project, projectFiles: BasicFile[], globalFiles: BasicFile[], overwriteGlobals: boolean = false): Promise<number> {
+        return await this.#db.transaction('rw', this.#projects, this.#files, async () => {
+            const projectId = await this.createProject(settings.name, settings.scenario, []);
+            await this.createFilesWithPath(projectFiles, projectId);
+            await this.createFilesWithPath(globalFiles, 0, overwriteGlobals);
             return projectId;
         });
     }
@@ -300,24 +356,6 @@ class LocalDB {
     async setProjectOpenFileId(id: number, fileId: number): Promise<void> {
         await this.#projects.update(id, {openFileId: fileId});
     }
-
-    // async importProject(name: string, scenario: string, projectFiles: File[], globalFiles: File[], collision: string): Promise<number>{
-    //     return this.#db.transaction('rw', this.#projects,this.#files, async () => {
-    //         const collisionFilesPromises = globalFiles.map(async (newFile) => {
-    //             try{
-    //                 const oldFile = await this.loadFileByPath(0, newFile.name);
-    //                 if(collision === 'new')
-    //                     await this.saveFileContent(oldFile.id, newFile.content || '');
-    //             }
-    //             catch(_){
-    //                 await this.createFile(0, newFile.name, newFile.content, newFile.parentId);
-    //             }
-    //         });
-    //         await Promise.all(collisionFilesPromises);
-
-    //         return await this.createProject(name, scenario, projectFiles as BasicFile[]);
-    //     });
-    // }
 
     async projectExists(name: string): Promise<boolean>{
         const project = await this.#projects.get({name});

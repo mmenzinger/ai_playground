@@ -1,5 +1,5 @@
 import { useState, useEffect, forwardRef, useMemo } from 'react';
-import { BasicFile, ScenarioTemplates } from '@src/scenario-utils';
+import { NestedFile, ScenarioTemplates } from '@src/scenario-utils';
 import { Modal } from '@elements/modal';
 import store from '@store';
 import { Select, Input } from 'react-daisyui';
@@ -46,7 +46,7 @@ export const CreateProjectModal = forwardRef((props: {
             const projectFiles = projectScenario?.files || [];
             const templateFiles = projectTemplate?.files || [];
             // add template files and overwrite existing ones
-            const recMergeFiles = (files: BasicFile[], templateFiles: BasicFile[]) => {
+            const recMergeFiles = (files: NestedFile[], templateFiles: NestedFile[]) => {
                 for(const file of templateFiles){
                     const existingFile = files.find(f => f.name === file.name);
                     if(existingFile){
@@ -54,7 +54,7 @@ export const CreateProjectModal = forwardRef((props: {
                             existingFile.content = file.content;
                         }
                         else{
-                            recMergeFiles(existingFile.content as BasicFile[], file.content as BasicFile[]);
+                            recMergeFiles(existingFile.content as NestedFile[], file.content as NestedFile[]);
                         }
                     }
                     else{
