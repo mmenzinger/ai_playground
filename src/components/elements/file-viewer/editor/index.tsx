@@ -1,16 +1,14 @@
 import { useState, useRef, useEffect } from 'react';
 import MonacoEditor, { Monaco, loader } from '@monaco-editor/react';
-import { Uri, editor, languages, MarkerSeverity } from 'monaco-editor';
-import store, { File, FileError, Project, ProjectErrors } from '@store';
+import { Uri, editor } from 'monaco-editor';
+import store, { File, Project } from '@store';
 import { prologTokensProvider } from './prolog';
-import { isString } from 'lodash-es';
 import { autorun } from 'mobx';
 import db from '@localdb';
+import { Defer } from '@utils';
 
 const LIB_FILES = [
-    '/lib/utils.js',
-    '/lib/prolog.js',
-    '/lib/tensorflow.js',
+    {path: '/lib/utils.js', def: '/lib/utils.d.ts'},
 ];
 
 type Theme = 'vs' | 'vs-dark' | 'hc-black' | 'hc-light';
@@ -44,71 +42,44 @@ loader.config({
     } 
 });
 
-export function Editor() {
+export function Editor(props: { project: Project }) {
     const [value, setValue] = useState('');
 
     const internals = useRef<{
-        editor: editor.IStandaloneCodeEditor | null;
-        monaco: Monaco | null;
+        editor: Defer<editor.IStandaloneCodeEditor>;
+        monaco: Defer<Monaco>;
         theme: Theme;
         file: File | null;
-        modelFiles: Map<string, File>; // model.id => File
-        lastMarkers: editor.IMarker[] | null;
-        projectErrors: ProjectErrors;
-        firstErrorUpdate: boolean;
-        autorunDisposer: (() => void) | null;
-        isDisposed: boolean;
+        markerDebounceTimeout?: NodeJS.Timeout;
     }>({
-        editor: null,
-        monaco: null,
+        editor: new Defer<editor.IStandaloneCodeEditor>(),
+        monaco: new Defer<Monaco>(),
         theme: 'vs',
         file: null,
-        modelFiles: new Map(),
-        lastMarkers: null,
-        projectErrors: {},
-        firstErrorUpdate: true,
-        autorunDisposer: null,
-        isDisposed: false,
     });
 
     useEffect(() => {
-        const disposer = autorun(() => {
+        const styleDisposer = autorun(async () => {
             const dark = store.settings.getLocal('dark-theme', false);
             internals.current.theme = dark ? THEME.DARK : THEME.LIGHT;
-            const monaco = internals.current.monaco;
+            const monaco = await internals.current.monaco.promise;
             if (monaco) {
                 monaco.editor.setTheme(internals.current.theme);
             }
         });
-        return () => {
-            disposer();
-            // Cleanup when component unmounts
-            internals.current.isDisposed = true;
-            
-            if (internals.current.autorunDisposer) {
-                internals.current.autorunDisposer();
-                internals.current.autorunDisposer = null;
-            }
-            
-            // Clear model mappings with null checks
-            if (internals.current.modelFiles) {
-                internals.current.modelFiles.clear();
-            }
-            
-            if (internals.current.editor) {
-                try {
-                    internals.current.editor.dispose();
-                } catch (error) {
-                    console.warn('Error disposing Monaco Editor:', error);
-                }
-                internals.current.editor = null;
-            }
-        };
-    }, []);
 
-    useEffect(() => {
-        // update theme
-        return 
+        const fileUpdateDisposer = autorun(async () => {
+            const newFile = store.project.activeFile;
+            if (newFile) {
+                openFile(newFile);
+            }
+        });
+        
+        return () => {
+            styleDisposer();
+            fileUpdateDisposer();
+            console.log("Editor cleanup!")
+        };
     }, []);
 
     //#########################################################################
@@ -135,90 +106,71 @@ export function Editor() {
             module: monaco.languages.typescript.ModuleKind.ESNext,
             paths: {
                 '@/*': ['./'],
+                'lib/*': ['/lib/*'],
             },
             baseUrl: './',
         });
 
         monaco.languages.register({ id: 'prolog' });
         monaco.languages.setMonarchTokensProvider('prolog', prologTokensProvider);
+
+        for(const file of LIB_FILES) {
+            fetch(file.def).then((res) => res.text()).then((content) => {
+                monaco.languages.typescript.javascriptDefaults.addExtraLib(
+                    content,
+                    file.path
+                );
+            });
+        }
     }
 
     //-------------------------------------------------------------------------
-    // did mount
-    function editorDidMount(
+    // like the old onDidMount
+    function onMount(
         editor: editor.IStandaloneCodeEditor,
         monaco: Monaco
     ) {
-        internals.current.editor = editor;
-        internals.current.monaco = monaco;
-        
-        let file: File;
-        let project: Project;
+        console.log("Editor did mount")
+        internals.current.editor.resolve(editor);
+        internals.current.monaco.resolve(monaco);
 
         // Apply current theme immediately on mount
         monaco.editor.setTheme(internals.current.theme);
-        // editor.updateOptions({
-        //     fontFamily: 'Roboto Mono, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
-        // });
 
-        // Store the autorun disposer for cleanup
-        internals.current.autorunDisposer = autorun(async () => {
-            // Early exit if disposed
-            if (internals.current.isDisposed) {
-                return;
-            }
-
-            const newFile = store.project.activeFile;
-            const newProject = store.project.activeProject;
-
-            try {
-                // Create models for lib files
-                // switched from extraLibs to Models as the different methods
-                // led to parsing errors of the editor, requiring leading / to resolve
-                for(const file of LIB_FILES) {
-                    const uri = monaco.Uri.parse(file);
-                    if (!monaco.editor.getModel(uri)) {
-                        const content = await fetch(file).then((res) => res.text());
-                        monaco.editor.createModel(content, 'javascript', uri);
-                    }
-                }
-                
-            } catch (error) {
-                console.error('Failed to load library utilities:', error);
-                return;
-            }
-
-            if (newProject !== project && newProject && !internals.current.isDisposed) {
-                project = newProject;
-                let files = await db.getProjectFilesResolved(project.id);
-                if (internals.current.isDisposed) return; // Check again after async operation
-                
-                files = [
-                    ...files,
-                    ...(await db.getProjectFilesResolved(0)),
-                ].filter((file) => typeof file.content === 'string');
-                
-                if (!internals.current.isDisposed) {
-                    openProject(project, files);
-                }
-            }
-            if (newFile !== file && newFile && !internals.current.isDisposed) {
-                file = newFile;
-                openFile(file);
-            }
+        Promise.all([
+            db.getProjectFiles(props.project.id),
+            db.getProjectFiles(0)
+        ]).then(array => {
+            const files = [...array[0], ...array[1]]
+                .filter((file) => typeof file.content === 'string');
+            openProject(props.project, files);
         });
 
+        // Create models for lib files
+        // switched from extraLibs to Models as the different methods
+        // led to parsing errors of the editor, requiring leading / to resolve
+        // for(const file of LIB_FILES.ALWAYS) {
+        //     const uri = monaco.Uri.parse(file.path);
+        //     if (!monaco.editor.getModel(uri)) {
+        //         fetch(file.def).then((res) => res.text()).then((content) => {
+        //             monaco.editor.createModel(content, 'javascript', uri);
+        //         });
+        //     }
+        // }
+
         editor.onDidChangeCursorSelection((_) => {
-            if (internals.current.isDisposed || !internals.current.file?.id) return;
-            
+            if (!internals.current.file?.id)
+                return;
+
             store.project.saveFileState(
                 internals.current.file.id,
                 editor.saveViewState()
             );
         });
+
         editor.onDidScrollChange((_) => {
-            if (internals.current.isDisposed || !internals.current.file?.id) return;
-            
+            if (!internals.current.file?.id) return;
+
             store.project.saveFileState(
                 internals.current.file.id,
                 editor.saveViewState()
@@ -226,14 +178,11 @@ export function Editor() {
         });
 
         editor.onDidChangeModelDecorations((_) => {
-            if (internals.current.isDisposed) return;
-            
-            // Use setTimeout to ensure the DOM is ready before updating markers
-            setTimeout(() => {
-                if (!internals.current.isDisposed) {
-                    markersUpdated();
-                }
-            }, 0);
+            // debounce activation
+            clearTimeout(internals.current.markerDebounceTimeout);
+            internals.current.markerDebounceTimeout = setTimeout(() => {
+                markersUpdated();
+            }, 500);
         });
     }
 
@@ -250,16 +199,19 @@ export function Editor() {
         }
     }
 
+    
+
     //#########################################################################
     // helper functions
     //#########################################################################
     
     //-------------------------------------------------------------------------
     // create model
-    function createModel(file: File, uri: Uri) {
-        if (file.content instanceof Blob || internals.current.isDisposed || !internals.current.monaco) {
+    async function createModel(file: File, uri: Uri) {
+        if (file.content instanceof Blob) {
             return null;
         }
+        const monaco = await internals.current.monaco.promise;
 
         let language = 'javascript';
         const ending = file.name.match(/\.([a-z]+)$/);
@@ -283,104 +235,57 @@ export function Editor() {
             }
         }
 
-        try {
-            // Verify the language is registered before creating model
-            const registeredLanguages = internals.current.monaco.languages.getLanguages();
-            const isLanguageRegistered = registeredLanguages.some(lang => lang.id === language);
-            
-            if (!isLanguageRegistered) {
-                console.warn(`Language '${language}' not registered, falling back to plaintext`);
-                language = 'plaintext';
-            }
-
-            const model = internals.current.monaco.editor.createModel(
-                file.content || '',
-                language,
-                uri
-            );
-            
-            return model;
-        } catch (error) {
-            console.error('Error creating model:', error);
-            return null;
-        }
+        const model = monaco.editor.createModel(
+            file.content || '',
+            language,
+            uri
+        );
+        return model;
     }
 
     //-------------------------------------------------------------------------
     // open project
-    function openProject(_: Project, files: File[], initialFile?: File) {
-        if (internals.current.isDisposed || !internals.current.monaco) {
-            console.warn('Cannot open project: editor is disposed or Monaco is not initialized');
-            return;
-        }
+    async function openProject(_: Project, files: File[], initialFile?: File) {
+        const monaco = await internals.current.monaco.promise;
 
-        internals.current.projectErrors = {};
-        if (internals.current.modelFiles) {
-            internals.current.modelFiles.clear();
-        }
-
-        // preload files
-        const modelsValidated = [];
+        // load files
         for (const file of files) {
-            if (internals.current.isDisposed) break; // Check during loop
-            
-            // console.log(file);
             const virtualPath = 'project/' + file.path;
-            const uri = internals.current.monaco.Uri.parse(virtualPath);
-            let model = internals.current.monaco.editor.getModel(uri);
-            // console.log(uri);
+            const uri = monaco.Uri.parse(virtualPath);
+            let model = monaco.editor.getModel(uri);
             if (!model) {
-                model = createModel(file, uri);
-                // internals.current.monaco.languages.typescript.javascriptDefaults.addExtraLib(`export * from '${virtualPath}';`, `/${virtualPath}`);
+                model = await createModel(file, uri);
             } else {
                 if (!(file.content instanceof Blob)) {
                     model.setValue(file.content || '');
                 }
             }
-            if (model) {
-                modelsValidated.push(validateModel(model));
-                internals.current.modelFiles.set(model.id, file);
-            }
         }
-        Promise.all(modelsValidated).then((_) => {
-            if (!internals.current.isDisposed) {
-                // Use setTimeout to ensure the DOM is ready before updating markers
-                setTimeout(() => {
-                    if (!internals.current.isDisposed) {
-                        markersUpdated();
-                    }
-                }, 100);
-            }
-        }).catch(error => {
-            if (!internals.current.isDisposed) {
-                console.error('Error validating models:', error);
-            }
-        });
 
-        if (initialFile && !internals.current.isDisposed) {
+        if (initialFile) {
             openFile(initialFile);
         }
     }
 
     //-------------------------------------------------------------------------
     // open file
-    function openFile(file: File) {
-        if (internals.current.isDisposed || !internals.current.monaco) {
-            console.warn('Cannot open file: editor is disposed or Monaco is not initialized');
+    async function openFile(file: File) {
+        const monaco = await internals.current.monaco.promise;
+        const editor = await internals.current.editor.promise;
+        
+        // if the file is already open, just focus it
+        if(file.id && file.id === internals.current.file?.id) {
+            console.log("file is already open", file.id, internals.current.file.id);
+            editor.focus();
             return;
         }
 
         if (file.content instanceof Blob) return;
 
-        if (!file) {
-            console.warn('tried to open non existing file');
-            return;
-        }
-
         try {
             if (internals.current.file) {
                 internals.current.file.state =
-                    internals.current.editor?.saveViewState() || undefined;
+                    editor.saveViewState() || undefined;
             }
             internals.current.file = file;
 
@@ -390,216 +295,60 @@ export function Editor() {
             } else {
                 path = file.path;
             }
-            const uri = internals.current.monaco.Uri.parse(path);
-            let model = internals.current.monaco.editor.getModel(uri);
+            const uri = monaco.Uri.parse(path);
+            let model = monaco.editor.getModel(uri);
             if (!model) {
-                model = createModel(file, uri);
+                model = await createModel(file, uri);
+                if (!model) {
+                    console.error(file);
+                    throw Error(`could not open file!`);
+                }
             }
-            if (!model) {
-                console.error(file);
-                throw Error(`could not open file!`);
-            }
-            
-            // Check disposal again before setting model
-            if (internals.current.isDisposed) {
-                console.warn('Editor disposed while opening file');
-                return;
-            }
-            
+
             model.setValue(file.content || '');
-            internals.current.editor?.setModel(model);
+            editor.setModel(model);
 
             if (file.state) {
-                internals.current.editor?.restoreViewState(file.state);
+                // temp fix for issue https://github.com/microsoft/monaco-editor/issues/4904
+                delete file.state.contributionsState["editor.contrib.wordHighlighter"];
+                editor.restoreViewState(file.state);
             }
 
             if (file.id) {
-                internals.current.editor?.updateOptions({ readOnly: false });
+                editor.updateOptions({ readOnly: false });
             } else {
-                internals.current.editor?.updateOptions({ readOnly: true });
+                editor.updateOptions({ readOnly: true });
             }
 
-            internals.current.editor?.focus();
+            editor.focus();
         } catch (error) {
-            if (!internals.current.isDisposed) {
-                console.error('Error opening file:', error);
-            }
+            console.error('Error opening file:', error);
         }
     }
 
     //-------------------------------------------------------------------------
     // markers updated
-    function markersUpdated() {
-        // Safety check: ensure Monaco Editor and its editor instance are fully initialized
-        if (!internals.current.monaco || !internals.current.editor || internals.current.isDisposed) {
-            console.warn('markersUpdated called but editor is not ready or disposed');
-            return;
-        }
+    async function markersUpdated() {
+        if(internals.current.file){
+            console.log("markers updated");
+            const monaco = await internals.current.monaco.promise;
 
-        try {
-            const markers: editor.IMarker[] =
-                internals.current.monaco.editor.getModelMarkers({});
-            const errorMarkers = markers.filter(
-                (marker) => marker.severity === 8
-            );
-            
-            if (
-                !internals.current.lastMarkers ||
-                !sameMarkers(internals.current.lastMarkers, errorMarkers)
-            ) {
-                let errorsChanged = false;
-                internals.current.lastMarkers = errorMarkers;
-                const models = internals.current.monaco.editor.getModels();
-                
-                // Clear existing project errors before processing
-                const newProjectErrors: ProjectErrors = {};
-                
-                for (const model of models) {
-                    if (internals.current.isDisposed) break; // Check during loop
-                    
-                    try {
-                        const fileErrors = errorMarkers.filter(
-                            (marker) =>
-                                marker.resource.path ===
-                                (model as any)._associatedResource?.path
-                        );
-                        
-                        const file = internals.current.modelFiles?.get(model.id);
-                        if (file && file.id) {
-                            const errors: FileError[] = fileErrors.map(
-                                (marker): FileError => ({
-                                    caller: {
-                                        fileId: file.id,
-                                        fileName: file.name,
-                                        projectId: file.projectId,
-                                        line: marker.startLineNumber,
-                                        column: marker.startColumn,
-                                        functionNames: [],
-                                    },
-                                    args: [marker.message],
-                                })
-                            );
-                            
-                            if (
-                                !sameErrors(
-                                    internals.current.projectErrors[file.id] || [],
-                                    errors
-                                )
-                            ) {
-                                newProjectErrors[file.id] = errors;
-                                errorsChanged = true;
-                            } else {
-                                // Keep existing errors if they haven't changed
-                                newProjectErrors[file.id] = internals.current.projectErrors[file.id] || [];
-                            }
-                        } else if (fileErrors.length > 0) {
-                            // Only warn if there are actual errors for this model
-                            console.debug('Markers found for model without loaded file:', model.uri.path);
-                        }
-                    } catch (error) {
-                        console.warn('Error processing model markers:', error);
-                    }
-                }
-                
-                // Update project errors
-                internals.current.projectErrors = newProjectErrors;
-                
-                if (errorsChanged && !internals.current.isDisposed) {
-                    if (internals.current.firstErrorUpdate) {
-                        internals.current.firstErrorUpdate = false;
-                        if (store.project.activeFile) {
-                            openFile(store.project.activeFile);
-                        }
-                    }
-                    if (store.project.activeProject) {
-                        store.project.updateProjectErrors(
-                            store.project.activeProject.id,
-                            internals.current.projectErrors
-                        );
-                    }
+            const markers: editor.IMarker[] = monaco.editor.getModelMarkers({});
+            const fileMarkers = markers.filter((marker) => {
+                return marker.severity === 8 && marker.resource.path.endsWith(internals.current.file?.path || '');
+            });
+            if(fileMarkers.length > 0) {
+                if(!store.project.fileErrors.has(internals.current.file.id)) {
+                    store.project.setFileErrors(internals.current.file.id, fileMarkers);
                 }
             }
-        } catch (error) {
-            if (!internals.current.isDisposed) {
-                console.error('Error in markersUpdated:', error);
+            else{
+                if(store.project.fileErrors.has(internals.current.file.id)) {
+                    store.project.setFileErrors(internals.current.file.id, []);
+                }
             }
         }
     }
-
-    //-------------------------------------------------------------------------
-    // validate model
-    async function validateModel(
-        model: editor.ITextModel,
-        getWorker?: (
-            ...uris: Uri[]
-        ) => Promise<languages.typescript.TypeScriptWorker>
-    ) {
-        // Early exit if disposed or model is invalid
-        if (internals.current.isDisposed || !internals.current.monaco || !model || model.isDisposed()) {
-            return;
-        }
-
-        try {
-            const owner = model.getLanguageId();
-            if (owner === 'javascript' || owner === 'typescript') {
-                if (getWorker === undefined) {
-                    getWorker = await languages.typescript.getJavaScriptWorker();
-                }
-                
-                // Check disposal again after async operation
-                if (internals.current.isDisposed || model.isDisposed()) {
-                    return;
-                }
-                
-                const worker = await getWorker(model.uri);
-                
-                // Check disposal again after async operation
-                if (internals.current.isDisposed || model.isDisposed()) {
-                    return;
-                }
-                
-                const diagnostics = (
-                    await Promise.all([
-                        worker.getSyntacticDiagnostics(model.uri.toString()),
-                        worker.getSemanticDiagnostics(model.uri.toString()),
-                    ])
-                ).reduce((a, it) => a.concat(it));
-
-                // Check disposal again after async operation
-                if (internals.current.isDisposed || model.isDisposed()) {
-                    return;
-                }
-
-                const markers = diagnostics.map((d) => {
-                    const start = model.getPositionAt(d.start || 0);
-                    const end = model.getPositionAt(
-                        (d.start || 0) + (d.length || 0)
-                    );
-                    return {
-                        severity: MarkerSeverity.Error,
-                        startLineNumber: start.lineNumber,
-                        startColumn: start.column,
-                        endLineNumber: end.lineNumber,
-                        endColumn: end.column,
-                        message: flattenMessageChain(d.messageText),
-                    };
-                });
-
-                if (!internals.current.isDisposed && internals.current.monaco && !model.isDisposed()) {
-                    internals.current.monaco.editor.setModelMarkers(
-                        model,
-                        owner,
-                        markers
-                    );
-                }
-            }
-        } catch (error) {
-            if (!internals.current.isDisposed) {
-                console.warn('Error validating model:', error);
-            }
-        }
-    }
-
 
     return (
         <MonacoEditor
@@ -607,57 +356,10 @@ export function Editor() {
             options={OPTIONS}
             value={value}
             onChange={onChange}
-            onMount={editorDidMount}
+            onMount={onMount}
             beforeMount={editorWillMount}
         />
     );
-}
-
-//#############################################################################
-// utility functions
-//#############################################################################
-
-function flattenMessageChain(
-    chain: string | languages.typescript.DiagnosticMessageChain
-): string {
-    if (isString(chain)) return chain;
-    else {
-        return chain.messageText;
-    }
-}
-
-function sameMarker(a: editor.IMarker, b: editor.IMarker) {
-    return (
-        a.code === b.code &&
-        a.startColumn === b.startColumn &&
-        a.startLineNumber === b.startLineNumber &&
-        a.message === b.message &&
-        a.resource.path === b.resource.path
-    );
-}
-
-function sameMarkers(a: editor.IMarker[], b: editor.IMarker[]) {
-    if (!a || !b || a.length !== b.length) return false;
-    for (let i = 0; i < a.length; i++) {
-        if (!sameMarker(a[i], b[i])) return false;
-    }
-    return true;
-}
-
-function sameError(a: FileError, b: FileError) {
-    return (
-        a.caller.fileId === b.caller.fileId &&
-        a.caller.line === b.caller.line &&
-        a.caller.column === b.caller.column
-    );
-}
-
-function sameErrors(a: FileError[], b: FileError[]) {
-    if (!a || !b || a.length !== b.length) return false;
-    for (let i = 0; i < a.length; i++) {
-        if (!sameError(a[i], b[i])) return false;
-    }
-    return true;
 }
 
 export default Editor;

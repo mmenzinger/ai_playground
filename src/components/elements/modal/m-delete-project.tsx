@@ -1,7 +1,6 @@
 import { useState, forwardRef } from 'react';
 import { Modal } from '@elements/modal';
 import store, { Project } from '@store';
-import { Alert } from 'react-daisyui';
 
 export const DeleteProjectModal = forwardRef((props: { project: Project }, ref: React.Ref<HTMLDialogElement>) => {
     const [error, setError] = useState<string | undefined>(undefined);
@@ -21,7 +20,7 @@ export const DeleteProjectModal = forwardRef((props: { project: Project }, ref: 
         <Modal ref={ref} title={`Delete '${props.project.name}'`} submitName="delete" onSubmit={onSubmit} error={error}>
             <>
                 <p>Are you sure you want to <strong>permanently</strong> delete the project '<strong>{props.project.name}</strong>'?</p>
-                <Alert status="warning" className="mt-4"><span>This operation can <strong>not</strong> be undone!</span></Alert>
+                <div className="alert alert-warning mt-4"><span>This operation can <strong>not</strong> be undone!</span></div>
             </>
         </Modal>
     );

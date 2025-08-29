@@ -2,7 +2,6 @@ import { useState, useEffect, forwardRef, useMemo } from 'react';
 import { NestedFile, ScenarioTemplates } from '@src/scenario-utils';
 import { Modal } from '@elements/modal';
 import store from '@store';
-import { Select, Input } from 'react-daisyui';
 
 export type CreateProjectModalResult = {
     scenario: string;
@@ -89,17 +88,17 @@ export const CreateProjectModal = forwardRef((props: {
         <Modal ref={ref} title="New Project" submitName="create" onSubmit={onSubmit} error={error}>
             <>
                 <label className="label cursor-pointer" htmlFor="scenario">Scenario</label>
-                <Select className="w-full" id="scenario" size="lg" value={scenario} onChange={(e) => setScenario(e.target.value)}>
+                <select className="select select-lg w-full" id="scenario" value={scenario} onChange={(e) => setScenario(e.target.value)}>
                     {scenarios}
-                </Select>
+                </select>
 
                 <label className="label cursor-pointer" htmlFor="template">Template</label>
-                <Select className="w-full" id="template" size="lg" value={template} onChange={(e) => setTemplate(e.target.value)}>
+                <select className="select select-lg w-full" id="template" value={template} onChange={(e) => setTemplate(e.target.value)}>
                     {templates}
-                </Select>
+                </select>
 
                 <label className="label cursor-pointer" htmlFor="name">Name</label>
-                <Input className="w-full" size="lg" id="name" type="text" onChange={(e) => setName(e.target.value)} value={name} />
+                <input className="input input-lg w-full" id="name" type="text" onChange={(e) => setName(e.target.value)} value={name} />
             </>
         </Modal>
     );

@@ -1,5 +1,3 @@
-import { Collapse } from 'react-daisyui';
-
 const news = [
     {
         title: 'Major Update 2025.?.?',
@@ -48,10 +46,12 @@ export function News() {
     return (
         <div className="max-w-3xl mx-auto mt-4 prose">
             {news.map((item, index) => 
-                <Collapse icon="arrow" key={index} className="border border-base-300 bg-base-200">
-                    <input type="radio" name="news-accordion" defaultChecked={index === 0} />
-                    <Collapse.Title className={"text-xl font-medium " + (item.major ? "bg-primary text-neutral" : "")}>{item.title}</Collapse.Title>
-                    <Collapse.Content>
+                <div key={index} className="collapse collapse-arrow border border-base-300 bg-base-200">
+                    <input type="checkbox" name="news-accordion" defaultChecked={index === 0} />
+                    <div className={"collapse-title text-xl font-medium " + (item.major ? "bg-primary text-neutral" : "")}>
+                        {item.title}
+                    </div>
+                    <div className="collapse-content">
                         {item.content_text}
                         { item.content_list.length > 0 ? 
                             <ul className="m-0">
@@ -59,8 +59,8 @@ export function News() {
                             </ul>
                             : <></>
                         }
-                    </Collapse.Content>
-                </Collapse>
+                    </div>
+                </div>
             )}
         </div>
     );

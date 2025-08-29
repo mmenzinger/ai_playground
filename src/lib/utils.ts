@@ -1,5 +1,5 @@
-import { StoreMessage, MouseEventMessage, KeyboardEventMessage, ResizeEventMessage } from '@src/components/elements/simulator/worker-utils';
-import { serialize, deserialize, messageWithResult } from '@src/utils';
+import { StoreMessage, MouseEventMessage, KeyboardEventMessage, ResizeEventMessage } from '../components/elements/simulator/worker-utils';
+import { serialize, deserialize, messageWithResult } from '../utils';
 import seedrandom from 'seedrandom';
 
 import '@lib/global-types';

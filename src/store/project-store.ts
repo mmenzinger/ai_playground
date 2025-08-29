@@ -18,9 +18,7 @@ export type FileError = {
     args: any[],
 }
 
-export type ProjectErrors = {
-    [key:number]: FileError[],
-}
+export type ProjectErrors = Map<number, FileError[]>;
 
 export type File = {
     id: number,
@@ -39,7 +37,6 @@ export type Project = {
     name: string,
     scenario: string,
     openFileId?: number,
-    errors?: ProjectErrors,
 };
 
 class ProjectStore {
@@ -47,6 +44,7 @@ class ProjectStore {
     activeFile: File | null = null;
     lastFileTreeChange: number = 0;
     logCallbacks: ((logs: string[]) => void)[] = [];
+    fileErrors: Map<number, editor.IMarker[]> = new Map<number, editor.IMarker[]>();
 
     constructor() {
         makeAutoObservable(this);
@@ -73,10 +71,10 @@ class ProjectStore {
                 catch(_){}
             }
         }
-        navigator.serviceWorker.controller?.postMessage({
-            type: 'setProject',
-            project,
-        });
+        // navigator.serviceWorker.controller?.postMessage({
+        //     type: 'setProject',
+        //     project,
+        // });
         runInAction(() => {
             this.activeFile = file;
             this.activeProject = project;
@@ -97,31 +95,6 @@ class ProjectStore {
 
     async importProject(settings: Project, projectFiles: BasicFile[], globalFiles: BasicFile[], overwriteGlobals: boolean = false): Promise<number> {
         return await db.importProject(settings, projectFiles, globalFiles, overwriteGlobals);
-    }
-
-    async updateProjectErrors(id: number, projectErrors: ProjectErrors): Promise<void> {
-        let errors: ProjectErrors = {};
-        if (this.activeProject && this.activeProject.id === id && this.activeProject.errors) {
-            errors = toJS(this.activeProject.errors);
-        }
-        else {
-            const project = await db.getProject(id);
-            errors = project.errors || errors;
-        }
-        for (const [fileId, fileErrors] of Object.entries(projectErrors)) {
-            if (fileErrors.length > 0) {
-                errors[Number(fileId)] = fileErrors;
-            }
-            else {
-                delete errors[Number(fileId)];
-            }
-        }
-
-        runInAction(() => {
-            if (this.activeProject?.id === id) {
-                this.activeProject.errors = errors;
-            }
-        });
     }
 
     async deleteProject(id: number): Promise<void> {
@@ -260,6 +233,18 @@ class ProjectStore {
 
     async createFilesWithPath(files: BasicFile[], projectId: number, overwrite: boolean = false): Promise<void> {
         return db.createFilesWithPath(files, projectId, overwrite);
+    }
+
+    async setFileErrors(fileId: number, errors: editor.IMarker[]): Promise<void> {
+        runInAction(() => {
+            if(errors.length > 0){
+                this.fileErrors.set(fileId, errors);
+            }
+            else{
+                this.fileErrors.delete(fileId);
+            }
+            this.lastFileTreeChange = Date.now();
+        });
     }
 
     /**********************************************************************************+

@@ -1,3 +1,31 @@
+type MouseEvents = 'onmousedown' | 'onmouseup' | 'onmousemove';
+export interface MouseEventMessage {
+    type: MouseEvents,
+    x: number,
+    y: number,
+    button: number,
+    altKey: boolean,
+    ctrlKey: boolean,
+    timeStamp: number,
+}
+
+type KeyboardEvents = 'onkeydown' | 'onkeyup' | 'onkeypress';
+export interface KeyboardEventMessage {
+    type: KeyboardEvents,
+    key: string,
+    code: string,
+    altKey: boolean,
+    ctrlKey: boolean,
+    shiftKey: boolean,
+    timeStamp: number,
+}
+
+export interface ResizeEventMessage {
+    type: 'resize',
+    width: number,
+    height: number,
+}
+
 export declare function storeJson(path: string, data: any): Promise<void>;
 export declare function loadJson(path: string): Promise<any>;
 export declare function getFileContent(path: string): Promise<string>;
@@ -25,6 +53,10 @@ export declare function getImage(name: string): ImageBitmap | undefined;
 export declare function onVideoFrameUpdate(callback: (data: ImageBitmap) => void): void;
 //export declare function includeUrl(url: string, context = {}, parse = (content: string) => content ): Promise<any>;
 
-export declare function onMouseDown(callback: (e?: MouseEvent) => void): void;
-export declare function onMouseMove(callback: (e?: MouseEvent) => void): void;
-export declare function onMouseUp(callback: (e?: MouseEvent) => void): void;
+export declare function onMouseDown(callback: (e?: MouseEventMessage) => void): void;
+export declare function onMouseMove(callback: (e?: MouseEventMessage) => void): void;
+export declare function onMouseUp(callback: (e?: MouseEventMessage) => void): void;
+export function onKeyDown(callback: (e?: KeyboardEventMessage) => void): void;
+export function onKeyUp(callback: (e?: KeyboardEventMessage) => void): void;
+export function onKeyPress(callback: (e?: KeyboardEventMessage) => void): void;
+export function onResize(callback: (e?: ResizeEventMessage) => void): void;

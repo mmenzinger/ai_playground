@@ -5,16 +5,9 @@ import { viteStaticCopy } from 'vite-plugin-static-copy';
 import path from 'path';
 import fs from 'fs';
 import { globSync } from 'glob';
-import { sharedAliases } from './vite.shared';
+import { EXTERNAL, SHARED_ALIASES } from './vite._shared';
 
 const __SCENARIO_DIRECTORY_LIST__ = JSON.stringify(globSync('src/scenario/**/*', {nodir: true}).map(normalizePath).sort());
-
-// serve custom files during development
-const DEV_FILES = {
-  '/simulator/scenario-worker.js': '/src/components/elements/simulator/scenario-worker.ts',
-  '/simulator/worker-utils.js': '/src/components/elements/simulator/worker-utils.ts',
-  '/lib/utils.js': '/src/lib/utils.ts',
-};
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -27,19 +20,6 @@ export default defineConfig({
     {
       name: 'serve-utils',
       configureServer(server) {
-        // Serve custom transformed files
-        for (const [path, resolvedPath] of Object.entries(DEV_FILES)) {
-          server.middlewares.use(path, async (req, res, next) => {
-            try {
-              const transformed = await server.transformRequest(resolvedPath);
-              res.setHeader('Content-Type', 'application/javascript');
-              res.end(transformed?.code || '');
-            } catch (error) {
-              next(error);
-            }
-          });
-        }
-
         // Serve compiled CSS at fixed path during development
         server.middlewares.use('/assets/app.css', async (req, res, next) => {
           try {
@@ -77,28 +57,6 @@ export default defineConfig({
             }
           }
         });
-        
-        // Serve Monaco Editor files from node_modules
-        server.middlewares.use('/node_modules/monaco-editor', async (req, res, next) => {
-          try {
-            const filePath = path.resolve(__dirname, `./node_modules/monaco-editor${req.url}`);
-            if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
-              const content = fs.readFileSync(filePath);
-              
-              // Set proper content type
-              if (req.url?.endsWith('.js')) {
-                res.setHeader('Content-Type', 'application/javascript');
-              } else if (req.url?.endsWith('.css')) {
-                res.setHeader('Content-Type', 'text/css');
-              }
-              res.end(content);
-            } else {
-              next();
-            }
-          } catch (error) {
-            next(error);
-          }
-        });
       }
     },
     viteStaticCopy({
@@ -106,10 +64,17 @@ export default defineConfig({
         {
           src: [
             normalizePath(path.resolve(__dirname, './build/lib')),
+            normalizePath(path.resolve(__dirname, './build/simulator')),
             normalizePath(path.resolve(__dirname, './build/service-worker.js')),
             normalizePath(path.resolve(__dirname, './src/scenario')),
           ],
           dest: './',
+        },
+        {
+          src: [
+            normalizePath(path.resolve(__dirname, './src/lib/utils.d.ts')),
+          ],
+          dest: './lib/'
         },
         {
           src: normalizePath(path.resolve(__dirname, './src/components/elements/simulator/default.html')),
@@ -135,17 +100,17 @@ export default defineConfig({
     // }),
   ],
   resolve:{
-    alias: sharedAliases,
+    alias: SHARED_ALIASES,
   },
   build:{
     rollupOptions:{
       preserveEntrySignatures: 'exports-only',
-      external: ['/lib/utils.js', '/simulator/worker-utils.js'],
+      external: EXTERNAL,
       input:{
         index: path.resolve(__dirname, './index.html'),
-        'scenario-worker': path.resolve(__dirname, './src/components/elements/simulator/scenario-worker.ts'),
-        'worker-utils': path.resolve(__dirname, './src/components/elements/simulator/worker-utils.ts'),
-        'utils': path.resolve(__dirname, './src/lib/utils.ts'),
+        // 'scenario-worker': path.resolve(__dirname, './src/components/elements/simulator/scenario-worker.ts'),
+        // 'worker-utils': path.resolve(__dirname, './src/components/elements/simulator/worker-utils.ts'),
+        // 'utils': path.resolve(__dirname, './src/lib/utils.ts'),
       },
       output: {
         entryFileNames: (chunk) => {

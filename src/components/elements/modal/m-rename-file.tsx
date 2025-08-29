@@ -1,7 +1,6 @@
 import { useState, forwardRef } from 'react';
 import { Modal, useFocus } from '@elements/modal';
 import store from '@store';
-import { Input } from 'react-daisyui';
 
 export const RenameFileModal = forwardRef((props: { id:number, name: string }, ref: React.Ref<HTMLDialogElement>) => {
     const [error, setError] = useState<string | undefined>(undefined);
@@ -53,11 +52,11 @@ export const RenameFileModal = forwardRef((props: { id:number, name: string }, r
             {props.name.includes('.') 
                 ? <>
                     <label className="label cursor-pointer" htmlFor="name">Name</label>
-                    <div className="flex items-center"><Input className="w-full" size="lg" id="name" type="text" onChange={handleChange} value={name} ref={focus}/>&nbsp;<strong>.{ext}</strong></div>
+                    <div className="flex items-center"><input className="input input-lg w-full" id="name" type="text" onChange={handleChange} value={name} ref={focus}/>&nbsp;<strong>.{ext}</strong></div>
                 </>
                 : <>
                     <label className="label cursor-pointer" htmlFor="name">Name</label>
-                    <Input className="w-full" size="lg" id="name" type="text" onChange={handleChange} value={name} ref={focus} />
+                    <input className="input input-lg w-full" id="name" type="text" onChange={handleChange} value={name} ref={focus} />
                 </>
             }
             </>

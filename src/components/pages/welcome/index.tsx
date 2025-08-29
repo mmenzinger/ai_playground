@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { messageWithResult } from '@utils';
-import { Button, Loading, Alert } from 'react-daisyui';
 import store from '@store';
 
 async function checkServiceWorker(): Promise<React.ReactElement | true> {
@@ -80,22 +79,21 @@ export function Welcome() {
     }, []);
 
     const footer = missingFeatures ? (
-        <Button
-            color={missingFeatures.length ? 'error' : 'success'}
-            className="m-4"
+        <button
+            className={`btn ${missingFeatures.length ? 'btn-error' : 'btn-success'} m-4`}
             onClick={onContinue}
         >
             Continue {missingFeatures.length ? 'anyway' : ''}
-        </Button>
+        </button>
     ) : (
         <div className="m-4">
-            <Loading size="md"/>
+            <span className="loading loading-md text-primary" />
             checking browser features...
         </div>
     );
 
     const missing = missingFeatures?.length ? (
-        <Alert status="error" className="block text-center">
+        <div className="alert alert-error block text-center">
             Your browser is missing the following <strong>required</strong>{' '}
             features:
             <ul>
@@ -110,18 +108,18 @@ export function Welcome() {
             <a href="https://www.google.com/chrome/">Chrome</a>,{' '}
             <a href="https://www.microsoft.com/en-us/edge">Edge</a>,{' '}
             <a href="https://www.opera.com/">Opera</a>, ...)!
-        </Alert>
+        </div>
     ) : null;
 
     const ok =
         !missingFeatures || missingFeatures?.length ? null : (
-            <Alert status="success" className="block text-center">
+            <div className="alert alert-success block text-center">
                 Your browser has all required features and should work fine. If
                 you still find any bugs let me know:{' '}
                 <a href="https://github.com/c4f-wtf/ai/issues">
                     https://github.com/c4f-wtf/ai/issues
                 </a>
-            </Alert>
+            </div>
         );
 
     return (

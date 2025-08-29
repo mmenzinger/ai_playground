@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
-import { sharedAliases } from './vite.shared';
+import { SHARED_ALIASES } from './vite._shared';
 
 
 // https://vitejs.dev/config/
@@ -10,7 +10,7 @@ export default defineConfig({
     react(),
   ],
   resolve:{
-    alias: sharedAliases,
+    alias: SHARED_ALIASES,
   },
   publicDir: false,
   build:{

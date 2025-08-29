@@ -30,7 +30,11 @@ function isChild(parent: TreeItem, testChild: TreeItem): boolean {
 
 
 // Function to get the appropriate icon for a file or folder
-function getFileIcon(name: string): string {
+function getFileIcon(name: string, error: boolean = false): string {
+    if(error){
+        return '/assets/filetree/error.svg';
+    }
+
     const parts = name.split('.');
     if (parts.length === 1) {
         return '/assets/filetree/folder.svg';
@@ -412,7 +416,7 @@ function FileTree(props: FileTreeProps): JSX.Element {
                     onClick={() => selectHandler(node)}
                     onContextMenu={(event) => contextMenuHandler(event, node)}
                 >
-                    <img src={getFileIcon(node.name)} alt="file icon" className="w-3 h-4" />
+                    <img src={getFileIcon(node.name, store.project.fileErrors.has(node.file?.id || 0))} alt="file icon" className="w-3 h-4" />
                     {node.name}
                 </a>
                 

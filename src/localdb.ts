@@ -33,7 +33,6 @@ class LocalDB {
             files: '++id,&[projectId+name],projectId',
             projects: '++id,&name',
         });
-        // TODO: merge version 2, 3, 4 and 5 into 2
         this.#db.version(2).stores({
             files: '++id,&[projectId+name],projectId,parentId',
         });
@@ -324,21 +323,6 @@ class LocalDB {
     }
 
     async getProjectFiles(id: number): Promise<File[]>{
-        const iFiles = await this.#files.where('projectId').equals(id).toArray();
-        const files: File[] = [];
-        for(const iFile of iFiles){
-            
-            if(iFile.id !== undefined){
-                files.push({...iFile, id: iFile.id})
-            }
-            else{
-                throw new LocalDBError('this should never happen');
-            }
-        }
-        return files;
-    }
-
-    async getProjectFilesResolved(id: number): Promise<File[]>{
         const iFiles = await this.#files.where('projectId').equals(id).toArray();
         const files: File[] = [];
         for(const iFile of iFiles){
