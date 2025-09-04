@@ -1,6 +1,6 @@
 const news = [
     {
-        title: 'Major Update 2025.?.?',
+        title: 'Major Update 2025.?.? [currently in testing]',
         major: true,
         content_text: <></>,
         content_list: [
@@ -8,11 +8,13 @@ const news = [
             <>switched design to tailwind/daisyui</>,
             <>new console</>,
             <>new file-tree (added folders)</>,
-            <>new documentation</>,
-            <>more flexible scenario system (added views)</>,
+            <>new documentation [coming soon]</>,
+            <>more flexible scenario system (added index.html)</>,
             <>major bugfixes</>,
-            <>moved to single canvas</>,
+            <>moved to single canvas [TODO: fix flappy bird training scenario]</>,
             <>removed addMessage and setMessage from utils</>,
+            <>added keyboard support [coming soon]</>,
+            <>added Marvin scenario</>,
         ],
     },
     {     

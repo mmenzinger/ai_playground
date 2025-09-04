@@ -61,7 +61,7 @@ class LocalDB {
     //------------------------------------------------------------------------------------------
     // F i l e s
     //------------------------------------------------------------------------------------------
-    async createFile(projectId: number, name: string, content?: string | Blob, parentId?: number): Promise<number>{
+    async createFile(projectId: number, name: string, content?: string | Blob | Promise<string | Blob>, parentId?: number): Promise<number>{
         const lastChange = Date.now();
         let path = name;
         if(parentId === 0 && ['first', 'file'].includes(name)){
@@ -80,6 +80,11 @@ class LocalDB {
                 parent = iFile.parentId || 0;
                 path = `${iFile.name}/${path}`;
             }
+        }
+
+        // instanceof Promise does not always work
+        if(content instanceof Promise || (typeof (content as any)?.then === 'function')){
+            content = await content;
         }
         return this.#files.add({ projectId, name, path, content, parentId, lastChange });
     }

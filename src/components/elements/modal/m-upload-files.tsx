@@ -45,7 +45,7 @@ export const UploadFilesModal = forwardRef((props: { parentId:number, projectId:
             ext = ext?.replace(UNSUPPORTED_CHARACTERS, '');
             return {
                 name: `${fileName}.${ext}`,
-                content: await getFileContent(file),
+                content: getFileContent(file),
             };
         }));
 
@@ -86,7 +86,7 @@ export const UploadFilesModal = forwardRef((props: { parentId:number, projectId:
             }
 
             for (const file of selectedFiles) {
-                const content = Array.isArray(file.content) ? undefined : file.content;
+                const content = Array.isArray(file.content) ? undefined : await file.content;
                 await store.project.createOrUpdateFile(file.name, props.projectId, content, props.parentId);
             }
             return true;

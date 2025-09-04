@@ -1,7 +1,7 @@
 export type NestedFile = {
     name: string,
-    content: string | Blob | NestedFile[],
-};
+    content: Promise<string | Blob> | NestedFile[],
+}
 
 export type BasicFile = {
     path: string,
@@ -12,7 +12,7 @@ export type ScenarioTemplate = {
     name: string,
     scenario: string,
     files: NestedFile[],
-};
+}
 
 export type ScenarioTemplates = {
     name: string,
@@ -86,31 +86,30 @@ export async function getScenarios(): Promise<Map<string, ScenarioTemplates>> {
             files = folder.content as NestedFile[];
         }
 
-        const response = await fetch(`scenario/${path}`);
-        const newFile = await getBasicFile(parts[parts.length-1], response);
-        files.push(newFile);
+        const filename = parts[parts.length-1];
+        files.push({
+            name: filename,
+            content: fetch(`scenario/${path}`).then(r => getFileContent(filename, r)),
+        });
     }
     return scenarios;
 }
 
-async function getBasicFile(filename: string, response: Response): Promise<NestedFile>{
+async function getFileContent(filename: string, response: Response): Promise<string | Blob>{
     let content;
     switch(response.headers.get("Content-Type")?.split('/')[0]){
         case 'application':
         case 'text':
-            content = await response.text();
+            content = response.text();
             break;
         default:
             // .pl files have no content-type...
             // if file ends with .pl, get as text
             if (filename.endsWith('.pl')) {
-                content = await response.text();
+                content = response.text();
             } else {
-                content = await response.blob();
+                content = response.blob();
             }
     }
-    return {
-        name: filename,
-        content,
-    }
+    return content;
 }

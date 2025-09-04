@@ -26,7 +26,7 @@ export function App() {
 
     return (
         <Router>
-            <Header title="AI Playground" />
+            <Header title="AI Playground (beta)" />
             <Routes>
                 <Route path="/news" element={<News />} />
                 <Route path="/impressum" element={<Impressum />} />

@@ -1,5 +1,19 @@
 {
   "projects": {
     "default": "ai-618a2"
-  }
+  },
+  "targets": {
+    "ai-618a2": {
+      "hosting": {
+        "main": [
+          "ai-618a2",
+          "ai-c4f-wtf"
+        ],
+        "aibeta": [
+          "aibeta"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }

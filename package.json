@@ -87,6 +87,8 @@
         "build": "tsc && pnpm run build:sw && pnpm run build:libs && pnpm run build:simulators && vite build",
         "build:main": "tsc && vite build",
         "deploy": "firebase deploy",
+        "deploy:beta": "firebase deploy --only hosting:aibeta",
+        "deploy:main": "firebase deploy --only hosting:main",
         "update:check": "ncu",
         "update:patch": "ncu -u -t patch",
         "update:minor": "ncu -u -t minor",
