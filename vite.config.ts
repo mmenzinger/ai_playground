@@ -73,6 +73,7 @@ export default defineConfig({
         {
           src: [
             normalizePath(path.resolve(__dirname, './src/lib/utils.d.ts')),
+            normalizePath(path.resolve(__dirname, './src/lib/prolog.d.ts')),
           ],
           dest: './lib/'
         },

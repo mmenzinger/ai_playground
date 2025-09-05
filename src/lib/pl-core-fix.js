@@ -2458,7 +2458,9 @@ var pl = (function() {
 	var pl = {
 		
 		// Environment
-		__env: typeof module !== 'undefined' && module.exports ? global : window,
+		// FIX: remove window
+		// __env: typeof module !== 'undefined' && module.exports ? global : window,
+		__env: global,
 		
 		// Modules
 		module: {},
@@ -6306,16 +6308,18 @@ var pl = (function() {
 		
 	};
 
-	if( typeof module !== 'undefined' ) {
-		module.exports = pl;
-	} else {
-		window.pl = pl;
-	}
+	// FIX: just return for export
+	// if( typeof module !== 'undefined' ) {
+	// 	module.exports = pl;
+	// } else {
+	// 	window.pl = pl;
+	// }
 	
 	// Return pl for ES module export
 	return pl;
 	
 })();
 
+// FIX: add default export
 // Export for ES modules
 export default pl;

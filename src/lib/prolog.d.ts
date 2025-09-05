@@ -11,3 +11,5 @@ export type KnowledgeBase = {
     consult(file: string): Promise<void>,
     isTrue(query: string): Promise<boolean>,
 }
+
+export default pl;

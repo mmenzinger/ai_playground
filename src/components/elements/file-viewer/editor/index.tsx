@@ -9,6 +9,7 @@ import { Defer } from '@utils';
 
 const LIB_FILES = [
     {path: '/lib/utils.js', def: '/lib/utils.d.ts'},
+    {path: '/lib/prolog.js', def: '/lib/prolog.d.ts'},
 ];
 
 type Theme = 'vs' | 'vs-dark' | 'hc-black' | 'hc-light';
